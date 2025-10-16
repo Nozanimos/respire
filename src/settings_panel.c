@@ -1,8 +1,10 @@
-#include "settings_panel.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
+#include "settings_panel.h"
+#include "debug.h"
+
 
 
 #define PANEL_WIDTH 500
@@ -23,7 +25,7 @@ void init_preview_system(SettingsPanel* panel, int x, int y, int size, float rat
     panel->preview_system.last_update = SDL_GetTicks();
     panel->preview_system.current_time = 0.0;
 
-    printf("🔄 INIT Prévisualisation - Cadre: (%d,%d), Centre: (%d,%d), Taille: %d, Ratio: %.2f\n",
+    debug_printf("🔄 INIT Prévisualisation - Cadre: (%d,%d), Centre: (%d,%d), Taille: %d, Ratio: %.2f\n",
            x, y, panel->preview_system.center_x, panel->preview_system.center_y, size, ratio);
 
     // Créer les hexagones
@@ -36,14 +38,14 @@ void init_preview_system(SettingsPanel* panel, int x, int y, int size, float rat
 
     if (panel->preview_system.hex_list && panel->preview_system.hex_list->first && panel->preview_system.hex_list->first->data) {
         Hexagon* first_hex = panel->preview_system.hex_list->first->data;
-        printf("🔍 INIT - Premier hexagone - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
+        debug_printf("🔍 INIT - Premier hexagone - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
                first_hex->center_x, first_hex->center_y,
                first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
     }
 
     if (panel->preview_system.hex_list) {
         precompute_all_cycles(panel->preview_system.hex_list, TARGET_FPS, panel->temp_config.breath_duration);
-        printf("✅ Prévisualisation initialisée\n");
+        debug_printf("✅ Prévisualisation initialisée\n");
     }
 }
 
@@ -66,7 +68,7 @@ void update_preview_animation(SettingsPanel* panel) {
 void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
     if (!panel->preview_system.hex_list) return;
 
-    printf("🔄 Mise à jour prévisualisation - nouvelle durée: %.1fs\n", new_duration);
+    debug_printf("🔄 Mise à jour prévisualisation - nouvelle durée: %.1fs\n", new_duration);
 
     // Libérer l'ancien précalcul
     HexagoneNode* node = panel->preview_system.hex_list->first;
@@ -82,7 +84,7 @@ void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
     node = panel->preview_system.hex_list->first;
     if (node && node->data) {
         Hexagon* first_hex = node->data;
-        printf("🔍 AVANT - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
+        debug_printf("🔍 AVANT - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
                first_hex->center_x, first_hex->center_y,
                first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
     }
@@ -103,7 +105,7 @@ void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
     node = panel->preview_system.hex_list->first;
     if (node && node->data) {
         Hexagon* first_hex = node->data;
-        printf("🔍 APRES - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
+        debug_printf("🔍 APRES - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
                first_hex->center_x, first_hex->center_y,
                first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
     }
@@ -115,7 +117,7 @@ void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
     panel->preview_system.current_time = 0.0;
     panel->preview_system.last_update = SDL_GetTicks();
 
-    printf("✅ Prévisualisation réinitialisée avec nouvelle durée\n");
+    debug_printf("✅ Prévisualisation réinitialisée avec nouvelle durée\n");
 }
 
 void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x, int offset_y) {
@@ -125,7 +127,7 @@ void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x
     if (node && node->data) {
         // ✅ DEBUG : Afficher l'état pendant le rendu
         Hexagon* first_hex = node->data;
-        printf("🎨 RENDU - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d, Offset: (%d,%d)\n",
+        debug_printf("🎨 RENDU - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d, Offset: (%d,%d)\n",
                first_hex->center_x, first_hex->center_y,
                first_hex->current_scale, first_hex->vx[0], first_hex->vy[0],
                offset_x, offset_y);
@@ -161,24 +163,24 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
 
     // Initialiser SDL_ttf
     if (TTF_Init() == -1) {
-        printf("Erreur TTF_Init: %s\n", TTF_GetError());
+        debug_printf("Erreur TTF_Init: %s\n", TTF_GetError());
     }
 
     panel->font_title = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 28);
     panel->font = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 20);
     panel->font_small = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 16);
     if (!panel->font_title) {
-        printf("Erreur chargement police: %s\n", TTF_GetError());
+        debug_printf("Erreur chargement police: %s\n", TTF_GetError());
         // Police titre
         panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 28);
     }
     if (!panel->font) {
-        printf("Erreur chargement police: %s\n", TTF_GetError());
+        debug_printf("Erreur chargement police: %s\n", TTF_GetError());
         // Police normale
         panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 20);
     }
     if (!panel->font_small) {
-        printf("Erreur chargement police: %s\n", TTF_GetError());
+        debug_printf("Erreur chargement police: %s\n", TTF_GetError());
         // Police mini
         panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 16);
     }
@@ -206,7 +208,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     // Chargement de l'icône engrenage
     SDL_Surface* gear_surface = IMG_Load("../img/settings.png");
     if (!gear_surface) {
-        printf("Erreur: Impossible de charger ../img/settings.png: %s\n", IMG_GetError());
+        debug_printf("Erreur: Impossible de charger ../img/settings.png: %s\n", IMG_GetError());
         // Fallback: créer une surface simple
         gear_surface = SDL_CreateRGBSurface(0, 40, 40, 32, 0, 0, 0, 0);
         SDL_FillRect(gear_surface, NULL, SDL_MapRGBA(gear_surface->format, 200, 200, 200, 255));
@@ -220,7 +222,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     // Chargement du fond du panneau
     SDL_Surface* bg_surface = IMG_Load("../img/settings_bg.png");
     if (!bg_surface) {
-        printf("Erreur: Impossible de charger ../img/settings_bg.png: %s\n", IMG_GetError());
+        debug_printf("Erreur: Impossible de charger ../img/settings_bg.png: %s\n", IMG_GetError());
         // Fallback: fond gris semi-transparent
         bg_surface = SDL_CreateRGBSurface(0, PANEL_WIDTH, screen_height, 32, 0, 0, 0, 0);
         SDL_FillRect(bg_surface, NULL, SDL_MapRGBA(bg_surface->format, 50, 50, 60, 230));
@@ -248,7 +250,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     load_config(&panel->temp_config);
     init_preview_system(panel, 50, 80, 100, 0.7f);
 
-    printf("Panneau de configuration créé\n");
+    debug_printf("Panneau de configuration créé\n");
     return panel;
 }
 
@@ -326,7 +328,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
                  0xFF666666);
 
         char duration_text[50];
-        snprintf(duration_text, sizeof(duration_text), "%d secondes", panel->duration_slider.current_value);
+        debug_printf(duration_text, sizeof(duration_text), "%d secondes", panel->duration_slider.current_value);
         render_text(renderer, panel->font_small, duration_text, panel_x + 50, panel_y + 255, 0xFF000000);
 
         render_slider(renderer, &panel->duration_slider, panel->font, panel_x, panel_y);
@@ -341,7 +343,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
                  0xFF666666);
 
         char cycles_text[50];
-        snprintf(cycles_text, sizeof(cycles_text), "%d cycles", panel->cycles_slider.current_value);
+        debug_printf(cycles_text, sizeof(cycles_text), "%d cycles", panel->cycles_slider.current_value);
         render_text(renderer, panel->font_small, cycles_text, panel_x + 50, panel_y + 335, 0xFF000000);
 
         render_slider(renderer, &panel->cycles_slider, panel->font, panel_x, panel_y);
@@ -367,10 +369,10 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 load_config(&panel->temp_config);
                 // NOUVEAU : Mettre à jour la prévisualisation avec la config actuelle
                 update_preview_for_new_duration(panel, panel->temp_config.breath_duration);
-                printf("Ouverture du panneau de configuration\n");
+                debug_printf("Ouverture du panneau de configuration\n");
             } else if (panel->state == PANEL_OPEN) {
                 panel->state = PANEL_CLOSING;
-                printf("Fermeture du panneau de configuration\n");
+                debug_printf("Fermeture du panneau de configuration\n");
             }
         }
 
@@ -398,11 +400,11 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
             // Clic sur les curseurs des sliders
             if (is_point_in_rect(x, y, duration_slider_abs)) {
                 panel->duration_slider.is_dragging = true;
-                printf("Début drag durée respiration\n");
+                debug_printf("Début drag durée respiration\n");
             }
             if (is_point_in_rect(x, y, cycles_slider_abs)) {
                 panel->cycles_slider.is_dragging = true;
-                printf("Début drag cycles\n");
+                debug_printf("Début drag cycles\n");
             }
 
             // === GESTION DES BOUTONS ===
@@ -425,14 +427,14 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 // Appliquer la configuration temporaire
                 *main_config = panel->temp_config;
                 save_config(main_config);
-                printf("Configuration appliquée et sauvegardée\n");
+                debug_printf("Configuration appliquée et sauvegardée\n");
                 panel->state = PANEL_CLOSING;
             }
 
             // Clic sur le bouton Annuler
             if (is_point_in_rect(x, y, cancel_abs_rect)) {
                 // Annuler les changements
-                printf("Changements annulés\n");
+                debug_printf("Changements annulés\n");
                 panel->state = PANEL_CLOSING;
             }
         }
@@ -506,7 +508,7 @@ void free_settings_panel(SettingsPanel* panel) {
     if (panel->cancel_button_texture) SDL_DestroyTexture(panel->cancel_button_texture);
 
     free(panel);
-    printf("Panneau de configuration libéré\n");
+    debug_printf("Panneau de configuration libéré\n");
 }
 
 // Fonction helper pour détecter les clics
