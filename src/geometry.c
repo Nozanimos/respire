@@ -7,6 +7,7 @@
 #include "hexagone_list.h"
 #include "animation.h"
 #include "config.h"
+#include "debug.h"
 
 #define NB_SIDE 6
 #define ADJUST 10
@@ -77,7 +78,7 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
     };
     hex->color = colors[element_id % 4];
 
-    printf("✅ Hexagone %d créé - Centre: (%d,%d), Points relatifs\n",
+    debug_printf("✅ Hexagone %d créé - Centre: (%d,%d), Points relatifs\n",
            element_id, center_x, center_y);
 
     return hex;
@@ -105,7 +106,7 @@ HexagoneList* create_all_hexagones(int center_x, int center_y, int container_siz
 
         Animation* anim = create_animation(clockwise, angle);
         add_hexagone(list, hex, anim);
-        printf("Hexagone %d créé - Angle: %.1f° - Container: %d, Ratio: %.2f\n",
+        debug_printf("Hexagone %d créé - Angle: %.1f° - Container: %d, Ratio: %.2f\n",
                i, angle, container_size, size_ratio);
     }
 

@@ -7,26 +7,22 @@
 #include "hexagone_list.h"
 #include "renderer.h"
 #include "config.h"
+#include "debug.h"
 
-// Variable globale pour le fichier de debug
-static FILE *debug_file = NULL;
 
 void init_debug_mode(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
             debug_file = fopen("debug.txt", "w");
             if (debug_file) {
-                // Rediriger stdout et stderr vers le fichier
+                // ✅ CORRECTION : Une seule redirection
                 freopen("debug.txt", "w", stdout);
-                freopen("debug.txt", "w", stderr);
+                // stderr reste séparé pour les vraies erreurs
 
-                // Désactiver le buffering pour voir les logs en temps réel
                 setbuf(stdout, NULL);
-                setbuf(stderr, NULL);
 
-                // En-tête du fichier debug
                 time_t now = time(NULL);
-                fprintf(debug_file, "=== DÉBUT SESSION DEBUG - %s ===\n", ctime(&now));
+                printf("=== DÉBUT SESSION DEBUG - %s ===\n", ctime(&now));
                 printf("✅ Mode debug activé - logs dans debug.txt\n");
             }
             break;
@@ -43,7 +39,7 @@ void cleanup_debug_mode() {
     }
 }
 
-// Version améliorée de printf pour le debug
+/*// Version améliorée de printf pour le debug
 void debug_printf(const char *format, ...) {
     if (debug_file) {
         va_list args;
@@ -51,7 +47,7 @@ void debug_printf(const char *format, ...) {
         vfprintf(debug_file, format, args);
         va_end(args);
     }
-}
+}*/
 
 /*------------------------------------------- MAIN --------------------------------------------*/
 

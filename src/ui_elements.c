@@ -2,6 +2,7 @@
 #include "settings_panel.h"
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <stdio.h>
+#include "debug.h"
 
 // Créer un slider
 Slider create_slider(int x, int y, int width, int min_val, int max_val, int start_val) {
@@ -123,7 +124,7 @@ void render_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, int x
         SDL_DestroyTexture(texture);
         SDL_FreeSurface(surface);
     } else {
-        printf("Erreur rendu texte: %s\n", TTF_GetError());
+        debug_printf("Erreur rendu texte: %s\n", TTF_GetError());
     }
 }
 

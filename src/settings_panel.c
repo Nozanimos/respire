@@ -328,7 +328,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
                  0xFF666666);
 
         char duration_text[50];
-        debug_printf(duration_text, sizeof(duration_text), "%d secondes", panel->duration_slider.current_value);
+        snprintf(duration_text, sizeof(duration_text), "%d secondes", panel->duration_slider.current_value);
         render_text(renderer, panel->font_small, duration_text, panel_x + 50, panel_y + 255, 0xFF000000);
 
         render_slider(renderer, &panel->duration_slider, panel->font, panel_x, panel_y);
@@ -343,7 +343,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
                  0xFF666666);
 
         char cycles_text[50];
-        debug_printf(cycles_text, sizeof(cycles_text), "%d cycles", panel->cycles_slider.current_value);
+        snprintf(cycles_text, sizeof(cycles_text), "%d cycles", panel->cycles_slider.current_value);
         render_text(renderer, panel->font_small, cycles_text, panel_x + 50, panel_y + 335, 0xFF000000);
 
         render_slider(renderer, &panel->cycles_slider, panel->font, panel_x, panel_y);

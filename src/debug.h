@@ -8,6 +8,7 @@
 void init_debug_mode(int argc, char **argv);
 void cleanup_debug_mode();
 void debug_printf(const char *format, ...);
+extern FILE *debug_file;
 
 // Macros pratiques pour différents niveaux de log
 #ifdef DEBUG_MODE

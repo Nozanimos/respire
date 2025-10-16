@@ -4,6 +4,7 @@
 #include <math.h>
 #include "hexagone_list.h"
 #include "config.h"
+#include "debug.h"
 
 #define NB_SIDE 6
 
@@ -181,7 +182,7 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
             node->data->center_x = original_center_x;
             node->data->center_y = original_center_y;
 
-            printf("✅ Hexagone %d: %d frames pré-calculées (système relatif)\n",
+            debug_printf("✅ Hexagone %d: %d frames pré-calculées (système relatif)\n",
                    node->data->element_id, total_frames);
         }
         node = node->next;
@@ -226,7 +227,7 @@ int calculate_alignment_cycles(void) {
 
     int ppcm_result = (int)ceil(ppcm_float);
 
-    printf("🔢 PPCM: %.1f°, %.1f°, %.1f°, %.1f° -> %d cycles\n",
+    debug_printf("🔢 PPCM: %.1f°, %.1f°, %.1f°, %.1f° -> %d cycles\n",
            ANGLE_1, ANGLE_2, ANGLE_3, ANGLE_4, ppcm_result);
 
     return ppcm_result;
@@ -261,14 +262,14 @@ void free_hexagone_list(HexagoneList* list) {
 /*---------------------------- Print de débogage ------------------------------------------*/
 
 void debug_print_list_order(HexagoneList* list) {
-    printf("🔍 ORDRE RÉEL de la liste : ");
+    debug_printf("🔍 ORDRE RÉEL de la liste : ");
     HexagoneNode* node = list->first;
     while (node) {
-        printf("%d(", node->data->element_id);
-        printf("%s) ", node->animation->clockwise ? "H" : "A");
+        debug_printf("%d(", node->data->element_id);
+        debug_printf("%s) ", node->animation->clockwise ? "H" : "A");
         node = node->next;
     }
-    printf("\n");
+    debug_printf("\n");
 }
 
 /*---------------------------- Print de débogage ------------------------------------------*/
@@ -277,7 +278,7 @@ void debug_print_list_order(HexagoneList* list) {
 void print_rotation_frame_requirements(HexagoneList* list, int fps, float breath_duration) {
     if (!list) return;
 
-    printf("\n=== CALCUL DES FRAMES NÉCESSAIRES POUR LA ROTATION ===\n");
+    debug_printf("\n=== CALCUL DES FRAMES NÉCESSAIRES POUR LA ROTATION ===\n");
 
     HexagoneNode* node = list->first;
     while (node) {
@@ -296,20 +297,20 @@ void print_rotation_frame_requirements(HexagoneList* list, int fps, float breath
             double min_rotation_per_frame = 0.5;
             int required_frames_for_no_jitter = (int)(node->animation->angle_per_cycle / min_rotation_per_frame);
 
-            printf("Hexagone %d:\n", node->data->element_id);
-            printf("  Angle par cycle: %.1f°\n", node->animation->angle_per_cycle);
-            printf("  Frames disponibles: %d\n", available_frames);
-            printf("  Rotation par frame: %.3f°\n", rotation_per_frame_available);
-            printf("  Frames nécessaires (1°/frame): %d\n", required_frames_for_smooth);
-            printf("  Frames nécessaires (0.5°/frame): %d\n", required_frames_for_no_jitter);
-            printf("  Ratio disponible/nécessaire: %.2f\n", (double)available_frames / required_frames_for_no_jitter);
+            debug_printf("Hexagone %d:\n", node->data->element_id);
+            debug_printf("  Angle par cycle: %.1f°\n", node->animation->angle_per_cycle);
+            debug_printf("  Frames disponibles: %d\n", available_frames);
+            debug_printf("  Rotation par frame: %.3f°\n", rotation_per_frame_available);
+            debug_printf("  Frames nécessaires (1°/frame): %d\n", required_frames_for_smooth);
+            debug_printf("  Frames nécessaires (0.5°/frame): %d\n", required_frames_for_no_jitter);
+            debug_printf("  Ratio disponible/nécessaire: %.2f\n", (double)available_frames / required_frames_for_no_jitter);
 
             if (available_frames < required_frames_for_no_jitter) {
-                printf("  ⚠️  ATTENTION: Frames insuffisantes pour rotation fluide!\n");
+                debug_printf("  ⚠️  ATTENTION: Frames insuffisantes pour rotation fluide!\n");
             } else {
-                printf("  ✅ Frames suffisantes\n");
+                debug_printf("  ✅ Frames suffisantes\n");
             }
-            printf("\n");
+            debug_printf("\n");
 
         }
         node = node->next;

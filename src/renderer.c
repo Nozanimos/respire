@@ -4,6 +4,7 @@
 #include "config.h"
 #include "settings_panel.h"
 
+
 // Initialise toute la partie SDL et graphique
 bool initialize_app(AppState* app, const char* title, const char* image_path) {
     // 1. Initialisation SDL
