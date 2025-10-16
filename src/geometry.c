@@ -10,7 +10,7 @@
 #include "debug.h"
 
 #define NB_SIDE 6
-#define ADJUST 10
+#define ADJUST 0.05f
 #define PI 3.14159265358979323846
 
 /*----------------------------------------------------*/
@@ -62,7 +62,7 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
 
     // Calcul du rayon basé sur le container et ratio
     int base_radius = (int)(container_size * size_ratio / 2);
-    int current_radius = base_radius - (element_id * ADJUST);
+    int current_radius = (int) (base_radius * (1.0f - element_id * ADJUST));
 
     // ✅ MODIFICATION : Créer des points RELATIFS (centrés sur 0,0)
     for(int i = 0; i < NB_SIDE; i++) {
