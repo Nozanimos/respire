@@ -1,5 +1,6 @@
 PROJET BREATHING APP - TODO LIST
 ================================
+Mon tout premier programme en langage C + SDL2
 
 🎯 PHASE 1 : CORE ANIMATION (En cours)
 ✅ - Structure de base SDL2
