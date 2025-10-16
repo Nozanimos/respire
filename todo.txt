@@ -7,7 +7,12 @@ Mon tout premier programme en langage C + SDL2
 ✅ - Hexagones avec liste doublement chaînée
 ✅ - Système d'animation basique
 ✅ - Synchronisation rotation/scale
-🔄 - Optimisation des calculs avec les listes ← NOUS SOMMES ICI
+🔄 - Optimisation des calculs avec les listes
+🔄 - Création du panneau de configuration
+🔄 - Insertion animation dans le preview
+   |->  Débogage, l'hexagone réduit d'échelle si on actionne beaucoup de fois   ← NOUS SOMMES ICI
+        le panneau de configuration où si on intéragit avec la slidebar
+        vitesse de respiration
 
 🎯 PHASE 2 : CYCLE RESPIRATOIRE
 □ - Timer pour inspiration/expiration
