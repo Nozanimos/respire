@@ -1,0 +1,33 @@
+PROJET BREATHING APP - TODO LIST
+================================
+
+🎯 PHASE 1 : CORE ANIMATION (En cours)
+✅ - Structure de base SDL2
+✅ - Hexagones avec liste doublement chaînée
+✅ - Système d'animation basique
+✅ - Synchronisation rotation/scale
+🔄 - Optimisation des calculs avec les listes ← NOUS SOMMES ICI
+
+🎯 PHASE 2 : CYCLE RESPIRATOIRE
+□ - Timer pour inspiration/expiration
+□ - Compteur de cycles
+□ - États respiration (inspire/expire/rétention)
+□ - Affichage compteur
+
+🎯 PHASE 3 : INTERFACE PARAMÈTRES
+□ - Écran paramètres séparé
+□ - Curseurs temps inspiration/expiration
+□ - Réglage nombre de cycles
+□ - Options rétention (pleins/vides)
+
+🎯 PHASE 4 : AUDIO
+□ - Sons respiration
+□ - Voix "inspire"/"expire"
+□ - Musique d'ambiance
+□ - Gestion volume
+
+🎯 PHASE 5 : POLISH
+□ - Transitions entre écrans
+□ - Animations fluides
+□ - Gestion erreurs robuste
+□ - Optimisation performances
