@@ -1,8 +1,9 @@
 // renderer.c
 #include "renderer.h"
-#include <stdio.h>
+//#include <stdio.h>
 #include "config.h"
 #include "settings_panel.h"
+#include "debug.h"
 
 
 // Initialise toute la partie SDL et graphique
@@ -63,7 +64,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     // Chargement de la configuration
     load_config(&app->config);
 
-    printf("Application initialisée: %dx%d\n", app->screen_width, app->screen_height);
+    debug_printf("Application initialisée: %dx%d\n", app->screen_width, app->screen_height);
     return true;
 }
 
@@ -182,5 +183,5 @@ void cleanup_app(AppState* app) {
     }
 
     SDL_Quit();
-    printf("Application nettoyée\n");
+    debug_printf("Application nettoyée\n");
 }

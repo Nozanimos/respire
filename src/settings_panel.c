@@ -13,7 +13,20 @@
 #define BUTTON_HEIGHT 40
 #define BUTTON_MARGIN 20
 
-/* === NOUVELLES FONCTIONS PRÉVISUALISATION === */
+/* === FONCTIONS DE PRÉVISUALISATION === */
+
+void reinitialiser_preview_system(PreviewSystem* preview) {
+    if (!preview) return;
+
+    // Réinitialiser aux valeurs d'origine fixes
+    preview->center_x = 50;  // container_size/2 = 100/2 = 50
+    preview->center_y = 50;
+    preview->container_size = 100;
+    preview->size_ratio = 0.70f;
+
+    debug_printf("🔄 Paramètres preview réinitialisés - Centre: (%d,%d), Container: %d, Ratio: %.2f\n",
+                 preview->center_x, preview->center_y, preview->container_size, preview->size_ratio);
+}
 
 void init_preview_system(SettingsPanel* panel, int x, int y, int size, float ratio) {
     panel->preview_system.frame_x = x;
@@ -49,6 +62,7 @@ void init_preview_system(SettingsPanel* panel, int x, int y, int size, float rat
     }
 }
 
+
 void update_preview_animation(SettingsPanel* panel) {
     if (!panel->preview_system.hex_list) return;
 
@@ -70,6 +84,9 @@ void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
 
     debug_printf("🔄 Mise à jour prévisualisation - nouvelle durée: %.1fs\n", new_duration);
 
+    // Réinitialiser les paramètres de base
+    reinitialiser_preview_system(&panel->preview_system);
+
     // Libérer l'ancien précalcul
     HexagoneNode* node = panel->preview_system.hex_list->first;
     while (node) {
@@ -85,15 +102,15 @@ void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
     if (node && node->data) {
         Hexagon* first_hex = node->data;
         debug_printf("🔍 AVANT - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
-               first_hex->center_x, first_hex->center_y,
-               first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
+                     first_hex->center_x, first_hex->center_y,
+                     first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
     }
 
-    // Réinitialiser les hexagones
+    // Réinitialiser les hexagones avec les NOUVELLES valeurs
     node = panel->preview_system.hex_list->first;
     while (node) {
         if (node->data) {
-            // Réinitialiser la position ET l'échelle
+            // Réinitialiser la position ET l'échelle avec les paramètres réinitialisés
             move_hexagon(node->data, panel->preview_system.center_x, panel->preview_system.center_y);
             scale_hexagon(node->data, 1.0f);
             node->current_cycle = 0;
@@ -106,8 +123,8 @@ void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
     if (node && node->data) {
         Hexagon* first_hex = node->data;
         debug_printf("🔍 APRES - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
-               first_hex->center_x, first_hex->center_y,
-               first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
+                     first_hex->center_x, first_hex->center_y,
+                     first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
     }
 
     // Re-précalculer
@@ -128,29 +145,27 @@ void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x
         // ✅ DEBUG : Afficher l'état pendant le rendu
         Hexagon* first_hex = node->data;
         debug_printf("🎨 RENDU - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d, Offset: (%d,%d)\n",
-               first_hex->center_x, first_hex->center_y,
-               first_hex->current_scale, first_hex->vx[0], first_hex->vy[0],
-               offset_x, offset_y);
+                     first_hex->center_x, first_hex->center_y,
+                     first_hex->current_scale, first_hex->vx[0], first_hex->vy[0],
+                     offset_x, offset_y);
     }
 
     while (node) {
         if (node->data) {
-            // Sauvegarder la position et l'échelle originales
-            int original_center_x = node->data->center_x;
-            int original_center_y = node->data->center_y;
-            float original_scale = node->data->current_scale;
+            // ✅ CORRECTION : Utiliser une copie temporaire pour éviter de modifier l'original
+            Hexagon temp_hex = *(node->data);  // Copie de la structure
 
             // Positionner au centre du cadre de prévisualisation
             int preview_center_x = offset_x + preview->frame_x + preview->container_size/2;
             int preview_center_y = offset_y + preview->frame_y + preview->container_size/2;
 
-            transform_hexagon(node->data, preview_center_x, preview_center_y, 1.0f);
+            // Appliquer la transformation sur la copie temporaire
+            transform_hexagon(&temp_hex, preview_center_x, preview_center_y, 1.0f);
 
-            // Rendre l'hexagone
-            make_hexagone(renderer, node->data);
+            // Rendre l'hexagone temporaire
+            make_hexagone(renderer, &temp_hex);
 
-            // Restaurer la position et l'échelle originales
-            transform_hexagon(node->data, original_center_x, original_center_y, original_scale);
+            // ✅ PLUS BESOIN DE RESTAURER car on a travaillé sur une copie
         }
         node = node->next;
     }
@@ -367,9 +382,12 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 panel->state = PANEL_OPENING;
                 // Recharger la config actuelle dans la config temporaire
                 load_config(&panel->temp_config);
-                // NOUVEAU : Mettre à jour la prévisualisation avec la config actuelle
+
+                // Réinitialiser la prévisualisation avec la config actuelle
+                reinitialiser_preview_system(&panel->preview_system);
                 update_preview_for_new_duration(panel, panel->temp_config.breath_duration);
-                debug_printf("Ouverture du panneau de configuration\n");
+
+                debug_printf("🎯 Ouverture panneau - prévisualisation réinitialisée\n");
             } else if (panel->state == PANEL_OPEN) {
                 panel->state = PANEL_CLOSING;
                 debug_printf("Fermeture du panneau de configuration\n");

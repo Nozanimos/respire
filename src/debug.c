@@ -11,9 +11,9 @@ void debug_printf(const char *format, ...) {
         va_end(args);
         fflush(debug_file);  // ✅ Forcer l'écriture
     }
-    // ✅ OPTIONNEL : Afficher aussi dans la console
+    /*// ✅ OPTIONNEL : Afficher aussi dans la console
     va_list args2;
     va_start(args2, format);
     vprintf(format, args2);
-    va_end(args2);
+    va_end(args2);*/
 }

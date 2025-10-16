@@ -22,8 +22,8 @@ void init_debug_mode(int argc, char **argv) {
                 setbuf(stdout, NULL);
 
                 time_t now = time(NULL);
-                printf("=== DÉBUT SESSION DEBUG - %s ===\n", ctime(&now));
-                printf("✅ Mode debug activé - logs dans debug.txt\n");
+                debug_printf("=== DÉBUT SESSION DEBUG - %s ===\n", ctime(&now));
+                debug_printf("✅ Mode debug activé - logs dans debug.txt\n");
             }
             break;
         }
@@ -88,10 +88,10 @@ int main(int argc, char **argv) {
     int frame_count = 0;
     Uint32 last_fps_time = SDL_GetTicks();
 
-    printf("🔄 INIT Prévisualisation - Cadre: (50,80), Centre: (50,50), Taille: 100, Ratio: 0.70\n");
+    debug_printf("🔄 INIT Prévisualisation - Cadre: (50,80), Centre: (50,50), Taille: 100, Ratio: 0.70\n");
 
-    printf("Démarrage de l'application...\n");
-    printf("Boucle principale - ESC pour quitter\n");
+    debug_printf("Démarrage de l'application...\n");
+    debug_printf("Boucle principale - ESC pour quitter\n");
 
     while (done) {
         frame_start = SDL_GetTicks();
@@ -139,11 +139,11 @@ int main(int argc, char **argv) {
     }
 
     // === NETTOYAGE ===
-    printf("Nettoyage...\n");
+    debug_printf("Nettoyage...\n");
     cleanup_debug_mode();
     free_hexagone_list(hex_list);
     cleanup_app(&app);
 
-    printf("Application terminée\n");
+    debug_printf("Application terminée\n");
     return EXIT_SUCCESS;
 }

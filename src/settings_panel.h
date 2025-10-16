@@ -85,6 +85,7 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 void free_settings_panel(SettingsPanel* panel);
 
 // NOUVEAUX PROTOTYPES POUR LA PRÉVISUALISATION
+void reinitialiser_preview_system(PreviewSystem* preview);
 void init_preview_system(SettingsPanel* panel, int x, int y, int size, float ratio);
 void update_preview_animation(SettingsPanel* panel);
 void update_preview_for_new_duration(SettingsPanel* panel, float new_duration);
