@@ -12,7 +12,7 @@ Mon tout premier programme en langage C + SDL2
 🔄 - Insertion animation dans le preview
    |->  Débogage, l'hexagone réduit d'échelle si on actionne beaucoup de fois   ← NOUS SOMMES ICI
         le panneau de configuration où si on intéragit avec la slidebar
-        vitesse de respiration
+        vitesse de respiration.
 
 🎯 PHASE 2 : CYCLE RESPIRATOIRE
 □ - Timer pour inspiration/expiration
