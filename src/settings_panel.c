@@ -29,6 +29,7 @@ void reinitialiser_preview_system(PreviewSystem* preview) {
 }
 
 void init_preview_system(SettingsPanel* panel, int x, int y, int size, float ratio) {
+    // Initialiser d'abord les paramètres de base
     panel->preview_system.frame_x = x;
     panel->preview_system.frame_y = y;
     panel->preview_system.center_x = size/2;
@@ -38,10 +39,13 @@ void init_preview_system(SettingsPanel* panel, int x, int y, int size, float rat
     panel->preview_system.last_update = SDL_GetTicks();
     panel->preview_system.current_time = 0.0;
 
-    debug_printf("🔄 INIT Prévisualisation - Cadre: (%d,%d), Centre: (%d,%d), Taille: %d, Ratio: %.2f\n",
-           x, y, panel->preview_system.center_x, panel->preview_system.center_y, size, ratio);
+    // ✅ CORRECTION : Initialiser hex_list à NULL pour la première fois
+    panel->preview_system.hex_list = NULL;
 
-    // Créer les hexagones
+    debug_printf("🔄 INIT Prévisualisation - Cadre: (%d,%d), Centre: (%d,%d), Taille: %d, Ratio: %.2f\n",
+                 x, y, panel->preview_system.center_x, panel->preview_system.center_y, size, ratio);
+
+    // Créer les hexagones (sans tentative de libération préalable)
     panel->preview_system.hex_list = create_all_hexagones(
         panel->preview_system.center_x,
         panel->preview_system.center_y,
@@ -52,8 +56,11 @@ void init_preview_system(SettingsPanel* panel, int x, int y, int size, float rat
     if (panel->preview_system.hex_list && panel->preview_system.hex_list->first && panel->preview_system.hex_list->first->data) {
         Hexagon* first_hex = panel->preview_system.hex_list->first->data;
         debug_printf("🔍 INIT - Premier hexagone - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
-               first_hex->center_x, first_hex->center_y,
-               first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
+                     first_hex->center_x, first_hex->center_y,
+                     first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
+    } else {
+        debug_printf("❌ ERREUR: Impossible de créer les hexagones de prévisualisation\n");
+        return;
     }
 
     if (panel->preview_system.hex_list) {
@@ -80,92 +87,90 @@ void update_preview_animation(SettingsPanel* panel) {
 }
 
 void update_preview_for_new_duration(SettingsPanel* panel, float new_duration) {
-    if (!panel->preview_system.hex_list) return;
+    if (!panel) return;
 
     debug_printf("🔄 Mise à jour prévisualisation - nouvelle durée: %.1fs\n", new_duration);
 
-    // Réinitialiser les paramètres de base
-    reinitialiser_preview_system(&panel->preview_system);
-
-    // Libérer l'ancien précalcul
-    HexagoneNode* node = panel->preview_system.hex_list->first;
-    while (node) {
-        free(node->precomputed_vx);
-        free(node->precomputed_vy);
-        node->precomputed_vx = NULL;
-        node->precomputed_vy = NULL;
-        node = node->next;
+    // ✅ CORRECTION : Vérifier que la liste existe avant de la libérer
+    if (panel->preview_system.hex_list) {
+        free_hexagone_list(panel->preview_system.hex_list);
+        panel->preview_system.hex_list = NULL;
     }
 
-    // ✅ DEBUG : Afficher l'état avant réinitialisation
-    node = panel->preview_system.hex_list->first;
-    if (node && node->data) {
-        Hexagon* first_hex = node->data;
-        debug_printf("🔍 AVANT - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
+    // Réinitialiser les paramètres
+    panel->preview_system.center_x = 50;
+    panel->preview_system.center_y = 50;
+    panel->preview_system.container_size = 100;
+    panel->preview_system.size_ratio = 0.90f;
+
+    debug_printf("🔄 Paramètres preview réinitialisés - Centre: (%d,%d), Container: %d, Ratio: %.2f\n",
+                 panel->preview_system.center_x, panel->preview_system.center_y,
+                 panel->preview_system.container_size, panel->preview_system.size_ratio);
+
+    // Recréer les hexagones
+    panel->preview_system.hex_list = create_all_hexagones(
+        panel->preview_system.center_x,
+        panel->preview_system.center_y,
+        panel->preview_system.container_size,
+        panel->preview_system.size_ratio
+    );
+
+    // ✅ DEBUG : Afficher l'état APRÈS création
+    if (panel->preview_system.hex_list && panel->preview_system.hex_list->first && panel->preview_system.hex_list->first->data) {
+        Hexagon* first_hex = panel->preview_system.hex_list->first->data;
+        debug_printf("🔍 APRÈS CRÉATION - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
                      first_hex->center_x, first_hex->center_y,
                      first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
+    } else {
+        debug_printf("❌ ERREUR: Impossible de recréer les hexagones\n");
+        return;
     }
 
-    // Réinitialiser les hexagones avec les NOUVELLES valeurs
-    node = panel->preview_system.hex_list->first;
-    while (node) {
-        if (node->data) {
-            // Réinitialiser la position ET l'échelle avec les paramètres réinitialisés
-            move_hexagon(node->data, panel->preview_system.center_x, panel->preview_system.center_y);
-            scale_hexagon(node->data, 1.0f);
-            node->current_cycle = 0;
-        }
-        node = node->next;
+    // Re-précalculer les cycles
+    if (panel->preview_system.hex_list) {
+        precompute_all_cycles(panel->preview_system.hex_list, TARGET_FPS, new_duration);
     }
-
-    // ✅ DEBUG : Afficher l'état après réinitialisation
-    node = panel->preview_system.hex_list->first;
-    if (node && node->data) {
-        Hexagon* first_hex = node->data;
-        debug_printf("🔍 APRES - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n",
-                     first_hex->center_x, first_hex->center_y,
-                     first_hex->current_scale, first_hex->vx[0], first_hex->vy[0]);
-    }
-
-    // Re-précalculer
-    precompute_all_cycles(panel->preview_system.hex_list, TARGET_FPS, new_duration);
 
     // Réinitialiser le temps
     panel->preview_system.current_time = 0.0;
     panel->preview_system.last_update = SDL_GetTicks();
 
-    debug_printf("✅ Prévisualisation réinitialisée avec nouvelle durée\n");
+    debug_printf("✅ Prévisualisation COMPLÈTEMENT réinitialisée avec nouvelle durée\n");
 }
 
 void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x, int offset_y) {
-    if (!preview || !preview->hex_list) return;
+    if (!preview || !preview->hex_list) {
+        debug_printf("❌ RENDU: Prévisualisation non initialisée\n");
+        return;
+    }
 
     HexagoneNode* node = preview->hex_list->first;
-    if (node && node->data) {
-        // ✅ DEBUG : Afficher l'état pendant le rendu
-        Hexagon* first_hex = node->data;
-        debug_printf("🎨 RENDU - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d, Offset: (%d,%d)\n",
-                     first_hex->center_x, first_hex->center_y,
-                     first_hex->current_scale, first_hex->vx[0], first_hex->vy[0],
-                     offset_x, offset_y);
+    if (!node || !node->data) {
+        debug_printf("❌ RENDU: Aucun hexagone à afficher\n");
+        return;
     }
+
+    // ✅ DEBUG : Afficher l'état AVANT rendu
+    Hexagon* first_hex = node->data;
+    debug_printf("🎨 RENDU - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d, Offset: (%d,%d)\n",
+                 first_hex->center_x, first_hex->center_y,
+                 first_hex->current_scale, first_hex->vx[0], first_hex->vy[0],
+                 offset_x, offset_y);
 
     while (node) {
         if (node->data) {
-            // ✅ CORRECTION : Utiliser une copie temporaire pour éviter de modifier l'original
-            Hexagon temp_hex = *(node->data);  // Copie de la structure
-
             // Positionner au centre du cadre de prévisualisation
             int preview_center_x = offset_x + preview->frame_x + preview->container_size/2;
             int preview_center_y = offset_y + preview->frame_y + preview->container_size/2;
 
-            // Appliquer la transformation sur la copie temporaire
-            transform_hexagon(&temp_hex, preview_center_x, preview_center_y, 1.0f);
+            // Appliquer la transformation
+            transform_hexagon(node->data, preview_center_x, preview_center_y, 1.0f);
 
-            // Rendre l'hexagone temporaire
-            make_hexagone(renderer, &temp_hex);
+            // Rendre l'hexagone
+            make_hexagone(renderer, node->data);
 
-            // ✅ PLUS BESOIN DE RESTAURER car on a travaillé sur une copie
+            // ✅ IMPORTANT : Restaurer immédiatement la position d'origine
+            transform_hexagon(node->data, preview->center_x, preview->center_y, 1.0f);
         }
         node = node->next;
     }
@@ -175,6 +180,9 @@ void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x
 SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, int screen_height) {
     SettingsPanel* panel = malloc(sizeof(SettingsPanel));
     if (!panel) return NULL;
+
+    // ✅ INITIALISATION EXPLICITE de tous les membres
+    memset(panel, 0, sizeof(SettingsPanel));
 
     // Initialiser SDL_ttf
     if (TTF_Init() == -1) {
@@ -263,7 +271,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
 
     // Chargement configuration temporaire
     load_config(&panel->temp_config);
-    init_preview_system(panel, 50, 80, 100, 0.7f);
+    init_preview_system(panel, 50, 80, 100, 0.90f);
 
     debug_printf("Panneau de configuration créé\n");
     return panel;

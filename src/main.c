@@ -39,22 +39,16 @@ void cleanup_debug_mode() {
     }
 }
 
-/*// Version améliorée de printf pour le debug
-void debug_printf(const char *format, ...) {
-    if (debug_file) {
-        va_list args;
-        va_start(args, format);
-        vfprintf(debug_file, format, args);
-        va_end(args);
-    }
-}*/
-
 /*------------------------------------------- MAIN --------------------------------------------*/
 
 int main(int argc, char **argv) {
 
     // Initialiser le mode debug si demandé
     init_debug_mode(argc, argv);
+
+
+    /*------------------------------------------------------------*/
+
 
     AppState app = {0};
     HexagoneList* hex_list = NULL;
