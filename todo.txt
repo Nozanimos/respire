@@ -55,3 +55,4 @@ Mon tout premier programme en langage C + SDL2
 □ - Animations fluides
 □ - Gestion erreurs robuste
 □ - Optimisation performances
+ ptite modif pour voir
