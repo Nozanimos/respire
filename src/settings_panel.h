@@ -7,7 +7,8 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <stdbool.h>
 #include "config.h"
-#include "hexagone_list.h"  // AJOUT
+#include "hexagone_list.h"
+#include "widget.h"
 
 typedef enum {
     PANEL_CLOSED,
@@ -16,7 +17,7 @@ typedef enum {
     PANEL_CLOSING
 } PanelState;
 
-// === STRUCTURES UI EXISTANTES ===
+// === STRUCTURES UI ===
 typedef struct {
     int min_value;
     int max_value;
@@ -33,7 +34,7 @@ typedef struct {
     bool is_hovered;
 } UIButton;
 
-// === NOUVELLE STRUCTURE PRÉVISUALISATION ===
+// === STRUCTURE PRÉVISUALISATION ===
 typedef struct {
     HexagoneList* hex_list;
     int center_x, center_y;
@@ -44,6 +45,7 @@ typedef struct {
     int frame_x, frame_y;
 } PreviewSystem;
 
+// === STRUCTURE DU PANNEAU DE CONFIGURATION ===
 typedef struct {
     PanelState state;
     SDL_Rect rect;
@@ -61,12 +63,14 @@ typedef struct {
     TTF_Font* font_title;
     TTF_Font* font;
     TTF_Font* font_small;
-    Slider duration_slider;
-    Slider cycles_slider;
+
+    ConfigWidget* duration_widget;
+    ConfigWidget* cycles_widget;
+
     UIButton apply_button;
     UIButton cancel_button;
 
-    // NOUVEAU : Système de prévisualisation
+    // Système de prévisualisation
     PreviewSystem preview_system;
 
     // Anciens éléments (à supprimer progressivement)
@@ -77,14 +81,14 @@ typedef struct {
 
 } SettingsPanel;
 
-// Prototypes
+// PROTOTYPES
 SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, int screen_height);
 void update_settings_panel(SettingsPanel* panel, float delta_time);
 void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel);
 void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConfig* main_config);
 void free_settings_panel(SettingsPanel* panel);
 
-// NOUVEAUX PROTOTYPES POUR LA PRÉVISUALISATION
+// PROTOTYPES POUR LA PRÉVISUALISATION
 void reinitialiser_preview_system(PreviewSystem* preview);
 void init_preview_system(SettingsPanel* panel, int x, int y, int size, float ratio);
 void update_preview_animation(SettingsPanel* panel);
@@ -100,5 +104,6 @@ Slider create_slider(int x, int y, int width, int min_val, int max_val, int star
 void update_slider_thumb_position(Slider* slider);
 void render_slider(SDL_Renderer* renderer, Slider* slider, TTF_Font* font, int offset_x, int offset_y);
 bool handle_slider_event(Slider* slider, SDL_Event* event);
+bool is_point_in_rect(int x, int y, SDL_Rect rect);
 
 #endif

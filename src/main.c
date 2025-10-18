@@ -71,25 +71,17 @@ int main(int argc, char **argv) {
 
     hex_list = create_all_hexagones(app.screen_width/2, app.screen_height/2, container_size, size_ratio);
 
-    // ✅ CORRECTION CRITIQUE : Assigner hex_list à app.hexagones
+    // Assignement hex_list à app.hexagones
     app.hexagones = hex_list;
 
     // === PRÉ-CALCULS ===
     precompute_all_cycles(hex_list, TARGET_FPS, config.breath_duration);
+    print_rotation_frame_requirements(hex_list, TARGET_FPS, config.breath_duration);
 
     debug_printf("✅ Hexagones créés et assignés à app.hexagones\n");
     debug_printf("📊 Nombre d'hexagones: %d\n", hex_list->count);
 
-    /*// === CRÉATION DES HEXAGONES ===
-    // NOUVEAU : Calcul de la taille du container et ratio
-    int container_size = (app.screen_width < app.screen_height) ? app.screen_width : app.screen_height;
-    float size_ratio = 0.75f; // 75% de la taille du container
-
-    hex_list = create_all_hexagones(app.screen_width/2, app.screen_height/2, container_size, size_ratio);
-
-    // === PRÉ-CALCULS ===
-    precompute_all_cycles(hex_list, TARGET_FPS, config.breath_duration);
-    print_rotation_frame_requirements(hex_list, TARGET_FPS, config.breath_duration);*/
+    /*------------------------------------------------------------*/
 
     const int FRAME_DELAY = 1000 / TARGET_FPS;
     Uint32 frame_start;

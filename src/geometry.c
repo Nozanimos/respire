@@ -151,6 +151,82 @@ void free_hexagon(Hexagon* hex) {
 
 /*----------------------------------------------------*/
 
+// Crée un triangle isocèle générique
+Triangle* create_triangle(int center_x, int center_y, int height, bool points_up, SDL_Color color) {
+    Triangle* tri = malloc(sizeof(Triangle));
+    if (!tri) {
+        debug_printf("❌ Erreur allocation triangle\n");
+        return NULL;
+    }
+
+    // Selon ta spécification : base = 2 × hauteur
+    int base_half = height;  // base/2 = hauteur, donc base = 2 × hauteur
+
+    tri->center_x = center_x;
+    tri->center_y = center_y;
+    tri->color = color;
+
+    if (points_up) {
+        // Flèche vers le haut - sommet en haut
+        tri->vx[0] = center_x;              // Sommet
+        tri->vy[0] = center_y - height/2;   // Ajustement pour centrage
+
+        tri->vx[1] = center_x - base_half;  // Base gauche
+        tri->vy[1] = center_y + height/2;   // Ajustement pour centrage
+
+        tri->vx[2] = center_x + base_half;  // Base droite
+        tri->vy[2] = center_y + height/2;   // Ajustement pour centrage
+    } else {
+        // Flèche vers le bas - sommet en bas
+        tri->vx[0] = center_x;              // Sommet
+        tri->vy[0] = center_y + height/2;   // Ajustement pour centrage
+
+        tri->vx[1] = center_x - base_half;  // Base gauche
+        tri->vy[1] = center_y - height/2;   // Ajustement pour centrage
+
+        tri->vx[2] = center_x + base_half;  // Base droite
+        tri->vy[2] = center_y - height/2;   // Ajustement pour centrage
+    }
+
+    debug_printf("🔺 Triangle créé - Centre: (%d,%d), Hauteur: %d, Orientation: %s\n",
+                 center_x, center_y, height, points_up ? "haut" : "bas");
+
+    return tri;
+}
+
+/*----------------------------------------------------*/
+
+// Dessine un triangle
+void draw_triangle(SDL_Renderer *renderer, Triangle* tri) {
+    if (!renderer || !tri) return;
+
+    filledPolygonRGBA(renderer, tri->vx, tri->vy, 3,
+                      tri->color.r, tri->color.g, tri->color.b, tri->color.a);
+}
+
+/*----------------------------------------------------*/
+
+// Fonctions spécifiques pour flèches (utilisent create_triangle)
+Triangle* create_up_arrow(int center_x, int center_y, int size, SDL_Color color) {
+    return create_triangle(center_x, center_y, size, true, color);
+}
+
+Triangle* create_down_arrow(int center_x, int center_y, int size, SDL_Color color) {
+    return create_triangle(center_x, center_y, size, false, color);
+}
+
+/*----------------------------------------------------*/
+
+// Libère un triangle
+void free_triangle(Triangle* tri) {
+    if (tri) {
+        free(tri);
+        debug_printf("🔻 Triangle libéré\n");
+    }
+}
+
+/*----------------------------------------------------*/
+
 /*----------------------------------------------------*/
 
 /*----------------------------------------------------*/

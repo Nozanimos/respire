@@ -1,7 +1,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include "settings_panel.h"
 #include "debug.h"
 
@@ -12,6 +12,27 @@
 #define BUTTON_WIDTH 120
 #define BUTTON_HEIGHT 40
 #define BUTTON_MARGIN 20
+
+// ✅ CALLBACKS pour les widgets (ajouter en haut du fichier, avant create_settings_panel)
+
+static SettingsPanel* current_panel_for_callbacks = NULL;
+
+static void duration_value_changed(int new_value) {
+    if (!current_panel_for_callbacks) return;
+
+    current_panel_for_callbacks->temp_config.breath_duration = new_value;
+    debug_printf("🔄 Durée respiration changée: %d secondes\n", new_value);
+
+    // Mettre à jour la prévisualisation en temps réel
+    update_preview_for_new_duration(current_panel_for_callbacks, new_value);
+}
+
+static void cycles_value_changed(int new_value) {
+    if (!current_panel_for_callbacks) return;
+
+    current_panel_for_callbacks->temp_config.breath_cycles = new_value;
+    debug_printf("🔄 Cycles changés: %d\n", new_value);
+}
 
 /* === FONCTIONS DE PRÉVISUALISATION === */
 
@@ -150,12 +171,12 @@ void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x
         return;
     }
 
-    // ✅ DEBUG : Afficher l'état AVANT rendu
+   /* // ✅ DEBUG : Afficher l'état AVANT rendu
     Hexagon* first_hex = node->data;
     debug_printf("🎨 RENDU - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d, Offset: (%d,%d)\n",
                  first_hex->center_x, first_hex->center_y,
                  first_hex->current_scale, first_hex->vx[0], first_hex->vy[0],
-                 offset_x, offset_y);
+                 offset_x, offset_y);*/
 
     while (node) {
         if (node->data) {
@@ -192,6 +213,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     panel->font_title = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 28);
     panel->font = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 20);
     panel->font_small = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 16);
+
     if (!panel->font_title) {
         debug_printf("Erreur chargement police: %s\n", TTF_GetError());
         // Police titre
@@ -213,9 +235,38 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
 
     // === RÉORGANISATION DE L'ESPACE ===
 
-    // Créer les sliders
-    panel->duration_slider = create_slider(50, 240, 250, 1, 10, panel->temp_config.breath_duration);
-    panel->cycles_slider = create_slider(50, 320, 250, 1, 20, panel->temp_config.breath_cycles);
+    // Créer les widgets
+    int widget_x = 50;
+    int duration_y = 240;
+    int cycles_y = 320;
+    int arrow_size = 8;  // ✅ taille flèches
+    int text_size = 20;
+
+    // Widget pour la durée de respiration
+    panel->duration_widget = create_config_widget(
+        "Durée respiration",   // nom
+        widget_x, duration_y,  // position
+        1, 10,                 // min, max
+        panel->temp_config.breath_duration, // valeur initiale
+        1,                     // incrément
+        arrow_size,            // taille des flèches
+        text_size              // taille du texte
+    );
+
+    // Widget pour le nombre de cycles
+    panel->cycles_widget = create_config_widget(
+        "Cycles",              // nom
+        widget_x, cycles_y,    // position
+        1, 20,                 // min, max
+        panel->temp_config.breath_cycles, // valeur initiale
+        1,                     // incrément
+        arrow_size,            // taille des flèches
+        text_size              // taille du texte
+    );
+
+    // ✅ CALLBACKS pour mise à jour en temps réel
+    set_widget_value_changed_callback(panel->duration_widget, duration_value_changed);
+    set_widget_value_changed_callback(panel->cycles_widget, cycles_value_changed);
 
     // Créer les boutons UI
     panel->apply_button = create_button("Appliquer", 200, screen_height-50, 120, 30);
@@ -228,20 +279,6 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     panel->current_x = screen_width;
     panel->animation_progress = 0.0f;
 
-    // Chargement de l'icône engrenage
-    SDL_Surface* gear_surface = IMG_Load("../img/settings.png");
-    if (!gear_surface) {
-        debug_printf("Erreur: Impossible de charger ../img/settings.png: %s\n", IMG_GetError());
-        // Fallback: créer une surface simple
-        gear_surface = SDL_CreateRGBSurface(0, 40, 40, 32, 0, 0, 0, 0);
-        SDL_FillRect(gear_surface, NULL, SDL_MapRGBA(gear_surface->format, 200, 200, 200, 255));
-    }
-    panel->gear_icon = SDL_CreateTextureFromSurface(renderer, gear_surface);
-    SDL_FreeSurface(gear_surface);
-
-    // Position de l'engrenage en haut à droite
-    panel->gear_rect = (SDL_Rect){screen_width - 60, 20, 40, 40};
-
     // Chargement du fond du panneau
     SDL_Surface* bg_surface = IMG_Load("../img/settings_bg.png");
     if (!bg_surface) {
@@ -252,6 +289,23 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     }
     panel->background = SDL_CreateTextureFromSurface(renderer, bg_surface);
     SDL_FreeSurface(bg_surface);
+
+    // Chargement de l'icône engrenage
+    SDL_Surface* gear_surface = IMG_Load("../img/settings.png");
+
+    if (!gear_surface) {
+        debug_printf("Erreur: Impossible de charger ../img/settings.png: %s\n", IMG_GetError());
+        // Fallback: créer une surface simple
+        gear_surface = SDL_CreateRGBSurface(0, 40, 40, 32, 0, 0, 0, 0);
+        SDL_FillRect(gear_surface, NULL, SDL_MapRGBA(gear_surface->format, 200, 200, 200, 255));
+    }
+
+    panel->gear_icon = SDL_CreateTextureFromSurface(renderer, gear_surface);
+    SDL_FreeSurface(gear_surface);
+
+    // Position de l'engrenage en haut à droite
+    panel->gear_rect = (SDL_Rect){screen_width - 60, 20, 40, 40};
+
 
     // Création des boutons (textures simples pour l'instant)
     SDL_Surface* apply_surface = SDL_CreateRGBSurface(0, BUTTON_WIDTH, BUTTON_HEIGHT, 32, 0, 0, 0, 0);
@@ -273,7 +327,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     load_config(&panel->temp_config);
     init_preview_system(panel, 50, 80, 100, 0.90f);
 
-    debug_printf("Panneau de configuration créé\n");
+    debug_printf("✅ Panneau de configuration créé avec widgets\n");
     return panel;
 }
 
@@ -329,7 +383,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         int panel_y = panel->rect.y;
 
         // === TITRE ===
-        render_text(renderer, panel->font_title,"Configuration Respiration", panel_x + 140, panel_y + 40, 0xFFFFFFFF);
+        render_text(renderer, panel->font_title,"Configuration Respiration", panel_x + 70, panel_y + 40, 0xFFFFFFFF);
 
         // === ESPACE RÉSERVÉ POUR L'ANIMATION ===
         // Dessiner un cadre pour la prévisualisation
@@ -341,35 +395,15 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         // Hexagone de prévisualisation
         render_preview(renderer, &panel->preview_system, panel_x, panel_y);
 
-        // === SLIDER DURÉE RESPIRATION ===
-        render_text(renderer, panel->font, "Vitesse de respiration", panel_x + 50, panel_y + 200, 0xFFFFFFFF);
+        // === WIDGET DURÉE RESPIRATION ===
+        if (panel->duration_widget) {
+            render_config_widget(renderer, panel->duration_widget, panel->font);
+        }
 
-        // Barre de séparation visuelle
-        boxColor(renderer,
-                 panel_x + 50, panel_y + 228,
-                 panel_x + PANEL_WIDTH - 100, panel_y + 229,
-                 0xFF666666);
-
-        char duration_text[50];
-        snprintf(duration_text, sizeof(duration_text), "%d secondes", panel->duration_slider.current_value);
-        render_text(renderer, panel->font_small, duration_text, panel_x + 50, panel_y + 255, 0xFF000000);
-
-        render_slider(renderer, &panel->duration_slider, panel->font, panel_x, panel_y);
-
-        // === SLIDER CYCLES ===
-        render_text(renderer, panel->font, "Cycles", panel_x + 50, panel_y + 280, 0xFFFFFFFF);
-
-        // Barre de séparation visuelle
-        boxColor(renderer,
-                 panel_x + 50, panel_y + 308,
-                 panel_x + PANEL_WIDTH - 100, panel_y + 309,
-                 0xFF666666);
-
-        char cycles_text[50];
-        snprintf(cycles_text, sizeof(cycles_text), "%d cycles", panel->cycles_slider.current_value);
-        render_text(renderer, panel->font_small, cycles_text, panel_x + 50, panel_y + 335, 0xFF000000);
-
-        render_slider(renderer, &panel->cycles_slider, panel->font, panel_x, panel_y);
+        // === WIDGET CYCLES ===
+        if (panel->cycles_widget) {
+            render_config_widget(renderer, panel->cycles_widget, panel->font);
+        }
 
         // === BOUTONS ===
         render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
@@ -379,6 +413,9 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
 
 void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConfig* main_config) {
     if (!panel || !event) return;
+
+    // SET le panel courant pour les callbacks
+    current_panel_for_callbacks = panel;
 
     if (event->type == SDL_MOUSEBUTTONDOWN) {
         int x = event->button.x;
@@ -390,6 +427,14 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 panel->state = PANEL_OPENING;
                 // Recharger la config actuelle dans la config temporaire
                 load_config(&panel->temp_config);
+
+                // METTRE À JOUR les widgets avec les valeurs actuelles
+                if (panel->duration_widget) {
+                    panel->duration_widget->value = panel->temp_config.breath_duration;
+                }
+                if (panel->cycles_widget) {
+                    panel->cycles_widget->value = panel->temp_config.breath_cycles;
+                }
 
                 // Réinitialiser la prévisualisation avec la config actuelle
                 reinitialiser_preview_system(&panel->preview_system);
@@ -407,30 +452,12 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
             int panel_x = panel->rect.x;
             int panel_y = panel->rect.y;
 
-            // === GESTION DES SLIDERS ===
-            // Créer des rectangles absolus pour la détection
-            SDL_Rect duration_slider_abs = {
-                panel->duration_slider.thumb_rect.x + panel_x,
-                panel->duration_slider.thumb_rect.y + panel_y,
-                panel->duration_slider.thumb_rect.w,
-                panel->duration_slider.thumb_rect.h
-            };
-
-            SDL_Rect cycles_slider_abs = {
-                panel->cycles_slider.thumb_rect.x + panel_x,
-                panel->cycles_slider.thumb_rect.y + panel_y,
-                panel->cycles_slider.thumb_rect.w,
-                panel->cycles_slider.thumb_rect.h
-            };
-
-            // Clic sur les curseurs des sliders
-            if (is_point_in_rect(x, y, duration_slider_abs)) {
-                panel->duration_slider.is_dragging = true;
-                debug_printf("Début drag durée respiration\n");
+            // GESTION DES WIDGETS
+            if (panel->duration_widget) {
+                handle_config_widget_events(panel->duration_widget, event);
             }
-            if (is_point_in_rect(x, y, cycles_slider_abs)) {
-                panel->cycles_slider.is_dragging = true;
-                debug_printf("Début drag cycles\n");
+            if (panel->cycles_widget) {
+                handle_config_widget_events(panel->cycles_widget, event);
             }
 
             // === GESTION DES BOUTONS ===
@@ -466,66 +493,43 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
         }
     }
 
-    // === GESTION DU DRAG CONTINU DES SLIDERS ===
-    if (event->type == SDL_MOUSEMOTION) {
-        if (panel->duration_slider.is_dragging) {
-            int mouse_x = event->motion.x;
-            int panel_x = panel->rect.x;
-
-            // Calculer la nouvelle valeur
-            float ratio = (float)(mouse_x - panel_x - panel->duration_slider.track_rect.x) /
-            panel->duration_slider.track_rect.w;
-            ratio = ratio < 0 ? 0 : (ratio > 1 ? 1 : ratio);
-
-            int new_value = panel->duration_slider.min_value +
-            (int)(ratio * (panel->duration_slider.max_value - panel->duration_slider.min_value));
-
-            // Mettre à jour seulement si la valeur a changé
-            if (new_value != panel->duration_slider.current_value) {
-                panel->duration_slider.current_value = new_value;
-
-                // Mettre à jour la config temporaire
-                panel->temp_config.breath_duration = panel->duration_slider.current_value;
-
-                // Mettre à jour la prévisualisation en temps réel
-                update_preview_for_new_duration(panel, panel->temp_config.breath_duration);
-
-                update_slider_thumb_position(&panel->duration_slider);
-            }
+    // ✅ GESTION CONTINUE DES ÉVÉNEMENTS POUR LES WIDGETS
+    // (pour la molette et le hover)
+    if (panel->state == PANEL_OPEN) {
+        if (panel->duration_widget) {
+            handle_config_widget_events(panel->duration_widget, event);
         }
-
-        if (panel->cycles_slider.is_dragging) {
-            int mouse_x = event->motion.x;
-            int panel_x = panel->rect.x;
-
-            float ratio = (float)(mouse_x - panel_x - panel->cycles_slider.track_rect.x) /
-            panel->cycles_slider.track_rect.w;
-            ratio = ratio < 0 ? 0 : (ratio > 1 ? 1 : ratio);
-
-            panel->cycles_slider.current_value = panel->cycles_slider.min_value +
-            (int)(ratio * (panel->cycles_slider.max_value - panel->cycles_slider.min_value));
-
-            // Mettre à jour la config temporaire
-            panel->temp_config.breath_cycles = panel->cycles_slider.current_value;
-
-            update_slider_thumb_position(&panel->cycles_slider);
+        if (panel->cycles_widget) {
+            handle_config_widget_events(panel->cycles_widget, event);
         }
     }
 
-    // === FIN DU DRAG ===
+    // ✅ NETTOYER la référence au panel
     if (event->type == SDL_MOUSEBUTTONUP) {
-        panel->duration_slider.is_dragging = false;
-        panel->cycles_slider.is_dragging = false;
+        current_panel_for_callbacks = NULL;
     }
 }
 
 void free_settings_panel(SettingsPanel* panel) {
     if (!panel) return;
+
+    // ✅ LIBÉRER LES WIDGETS
+    if (panel->duration_widget) {
+        free_config_widget(panel->duration_widget);
+    }
+    if (panel->cycles_widget) {
+        free_config_widget(panel->cycles_widget);
+    }
+
     // Libérer la prévisualisation
     if (panel->preview_system.hex_list) {
         free_hexagone_list(panel->preview_system.hex_list);
     }
+
+    // (garder le reste du nettoyage existant)
+    if (panel->font_title) TTF_CloseFont(panel->font_title);
     if (panel->font) TTF_CloseFont(panel->font);
+    if (panel->font_small) TTF_CloseFont(panel->font_small);
     TTF_Quit();
 
     if (panel->gear_icon) SDL_DestroyTexture(panel->gear_icon);
@@ -534,11 +538,5 @@ void free_settings_panel(SettingsPanel* panel) {
     if (panel->cancel_button_texture) SDL_DestroyTexture(panel->cancel_button_texture);
 
     free(panel);
-    debug_printf("Panneau de configuration libéré\n");
-}
-
-// Fonction helper pour détecter les clics
-bool is_point_in_rect(int x, int y, SDL_Rect rect) {
-    return (x >= rect.x && x <= rect.x + rect.w &&
-    y >= rect.y && y <= rect.y + rect.h);
+    debug_printf("✅ Panneau de configuration libéré (avec widgets)\n");
 }

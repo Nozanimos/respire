@@ -9,22 +9,40 @@ Mon tout premier programme en langage C + SDL2
 ✅ - Synchronisation rotation/scale
 ✅ - Optimisation des calculs avec les listes
 ✅ - Création du panneau de configuration
-🔄 - Insertion animation dans le preview
-   |->  Débogage, l'hexagone réduit d'échelle si on actionne beaucoup de fois   ← NOUS SOMMES ICI
-        le panneau de configuration où si on intéragit avec la slidebar
-        vitesse de respiration.
+✅ - Insertion animation dans le preview
 
-🎯 PHASE 2 : CYCLE RESPIRATOIRE
+
+🎯 PHASE 2 : INTERFACE PARAMÈTRES
+✅ - Panneau de configuration animé
+✅ - Curseurs temps inspiration/expiration
+🔄 - Réglage nombre de cycles                           ← NOUS SOMMES ICI
+
+        🔄 - créer triangle isocèle dans géometry.c, le milieu de la base servira de point de référence et la base sera le double de la hauteur
+                - À voir si la contrainte pour les coodonnées est meilleure en valeurs relatives ou valeurs absolues
+                - Le triangle créé servira de fêches haut/bas tête-bèche espacée de quelques pixels dans le widget en dessous.
+        □ - remplacer les sildebar par les flèches haut/bas puis débogage.
+        □ - Créer un modèle de widget {"nom_option",
+                                        taille_texte,
+                                        flèches haut/bas (incrémenter/décrémenter valeur),
+                                        couleur (noir par défaut),
+                                        hovered couleur (jaune pâle),
+                                        position_x,
+                                        position_y};
+        □ - modélisation des options du panneau de configuration en listes :
+                □ - la liste sera imprimée dans un fichier avec les valeurs correspondantes au json
+                de manière à remplacer son contenu par les valeurs définitives codées en C directement.
+        □ - Créer fichier json_helper qui va servir à créer, positionner les options dans le panneau de configuration
+                □ - Une fenêtre en json devra s'ouvrir et la modification des valeurs pourra se faire en roulant la molette de la souris
+                pour incrémenter ou décrémenter les valeurs.
+        □ - remplacer les deux options existantes par deux occurrences de widget pour test des listes et du json
+
+□ - Options rétention (pleins/vides)
+
+🎯 PHASE 3 : CYCLE RESPIRATOIRE
 □ - Timer pour inspiration/expiration
 □ - Compteur de cycles
 □ - États respiration (inspire/expire/rétention)
 □ - Affichage compteur
-
-🎯 PHASE 3 : INTERFACE PARAMÈTRES
-□ - Écran paramètres séparé
-□ - Curseurs temps inspiration/expiration
-□ - Réglage nombre de cycles
-□ - Options rétention (pleins/vides)
 
 🎯 PHASE 4 : AUDIO
 □ - Sons respiration

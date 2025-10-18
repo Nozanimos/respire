@@ -27,4 +27,20 @@ void move_hexagon(Hexagon* hex, int new_center_x, int new_center_y);
 void scale_hexagon(Hexagon* hex, float new_scale);
 void transform_hexagon(Hexagon* hex, int new_center_x, int new_center_y, float new_scale);
 
+// Structure pour un triangle (réutilisable)
+typedef struct {
+    Sint16 vx[3];
+    Sint16 vy[3];
+    SDL_Color color;
+    int center_x;
+    int center_y;
+} Triangle;
+
+// Prototypes pour triangles
+Triangle* create_triangle(int center_x, int center_y, int height, bool points_up, SDL_Color color);
+Triangle* create_up_arrow(int center_x, int center_y, int size, SDL_Color color);
+Triangle* create_down_arrow(int center_x, int center_y, int size, SDL_Color color);
+void draw_triangle(SDL_Renderer *renderer, Triangle* tri);
+void free_triangle(Triangle* tri);
+
 #endif
