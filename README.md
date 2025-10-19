@@ -2,6 +2,12 @@
 ![SDL2](https://img.shields.io/badge/SDL2-0D4F8B?style=for-the-badge&logo=sdl&logoColor=white)
 ![Arch](https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white)
 
+
+![Compilation](https://img.shields.io/badge/Compilation-100%25-success)
+![Développement](https://img.shields.io/badge/Développement-40%25-orange)
+![Documentation](https://img.shields.io/badge/Documentation-0%25-blue)
+![Tests](https://img.shields.io/badge/Tests-100%25-brightgreen)
+
 # Mon Premier Programme en Langage C + SDL2
 
 ---
