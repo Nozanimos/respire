@@ -235,10 +235,13 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
 
     // === RÉORGANISATION DE L'ESPACE ===
 
-    int widget_x = 50;
-    int duration_y = 240;  // Assez d'espace pour l'alignement
-    int cycles_y = 320;    // Assez d'espace pour l'alignement
-    int arrow_size = 6;    // Taille taille des flèches
+    // Calcul de la largeur totale approximative du widget le plus large
+    int largeur_max_widget = 180 + 20 + 40 + 20; // texte_max + flèches + valeur + marges
+    int widget_x = (PANEL_WIDTH - largeur_max_widget) / 2; // Centrage horizontal
+
+    int duration_y = 240;
+    int cycles_y = 320;
+    int arrow_size = 6;
     int text_size = 20;
 
     // Widget pour la durée de respiration
@@ -396,15 +399,19 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         // Hexagone de prévisualisation
         render_preview(renderer, &panel->preview_system, panel_x, panel_y);
 
+
         // === WIDGET DURÉE RESPIRATION ===
         if (panel->duration_widget) {
-            render_config_widget(renderer, panel->duration_widget, panel->font);
+            // ✅ AJOUT : Passer l'offset du panneau
+            render_config_widget(renderer, panel->duration_widget, panel->font, panel_x, panel_y);
         }
 
         // === WIDGET CYCLES ===
         if (panel->cycles_widget) {
-            render_config_widget(renderer, panel->cycles_widget, panel->font);
+            // ✅ AJOUT : Passer l'offset du panneau
+            render_config_widget(renderer, panel->cycles_widget, panel->font, panel_x, panel_y);
         }
+
 
         // === BOUTONS ===
         render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
@@ -418,11 +425,17 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
     // SET le panel courant pour les callbacks
     current_panel_for_callbacks = panel;
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // GESTION DES ÉVÉNEMENTS GLOBAUX (indépendants de l'état du panneau)
+    // ═════════════════════════════════════════════════════════════════════════
+
     if (event->type == SDL_MOUSEBUTTONDOWN) {
         int x = event->button.x;
         int y = event->button.y;
 
-        // Clic sur l'engrenage
+        // ─────────────────────────────────────────────────────────────────────
+        // CLIC SUR L'ENGRENAGE (ouvrir/fermer le panneau)
+        // ─────────────────────────────────────────────────────────────────────
         if (is_point_in_rect(x, y, panel->gear_rect)) {
             if (panel->state == PANEL_CLOSED) {
                 panel->state = PANEL_OPENING;
@@ -446,22 +459,40 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 panel->state = PANEL_CLOSING;
                 debug_printf("Fermeture du panneau de configuration\n");
             }
+            return;  // ✅ Sortir immédiatement après gestion de l'engrenage
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // GESTION DES ÉVÉNEMENTS QUAND LE PANNEAU EST OUVERT
+    // ═════════════════════════════════════════════════════════════════════════
+    // IMPORTANT : Cette section doit gérer TOUS les types d'événements
+    // (MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEWHEEL, etc.)
+
+    if (panel->state == PANEL_OPEN) {
+        int panel_x = panel->rect.x;
+        int panel_y = panel->rect.y;
+
+        // ─────────────────────────────────────────────────────────────────────
+        // TRANSMETTRE TOUS LES ÉVÉNEMENTS AUX WIDGETS
+        // ─────────────────────────────────────────────────────────────────────
+        // Les widgets gèrent eux-mêmes le filtrage par type d'événement
+
+        if (panel->duration_widget) {
+            handle_config_widget_events(panel->duration_widget, event, panel_x, panel_y);
+        }
+        if (panel->cycles_widget) {
+            handle_config_widget_events(panel->cycles_widget, event, panel_x, panel_y);
         }
 
-        // Gestion des clics dans le panneau ouvert
-        if (panel->state == PANEL_OPEN) {
-            int panel_x = panel->rect.x;
-            int panel_y = panel->rect.y;
+        // ─────────────────────────────────────────────────────────────────────
+        // GESTION DES BOUTONS (seulement pour les clics)
+        // ─────────────────────────────────────────────────────────────────────
 
-            // GESTION DES WIDGETS
-            if (panel->duration_widget) {
-                handle_config_widget_events(panel->duration_widget, event);
-            }
-            if (panel->cycles_widget) {
-                handle_config_widget_events(panel->cycles_widget, event);
-            }
+        if (event->type == SDL_MOUSEBUTTONDOWN) {
+            int x = event->button.x;
+            int y = event->button.y;
 
-            // === GESTION DES BOUTONS ===
             SDL_Rect apply_abs_rect = {
                 panel->apply_button.rect.x + panel_x,
                 panel->apply_button.rect.y + panel_y,
@@ -494,18 +525,7 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
         }
     }
 
-    // ✅ GESTION CONTINUE DES ÉVÉNEMENTS POUR LES WIDGETS
-    // (pour la molette et le hover)
-    if (panel->state == PANEL_OPEN) {
-        if (panel->duration_widget) {
-            handle_config_widget_events(panel->duration_widget, event);
-        }
-        if (panel->cycles_widget) {
-            handle_config_widget_events(panel->cycles_widget, event);
-        }
-    }
-
-    // ✅ NETTOYER la référence au panel
+    // ✅ NETTOYER la référence au panel à la fin de la gestion d'événements
     if (event->type == SDL_MOUSEBUTTONUP) {
         current_panel_for_callbacks = NULL;
     }

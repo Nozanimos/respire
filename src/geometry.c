@@ -206,6 +206,24 @@ void draw_triangle(SDL_Renderer *renderer, Triangle* tri) {
 
 /*----------------------------------------------------*/
 
+// Dessine un triangle avec offset
+void draw_triangle_with_offset(SDL_Renderer *renderer, Triangle* tri, int offset_x, int offset_y) {
+    if (!renderer || !tri) return;
+
+    // Créer des tableaux temporaires avec les coordonnées décalées
+    Sint16 vx_offset[3];
+    Sint16 vy_offset[3];
+
+    for (int i = 0; i < 3; i++) {
+        vx_offset[i] = tri->vx[i] + offset_x;
+        vy_offset[i] = tri->vy[i] + offset_y;
+    }
+
+    filledPolygonRGBA(renderer, vx_offset, vy_offset, 3,
+                      tri->color.r, tri->color.g, tri->color.b, tri->color.a);
+}
+/*----------------------------------------------------*/
+
 // Fonctions spécifiques pour flèches (utilisent create_triangle)
 Triangle* create_up_arrow(int center_x, int center_y, int size, SDL_Color color) {
     return create_triangle(center_x, center_y, size, true, color);
