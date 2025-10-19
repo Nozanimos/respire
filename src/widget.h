@@ -30,6 +30,10 @@ typedef struct ConfigWidget {
     bool up_hovered;
     bool down_hovered;
 
+    // Stocker les positions calculées
+    int name_x, arrows_x, value_x;
+    int text_center_y;
+
     // Callback pour les changements de valeur
     void (*on_value_changed)(int new_value);
 
@@ -37,7 +41,7 @@ typedef struct ConfigWidget {
 
 // Prototypes
 ConfigWidget* create_config_widget(const char* name, int x, int y, int min_val, int max_val,
-                                   int start_val, int increment, int arrow_size, int text_size);
+                                   int start_val, int increment, int arrow_size, int text_size, TTF_Font* font);
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget, TTF_Font* font);
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event);
 void free_config_widget(ConfigWidget* widget);

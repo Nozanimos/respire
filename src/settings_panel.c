@@ -235,11 +235,10 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
 
     // === RÉORGANISATION DE L'ESPACE ===
 
-    // Créer les widgets
     int widget_x = 50;
-    int duration_y = 240;
-    int cycles_y = 320;
-    int arrow_size = 8;  // ✅ taille flèches
+    int duration_y = 240;  // Assez d'espace pour l'alignement
+    int cycles_y = 320;    // Assez d'espace pour l'alignement
+    int arrow_size = 6;    // Taille taille des flèches
     int text_size = 20;
 
     // Widget pour la durée de respiration
@@ -250,7 +249,8 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
         panel->temp_config.breath_duration, // valeur initiale
         1,                     // incrément
         arrow_size,            // taille des flèches
-        text_size              // taille du texte
+        text_size,             // taille du texte
+        panel->font            // Police
     );
 
     // Widget pour le nombre de cycles
@@ -261,7 +261,8 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
         panel->temp_config.breath_cycles, // valeur initiale
         1,                     // incrément
         arrow_size,            // taille des flèches
-        text_size              // taille du texte
+        text_size,             // taille du texte
+        panel->font            // Police
     );
 
     // ✅ CALLBACKS pour mise à jour en temps réel

@@ -21,7 +21,8 @@ SDL_Rect get_arrow_bounds(Triangle* arrow, int base_size) {
 }
 
 ConfigWidget* create_config_widget(const char* name, int x, int y, int min_val, int max_val,
-                                   int start_val, int increment, int arrow_size, int text_size) {
+                                   int start_val, int increment, int arrow_size, int text_size,
+                                   TTF_Font* font) {
     ConfigWidget* widget = malloc(sizeof(ConfigWidget));
     if (!widget) {
         debug_printf("❌ Erreur allocation widget: %s\n", name);
@@ -44,70 +45,79 @@ ConfigWidget* create_config_widget(const char* name, int x, int y, int min_val, 
     widget->text_size = text_size;
 
     // Couleurs par défaut
-    widget->color = (SDL_Color){200, 200, 200, 255};       // Gris clair
-    widget->hover_color = (SDL_Color){255, 255, 100, 255}; // Jaune
-    widget->text_color = (SDL_Color){255, 255, 255, 255};  // Blanc
+    widget->color = (SDL_Color){0,0,0, 255};
+    widget->hover_color = (SDL_Color){255, 255, 100, 255};
+    widget->text_color = (SDL_Color){0,0,0, 255};
 
-    // Création des flèches - positionnées à droite du texte
-    int arrow_spacing = 15; // Espace entre les flèches
-    int text_width = 150;   // Largeur estimée du texte
+    // ✅ CALCUL EXACT DES DIMENSIONS DU TEXTE
+    int text_width = 0, text_height = 0;
+    if (font) {
+        TTF_SizeText(font, name, &text_width, &text_height);
+    } else {
+        // Fallback si police non disponible
+        text_width = strlen(name) * (text_size / 2);
+        text_height = text_size;
+    }
 
-    widget->up_arrow = create_up_arrow(x + text_width, y + text_size/2, arrow_size, widget->color);
-    widget->down_arrow = create_down_arrow(x + text_width + arrow_size*2 + arrow_spacing,
-                                           y + text_size/2, arrow_size, widget->color);
+    // ✅ CALCUL DES POSITIONS AVEC ESPACEMENT OPTIMAL
+    int espace_apres_texte = 15;  // Espace entre texte et flèches
+    int espace_apres_fleches = 10; // Espace entre flèches et valeur
+
+    widget->name_x = x;
+    widget->arrows_x = x + text_width + espace_apres_texte;
+    widget->value_x = widget->arrows_x + (2 * arrow_size) + espace_apres_fleches;
+    widget->text_center_y = y + text_height / 2;
+
+    // Création des flèches
+    int up_arrow_y = widget->text_center_y - 5;
+    int down_arrow_y = widget->text_center_y + 5;
+
+    widget->up_arrow = create_up_arrow(widget->arrows_x, up_arrow_y, arrow_size, widget->color);
+    widget->down_arrow = create_down_arrow(widget->arrows_x, down_arrow_y, arrow_size, widget->color);
 
     widget->up_hovered = false;
     widget->down_hovered = false;
     widget->on_value_changed = NULL;
 
-    debug_printf("✅ Widget créé: %s (valeur: %d, min: %d, max: %d)\n",
-                 name, start_val, min_val, max_val);
+    debug_printf("✅ Widget créé: %s - texte: %dpx, flèches: %d, valeur: %d\n",
+                 name, text_width, widget->arrows_x, widget->value_x);
     return widget;
 }
 
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget, TTF_Font* font) {
     if (!widget || !renderer) return;
 
+    // ✅ UTILISER LES POSITIONS PRÉCALCULÉES
+    int text_height = TTF_FontHeight(font);
+    int text_center_y = widget->y + text_height / 2;
+
     // 1. Afficher le nom de l'option
-    render_text(renderer, font, widget->option_name, widget->x, widget->y,
+    render_text(renderer, font, widget->option_name, widget->name_x, widget->y,
                 (widget->text_color.r << 16) | (widget->text_color.g << 8) | widget->text_color.b);
 
-    // 2. Afficher la valeur actuelle
-    char value_str[20];
-    snprintf(value_str, sizeof(value_str), "%d", widget->value);
-
-    // Position de la valeur (au milieu entre le texte et les flèches)
-    int value_x = widget->x + 120;
-    render_text(renderer, font, value_str, value_x, widget->y,
-                (widget->text_color.r << 16) | (widget->text_color.g << 8) | widget->text_color.b);
-
-    // 3. Afficher les flèches avec la couleur appropriée
+    // 2. Afficher les flèches
     SDL_Color up_color = widget->up_hovered ? widget->hover_color : widget->color;
     SDL_Color down_color = widget->down_hovered ? widget->hover_color : widget->color;
 
-    // Mettre à jour les couleurs des triangles
+    // Mettre à jour les positions des triangles (au cas où)
     if (widget->up_arrow) {
+        widget->up_arrow->center_x = widget->arrows_x;
+        widget->up_arrow->center_y = text_center_y - 5;
         widget->up_arrow->color = up_color;
         draw_triangle(renderer, widget->up_arrow);
     }
     if (widget->down_arrow) {
+        widget->down_arrow->center_x = widget->arrows_x;
+        widget->down_arrow->center_y = text_center_y + 5;
         widget->down_arrow->color = down_color;
         draw_triangle(renderer, widget->down_arrow);
     }
 
-    // Debug: afficher les zones de collision en mode debug
-    #ifdef DEBUG_MODE
-    if (widget->up_arrow) {
-        SDL_Rect up_bounds = get_arrow_bounds(widget->up_arrow, widget->arrow_size);
-        rectangleColor(renderer, up_bounds.x, up_bounds.y,
-                        up_bounds.x + up_bounds.w, up_bounds.y + up_bounds.h, 0x00FF00FF);
-    }
-    if (widget->down_arrow) {
-        SDL_Rect down_bounds = get_arrow_bounds(widget->down_arrow, widget->arrow_size);
-        rectangleColor(renderer, down_bounds.x, down_bounds.y,
-                        down_bounds.x + down_bounds.w, down_bounds.y + down_bounds.h, 0x00FF00FF);
-    }
-    #endif
+    // 3. Afficher la valeur
+    char value_str[20];
+    snprintf(value_str, sizeof(value_str), "%d", widget->value);
+    render_text(renderer, font, value_str, widget->value_x, widget->y,
+                (widget->text_color.r << 16) | (widget->text_color.g << 8) | widget->text_color.b);
 }
 
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event) {
