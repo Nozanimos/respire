@@ -19,7 +19,7 @@
 
 ## 🎯 Description
 
-Ce programme est une implémentation de la méthode de respiration guidée Win Hof, offrant une expérience complète avec de nombreuses options de personnalisation.
+Ce programme est une implémentation de la méthode de respiration guidée Wim Hof en Français pour le moment, offrant une expérience complète avec de nombreuses options de personnalisation.
 
 ## 🚀 Installation
 
