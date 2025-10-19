@@ -1,4 +1,3 @@
-```markdown
 ![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![SDL2](https://img.shields.io/badge/SDL2-0D4F8B?style=for-the-badge&logo=sdl&logoColor=white)
 ![Arch](https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white)
