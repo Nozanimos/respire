@@ -1,9 +1,0 @@
-// Au lieu de printf simples, utilise :
-debug_printf("✅ Hexagone %d créé - Centre: (%d,%d)\n", id, centre_x, centre_y);
-LOG_INFO("Rotation par frame: %.3f°", rotation_par_frame);
-
-// Pour les calculs critiques :
-#ifdef DEBUG_MODE
-    printf("🔍 AVANT - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d\n", 
-           centre_x, centre_y, scale, vertices_x[0], vertices_y[0]);
-#endif
