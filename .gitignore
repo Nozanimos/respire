@@ -2,6 +2,7 @@
 *.log
 **/logs
 .cppcheck
-/obj
+/obj/*.o
 *.o
 debug.txt
+**/debug.txt

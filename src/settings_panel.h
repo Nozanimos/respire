@@ -9,6 +9,7 @@
 #include "config.h"
 #include "hexagone_list.h"
 #include "widget.h"
+#include "toggle_widget.h"
 
 typedef enum {
     PANEL_CLOSED,
@@ -66,6 +67,7 @@ typedef struct {
 
     ConfigWidget* duration_widget;
     ConfigWidget* cycles_widget;
+    ToggleWidget* alternate_cycles_widget;
 
     UIButton apply_button;
     UIButton cancel_button;

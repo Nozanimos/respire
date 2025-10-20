@@ -34,6 +34,15 @@ static void cycles_value_changed(int new_value) {
     debug_printf("🔄 Cycles changés: %d\n", new_value);
 }
 
+static void alternate_cycles_changed(bool new_value) {
+    if (!current_panel_for_callbacks) return;
+
+    current_panel_for_callbacks->temp_config.alternate_cycles = new_value;
+    debug_printf("🔄 Cycles alternés changés: %s\n", new_value ? "ACTIF" : "INACTIF");
+
+    // Ici tu pourras ajouter la logique pour affecter l'animation principale
+}
+
 /* === FONCTIONS DE PRÉVISUALISATION === */
 
 void reinitialiser_preview_system(PreviewSystem* preview) {
@@ -60,7 +69,7 @@ void init_preview_system(SettingsPanel* panel, int x, int y, int size, float rat
     panel->preview_system.last_update = SDL_GetTicks();
     panel->preview_system.current_time = 0.0;
 
-    // ✅ CORRECTION : Initialiser hex_list à NULL pour la première fois
+    // Initialiser hex_list à NULL pour la première fois
     panel->preview_system.hex_list = NULL;
 
     debug_printf("🔄 INIT Prévisualisation - Cadre: (%d,%d), Centre: (%d,%d), Taille: %d, Ratio: %.2f\n",
@@ -171,13 +180,6 @@ void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x
         return;
     }
 
-   /* // ✅ DEBUG : Afficher l'état AVANT rendu
-    Hexagon* first_hex = node->data;
-    debug_printf("🎨 RENDU - Centre: (%d,%d), Scale: %.2f, vx[0]: %d, vy[0]: %d, Offset: (%d,%d)\n",
-                 first_hex->center_x, first_hex->center_y,
-                 first_hex->current_scale, first_hex->vx[0], first_hex->vy[0],
-                 offset_x, offset_y);*/
-
     while (node) {
         if (node->data) {
             // Positionner au centre du cadre de prévisualisation
@@ -202,7 +204,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     SettingsPanel* panel = malloc(sizeof(SettingsPanel));
     if (!panel) return NULL;
 
-    // ✅ INITIALISATION EXPLICITE de tous les membres
+    // INITIALISATION EXPLICITE de tous les membres
     memset(panel, 0, sizeof(SettingsPanel));
 
     // Initialiser SDL_ttf
@@ -243,6 +245,11 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     int cycles_y = 320;
     int arrow_size = 6;
     int text_size = 20;
+    int altern_y = 400;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // WIDGETS EN DEBOGAGE AVANT PASSAGE EN LISTES
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Widget pour la durée de respiration
     panel->duration_widget = create_config_widget(
@@ -268,9 +275,27 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
         panel->font            // Police
     );
 
+    // Widget Cycles alternés oui/non
+    panel->alternate_cycles_widget = create_toggle_widget(
+        "Cycles alternés",    // nom
+            widget_x, altern_y,             // position (x, y)
+    false,                // état initial (OFF)
+    40, 20,               // toggle_width, toggle_height
+    20,                   // thumb_size
+    text_size,                   // text_size
+    panel->font           // police
+    );
+
+    if (panel->alternate_cycles_widget) {
+        debug_printf("✅ Toggle widget créé avec succès\n");
+    } else {
+        debug_printf("❌ Échec création toggle widget\n");
+    }
+
     // ✅ CALLBACKS pour mise à jour en temps réel
     set_widget_value_changed_callback(panel->duration_widget, duration_value_changed);
     set_widget_value_changed_callback(panel->cycles_widget, cycles_value_changed);
+    set_toggle_value_changed_callback(panel->alternate_cycles_widget, alternate_cycles_changed);
 
     // Créer les boutons UI
     panel->apply_button = create_button("Appliquer", 200, screen_height-50, 120, 30);
@@ -364,6 +389,18 @@ void update_settings_panel(SettingsPanel* panel, float delta_time) {
     panel->current_x = panel->target_x - (int)(PANEL_WIDTH * eased);
     panel->rect.x = panel->current_x;
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // MISE À JOUR DES ANIMATIONS DES WIDGETS
+    // ═════════════════════════════════════════════════════════════════════════
+    if (panel->state == PANEL_OPEN) {
+        update_preview_animation(panel);
+
+        // Mise à jour de l'animation du toggle widget
+        if (panel->alternate_cycles_widget) {
+            update_toggle_widget(panel->alternate_cycles_widget, delta_time);
+        }
+    }
+
     // Animation de prévisualisation
     if (panel->state == PANEL_OPEN) {
         update_preview_animation(panel);
@@ -402,16 +439,25 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
 
         // === WIDGET DURÉE RESPIRATION ===
         if (panel->duration_widget) {
-            // ✅ AJOUT : Passer l'offset du panneau
+            // Passer l'offset du panneau
             render_config_widget(renderer, panel->duration_widget, panel->font, panel_x, panel_y);
         }
 
         // === WIDGET CYCLES ===
         if (panel->cycles_widget) {
-            // ✅ AJOUT : Passer l'offset du panneau
+            // Passer l'offset du panneau
             render_config_widget(renderer, panel->cycles_widget, panel->font, panel_x, panel_y);
         }
 
+        // ═════════════════════════════════════════════════════════════════════════
+        // ✅ AJOUT : WIDGET CYCLES ALTERNÉS
+        // ═════════════════════════════════════════════════════════════════════════
+        if (panel->alternate_cycles_widget) {
+            debug_printf("🎨 Tentative de rendu du toggle widget...\n");
+            render_toggle_widget(renderer, panel->alternate_cycles_widget, panel->font, panel_x, panel_y);
+        } else {
+            debug_printf("❌ Toggle widget est NULL!\n");
+        }
 
         // === BOUTONS ===
         render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
@@ -424,6 +470,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
     // SET le panel courant pour les callbacks
     current_panel_for_callbacks = panel;
+
+    int panel_x = 0;
+    int panel_y = 0;
 
     // ═════════════════════════════════════════════════════════════════════════
     // GESTION DES ÉVÉNEMENTS GLOBAUX (indépendants de l'état du panneau)
@@ -461,6 +510,10 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
             }
             return;  // ✅ Sortir immédiatement après gestion de l'engrenage
         }
+        // ✅ NETTOYER la référence au panel à la fin de la gestion d'événements
+        if (event->type == SDL_MOUSEBUTTONUP) {
+            current_panel_for_callbacks = NULL;
+        }
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -470,8 +523,8 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
     // (MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEWHEEL, etc.)
 
     if (panel->state == PANEL_OPEN) {
-        int panel_x = panel->rect.x;
-        int panel_y = panel->rect.y;
+        panel_x = panel->rect.x;
+        panel_y = panel->rect.y;
 
         // ─────────────────────────────────────────────────────────────────────
         // TRANSMETTRE TOUS LES ÉVÉNEMENTS AUX WIDGETS
@@ -483,6 +536,10 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
         }
         if (panel->cycles_widget) {
             handle_config_widget_events(panel->cycles_widget, event, panel_x, panel_y);
+        }
+        // ✅ AJOUT : GESTION DES ÉVÉNEMENTS DU TOGGLE WIDGET
+        if (panel->alternate_cycles_widget) {
+            handle_toggle_widget_events(panel->alternate_cycles_widget, event, panel_x, panel_y);
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -540,6 +597,11 @@ void free_settings_panel(SettingsPanel* panel) {
     }
     if (panel->cycles_widget) {
         free_config_widget(panel->cycles_widget);
+    }
+
+    // ✅ AJOUT : LIBÉRER LE TOGGLE WIDGET
+    if (panel->alternate_cycles_widget) {
+        free_toggle_widget(panel->alternate_cycles_widget);
     }
 
     // Libérer la prévisualisation

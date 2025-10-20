@@ -30,6 +30,7 @@ typedef struct {
     // Paramètres respiration
     int breath_cycles;
     float breath_duration;
+    bool alternate_cycles;
 
     // Paramètres d'affichage
     int screen_width;

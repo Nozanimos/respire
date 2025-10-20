@@ -15,20 +15,22 @@ Mon tout premier programme en langage C + SDL2
 🎯 PHASE 2 : INTERFACE PARAMÈTRES
 ✅ - Panneau de configuration animé
 ✅ - Curseurs temps inspiration/expiration
-🔄 - Réglage nombre de cycles                           ← NOUS SOMMES ICI
-
-        🔄 - créer triangle isocèle dans géometry.c, le milieu de la base servira de point de référence et la base sera le double de la hauteur
+✅ - Réglage nombre de cycles
+        ✅ - créer triangle isocèle dans géometry.c, le milieu de la base servira de point de référence et la base sera le double de la hauteur
                 - À voir si la contrainte pour les coodonnées est meilleure en valeurs relatives ou valeurs absolues
                 - Le triangle créé servira de fêches haut/bas tête-bèche espacée de quelques pixels dans le widget en dessous.
-        □ - remplacer les sildebar par les flèches haut/bas puis débogage.
-        □ - Créer un modèle de widget {"nom_option",
+        ✅ - remplacer les sildebar par les flèches haut/bas puis débogage.
+        ✅ - Créer un modèle de widget {"nom_option",
                                         taille_texte,
                                         flèches haut/bas (incrémenter/décrémenter valeur),
                                         couleur (noir par défaut),
                                         hovered couleur (jaune pâle),
                                         position_x,
                                         position_y};
+        🔄 - Créer widget bouton actif/inactif nom - on/off - commande                  ← NOUS SOMMES ICI
+
         □ - modélisation des options du panneau de configuration en listes :
+
                 □ - la liste sera imprimée dans un fichier avec les valeurs correspondantes au json
                 de manière à remplacer son contenu par les valeurs définitives codées en C directement.
         □ - Créer fichier json_helper qui va servir à créer, positionner les options dans le panneau de configuration
