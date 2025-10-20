@@ -129,18 +129,47 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget, TTF_Font
     int absolute_value_x = widget->value_x + offset_x;
 
     // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DE LA LARGEUR TOTALE DU WIDGET
+    // ─────────────────────────────────────────────────────────────────────────
+    // Pour calculer la largeur totale, on doit connaître la largeur de la valeur affichée
+    char value_str[20];
+    snprintf(value_str, sizeof(value_str), "%d", widget->value);
+    int value_width = 0;
+
+    // Calcul cohérent avec handle_config_widget_events
+    if (widget->text_size > 0) {
+        value_width = strlen(value_str) * (widget->text_size / 2);
+    } else {
+        value_width = strlen(value_str) * 8;
+    }
+
+    // Largeur totale = de name_x jusqu'à la fin de la valeur + marges
+    int total_width = (widget->value_x + value_width) - widget->name_x;
+
+
+
+    // ─────────────────────────────────────────────────────────────────────────
     // FOND AU SURVOL DU WIDGET COMPLET
     // ─────────────────────────────────────────────────────────────────────────
     if (widget->whole_widget_hovered) {
         SDL_Rect bg_rect = {
-            absolute_name_x - 5,
-            absolute_y - 5,
-            (widget->value_x - widget->name_x) + 40,
-            widget->text_height + 10
+            absolute_name_x - 10,                    // Marge gauche de 10px
+            absolute_y - 5,                         // Marge haut de 5px
+            total_width + 20,                       // Largeur totale + marges
+            widget->text_height + 10                // Hauteur + marges
         };
-        boxColor(renderer, bg_rect.x, bg_rect.y,
-                 bg_rect.x + bg_rect.w, bg_rect.y + bg_rect.h,
-                 0x00000032);  // Noir semi-transparent (RGBA inversé pour SDL_gfx)
+
+        // Conversion de la couleur
+        Uint32 bg_color =
+        ((Uint32)widget->bg_hover_color.a << 24) |
+        ((Uint32)widget->bg_hover_color.r << 16) |
+        ((Uint32)widget->bg_hover_color.g << 8) |
+        (Uint32)widget->bg_hover_color.b;
+
+        roundedBoxColor(renderer, bg_rect.x, bg_rect.y,
+                        bg_rect.x + bg_rect.w, bg_rect.y + bg_rect.h,
+                        15,  // Rayon de courbure des coins
+                        bg_color);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -167,7 +196,7 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget, TTF_Font
     // ─────────────────────────────────────────────────────────────────────────
     // RENDU DE LA VALEUR NUMÉRIQUE
     // ─────────────────────────────────────────────────────────────────────────
-    char value_str[20];
+    //char value_str[20];
     snprintf(value_str, sizeof(value_str), "%d", widget->value);
     render_text(renderer, font, value_str, absolute_value_x, absolute_y,
                 (widget->text_color.r << 16) | (widget->text_color.g << 8) | widget->text_color.b);
@@ -189,16 +218,40 @@ void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
             int mouse_y = event->motion.y;
 
             // ─────────────────────────────────────────────────────────────────
-            // Zone complète du widget
+            // CALCUL PRÉCIS DE LA ZONE COMPLÈTE DU WIDGET
             // ─────────────────────────────────────────────────────────────────
+            // Calculer la largeur de la valeur comme dans le rendu
+            char value_str[20];
+            snprintf(value_str, sizeof(value_str), "%d", widget->value);
+            int value_width = 0;
+
+            // Estimation de la largeur (similaire au calcul dans render_config_widget)
+            if (widget->text_size > 0) {
+                // Estimation basée sur la taille du texte
+                value_width = strlen(value_str) * (widget->text_size / 2);
+            } else {
+                value_width = strlen(value_str) * 8; // Valeur par défaut
+            }
+
+            // Largeur totale = de name_x jusqu'à la fin de la valeur + marges
+            int total_width = (widget->value_x + value_width) - widget->name_x;
+
             SDL_Rect widget_rect = {
-                widget->name_x + offset_x - 5,
-                widget->y + offset_y - 5,
-                (widget->value_x - widget->name_x) + 40,
-                widget->text_height + 10
+                widget->name_x + offset_x - 10,      // Marge gauche
+                widget->y + offset_y - 5,           // Marge haut
+                total_width + 20,                   // Largeur totale + marges
+                widget->text_height + 10            // Hauteur + marges
             };
+
+            bool was_hovered = widget->whole_widget_hovered;
             widget->whole_widget_hovered = is_point_in_rect(mouse_x, mouse_y, widget_rect);
 
+            // ✅ DEBUG : Afficher seulement quand l'état change
+            if (was_hovered != widget->whole_widget_hovered) {
+                debug_printf("🖱️ Widget '%s' - Survol: %s\n",
+                             widget->option_name,
+                             widget->whole_widget_hovered ? "ACTIF" : "inactif");
+            }
             // ─────────────────────────────────────────────────────────────────
             // Détection du survol des flèches (utiliser les positions stockées)
             // ─────────────────────────────────────────────────────────────────

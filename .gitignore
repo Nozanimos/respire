@@ -1,0 +1,7 @@
+# Fichiers ignorés
+*.log
+**/logs
+.cppcheck
+/obj
+*.o
+debug.txt
