@@ -99,15 +99,13 @@ int main(int argc, char **argv) {
 
         // Gestion événements
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT ||
-                (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
-                done = 0;
-                }
+            // Utiliser la fonction centralisée de renderer.c
+            handle_app_events(&app, &event);
 
-                // GESTION DU PANNEAU
-                if (app.settings_panel) {
-                    handle_settings_panel_event(app.settings_panel, &event, &config);
-                }
+            // Vérifier si l'appli doit se fermer
+            if (!app.is_running) {
+                done = 0;
+            }
         }
 
         // Mise à jour animations hexagones

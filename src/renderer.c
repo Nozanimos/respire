@@ -16,10 +16,9 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
 
     // 2. Création fenêtre plein écran
     app->window = SDL_CreateWindow(title,
-                                   SDL_WINDOWPOS_CENTERED,
-                                   SDL_WINDOWPOS_CENTERED,
-                                   0, 0,  // Taille ignorée en FULLSCREEN_DESKTOP
-                                   SDL_WINDOW_FULLSCREEN_DESKTOP);
+                                   100, 100,  // Position sur l'écran
+                                   1280, 720, // Taille fixe pour dev
+                                   SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!app->window) {
         SDL_Log("ERREUR Fenêtre: %s", SDL_GetError());
         return false;
@@ -61,6 +60,24 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     app->is_running = true;
     app->settings_panel = create_settings_panel(app->renderer, app->screen_width, app->screen_height);
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // CRÉATION DE LA FENÊTRE ÉDITEUR JSON
+    // ─────────────────────────────────────────────────────────────────────────
+    // Positionner la fenêtre à droite de la fenêtre principale
+    int editor_pos_x = 100 + 1280 + 20;  // Juste à droite de la fenêtre principale
+    int editor_pos_y = 100;
+
+    app->json_editor = creer_json_editor(
+        "../config/widgets_config.json",
+        editor_pos_x,
+        editor_pos_y
+    );
+
+    if (!app->json_editor) {
+        debug_printf("⚠️ Impossible de créer l'éditeur JSON\n");
+        // Ce n'est pas bloquant, on continue sans
+    }
+
     // Chargement de la configuration
     load_config(&app->config);
 
@@ -72,9 +89,31 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
 void handle_app_events(AppState* app, SDL_Event* event) {
     if (!app) return;
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // PRIORITÉ 1 : Éditeur JSON (si ouvert)
+    // ─────────────────────────────────────────────────────────────────────────
+    if (app->json_editor && app->json_editor->est_ouvert) {
+        if (gerer_evenements_json_editor(app->json_editor, event)) {
+            return;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PRIORITÉ 2 : Événements globaux
+    // ─────────────────────────────────────────────────────────────────────────
     switch (event->type) {
         case SDL_QUIT:
             app->is_running = false;
+            break;
+
+        case SDL_WINDOWEVENT:  // ← AJOUTER CECI
+            if (event->window.event == SDL_WINDOWEVENT_CLOSE) {
+                // Fermeture de la fenêtre principale
+                Uint32 main_window_id = SDL_GetWindowID(app->window);
+                if (event->window.windowID == main_window_id) {
+                    app->is_running = false;
+                }
+            }
             break;
 
         case SDL_KEYDOWN:
@@ -84,7 +123,6 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             break;
 
         case SDL_MOUSEBUTTONDOWN:
-            // Passe l'événement au panneau de configuration
             if (app->settings_panel) {
                 handle_settings_panel_event(app->settings_panel, event, &app->config);
             }
@@ -132,8 +170,20 @@ void render_app(AppState* app) {
         render_settings_panel(app->renderer, app->settings_panel);
     }
 
-    // 4. Présentation
+    // 4. Présentation fenêtre principale
     SDL_RenderPresent(app->renderer);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 5. RENDU DE LA FENÊTRE ÉDITEUR JSON (seulement si ouverte)
+    // ─────────────────────────────────────────────────────────────────────────
+    if (app->json_editor && app->json_editor->est_ouvert) {
+        rendre_json_editor(app->json_editor);
+    } else if (app->json_editor && !app->json_editor->est_ouvert) {
+        // ✅ Si la fenêtre est marquée comme fermée, la détruire
+        detruire_json_editor(app->json_editor);
+        app->json_editor = NULL;
+        debug_printf("🗑️ Fenêtre JSON fermée\n");
+    }
 }
 
 // Régulation FPS
@@ -166,6 +216,12 @@ void render_hexagones(AppState* app, HexagoneList* hex_list) {
 void cleanup_app(AppState* app) {
     if (!app) return;
 
+    // Libère l'éditeur JSON
+    if (app->json_editor) {
+        detruire_json_editor(app->json_editor);
+        app->json_editor = NULL;
+    }
+
     // Libère le panneau de settings
     if (app->settings_panel) {
         free_settings_panel(app->settings_panel);
@@ -185,3 +241,21 @@ void cleanup_app(AppState* app) {
     SDL_Quit();
     debug_printf("Application nettoyée\n");
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  NOTES IMPORTANTES
+// ════════════════════════════════════════════════════════════════════════════
+//
+// 🎯 FLUX DES ÉVÉNEMENTS :
+//    1. L'éditeur JSON a la priorité (si ouvert)
+//    2. Puis les événements globaux (ESC, fermeture)
+//    3. Puis le panneau de configuration
+//
+// 🖼️ FLUX DE RENDU :
+//    1. Fenêtre principale (hexagones + panneau)
+//    2. Fenêtre éditeur JSON (indépendante)
+//
+// ⚠️ IMPORTANTE : SDL_TEXTINPUT
+//    Pour que la saisie clavier fonctionne dans l'éditeur,
+//    SDL_StartTextInput() est automatiquement activé par SDL.
+//    Si tu veux désactiver la saisie ailleurs, utilise SDL_StopTextInput()

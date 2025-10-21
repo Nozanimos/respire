@@ -8,6 +8,7 @@
 #include "geometry.h"
 #include "config.h"
 #include "settings_panel.h"
+#include "json_editor_window.h"
 
 // Structure qui contient TOUT l'état de l'application graphique
 typedef struct {
@@ -20,6 +21,7 @@ typedef struct {
     // État de l'application
     HexagoneList* hexagones;
     SettingsPanel* settings_panel;
+    JsonEditor* json_editor;
     AppConfig config;
     bool is_running;
 

@@ -4,8 +4,8 @@
 
 
 ![Compilation](https://img.shields.io/badge/Compilation-100%25-success)
-![Développement](https://img.shields.io/badge/Développement-40%25-orange)
-![Documentation](https://img.shields.io/badge/Documentation-0%25-blue)
+![Développement](https://img.shields.io/badge/Développement-45%25-orange)
+![Documentation](https://img.shields.io/badge/Documentation-10%25-blue)
 ![Tests](https://img.shields.io/badge/Tests-100%25-brightgreen)
 
 # Mon Premier Programme en Langage C + SDL2

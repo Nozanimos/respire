@@ -4,6 +4,7 @@
 //#include <stdio.h>
 #include "settings_panel.h"
 #include "debug.h"
+#include "json_config_loader.h"
 
 
 
@@ -17,7 +18,7 @@
 
 static SettingsPanel* current_panel_for_callbacks = NULL;
 
-static void duration_value_changed(int new_value) {
+void duration_value_changed(int new_value) {
     if (!current_panel_for_callbacks) return;
 
     current_panel_for_callbacks->temp_config.breath_duration = new_value;
@@ -27,14 +28,14 @@ static void duration_value_changed(int new_value) {
     update_preview_for_new_duration(current_panel_for_callbacks, new_value);
 }
 
-static void cycles_value_changed(int new_value) {
+void cycles_value_changed(int new_value) {
     if (!current_panel_for_callbacks) return;
 
     current_panel_for_callbacks->temp_config.breath_cycles = new_value;
     debug_printf("🔄 Cycles changés: %d\n", new_value);
 }
 
-static void alternate_cycles_changed(bool new_value) {
+void alternate_cycles_changed(bool new_value) {
     if (!current_panel_for_callbacks) return;
 
     current_panel_for_callbacks->temp_config.alternate_cycles = new_value;
@@ -242,14 +243,31 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
 
     // === RÉORGANISATION DE L'ESPACE ===
 
-    // Calcul de la largeur totale approximative du widget le plus large
-    int largeur_max_widget = 180 + 20 + 40 + 20; // texte_max + flèches + valeur + marges
-    int widget_x = (PANEL_WIDTH - largeur_max_widget) / 2; // Centrage horizontal
 
     // ══════════════════════════════════════════════════════════════════════════
     // CRÉATION DE LA LISTE DE WIDGETS
     // ══════════════════════════════════════════════════════════════════════════
     panel->widget_list = create_widget_list();
+
+    // Préparer le contexte de chargement
+    LoaderContext ctx = {
+        .renderer = renderer,
+        .font_titre = panel->font_title,
+        .font_normal = panel->font,
+        .font_petit = panel->font_small
+    };
+
+    // Charger les widgets depuis le JSON
+    const char* json_path = "../config/widgets_config.json";
+    if (!charger_widgets_depuis_json(json_path, &ctx, panel->widget_list)) {
+        debug_printf("⚠️ Échec chargement JSON, utilisation config par défaut\n");
+
+        // FALLBACK : Si le JSON n'existe pas ou est invalide,
+        // créer les widgets en dur (ton ancien code)
+
+        // Calcul largeur widget pour centrage
+        int largeur_max_widget = 180 + 20 + 40 + 20;
+        int widget_x = (PANEL_WIDTH - largeur_max_widget) / 2;
 
     // ──────────────────────────────────────────────────────────────────────────
     // WIDGET 1 : DURÉE DE RESPIRATION (Incrément)
@@ -305,7 +323,8 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
         18,                              // Taille de référence du texte
         panel->font,                     // Police TTF pour le rendu
         alternate_cycles_changed         // Callback appelé à chaque basculement
-    );
+        );
+    }
 
     // ──────────────────────────────────────────────────────────────────────────
     // DEBUG : Afficher le contenu de la liste
@@ -420,6 +439,7 @@ void update_settings_panel(SettingsPanel* panel, float delta_time) {
 
 void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
     if (!panel) return;
+
 
     // Icône engrenage (toujours visible)
     if (panel->gear_icon) {

@@ -1,0 +1,85 @@
+{
+  "_commentaire": "Configuration des widgets pour le panneau de paramètres",
+  "_note": "Les coordonnées x,y sont RELATIVES au panneau (pas à l'écran)",
+
+  "widgets": [
+    {
+      "_commentaire": "═══════════════════════════════════════════════════════",
+      "_description": "WIDGET INCREMENT - Valeur numérique avec flèches",
+      "_template": {
+        "type": "increment",
+        "id": "identifiant_unique",
+        "nom_affichage": "Texte affiché",
+        "x": 100,
+       "y":200,
+        "valeur_min": 1,
+        "valeur_max": 10,
+        "valeur_depart": 3,
+        "increment": 1,
+        "taille_fleche": 6,
+        "taille_texte": 18,
+        "callback": "nom_fonction_callback"
+      },
+      "_fin_template": "═══════════════════════════════════════════════════════",
+
+      "type": "increment",
+      "id": "breath_duration",
+      "nom_affichage": "Durée respiration",
+      "x": 100,
+      "y": 240,
+      "valeur_min": 1,
+      "valeur_max": 10,
+      "valeur_depart": 3,
+      "increment": 1,
+      "taille_fleche": 6,
+      "taille_texte": 18,
+      "callback": "duration_value_changed"
+    },
+
+    {
+      "type": "increment",
+      "id": "breath_cycles",
+      "nom_affichage": "Cycles",
+      "x": 100,
+      "y": 340,
+      "valeur_min": 1,
+      "valeur_max": 20,
+      "valeur_depart": 1,
+      "increment": 1,
+      "taille_fleche": 6,
+      "taille_texte": 18,
+      "callback": "cycles_value_changed"
+    },
+
+    {
+      "_commentaire": "═══════════════════════════════════════════════════════",
+      "_description": "WIDGET TOGGLE - Interrupteur ON/OFF",
+      "_template": {
+        "type": "toggle",
+        "id": "identifiant_unique",
+        "nom_affichage": "Texte affiché",
+        "x": 100,
+        "y": 400,
+        "etat_depart": false,
+        "largeur_toggle": 40,
+        "hauteur_toggle": 18,
+        "taille_curseur": 18,
+        "taille_texte": 18,
+        "callback": "nom_fonction_callback"
+      },
+      "_fin_template": "═══════════════════════════════════════════════════════",
+
+      "type": "toggle",
+      "id": "alternate_cycles",
+      "nom_affichage": "Cycles alternés",
+      "x": 100,
+      "y": 400,
+      "etat_depart": false,
+      "largeur_toggle": 40,
+      "hauteur_toggle": 18,
+      "taille_curseur": 18,
+      "taille_texte": 18,
+      "callback": "alternate_cycles_changed"
+    }
+  ]
+}

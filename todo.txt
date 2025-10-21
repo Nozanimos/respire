@@ -27,18 +27,25 @@ Mon tout premier programme en langage C + SDL2
                                         hovered couleur (jaune pâle),
                                         position_x,
                                         position_y};
-        🔄 - Créer widget bouton actif/inactif nom - on/off - commande                  ← NOUS SOMMES ICI
+        ✅ - Créer widget bouton actif/inactif nom - on/off - commande
 
-        □ - modélisation des options du panneau de configuration en listes :
+        ✅ - modélisation des options du panneau de configuration en listes :
 
-                □ - la liste sera imprimée dans un fichier avec les valeurs correspondantes au json
-                de manière à remplacer son contenu par les valeurs définitives codées en C directement.
-        □ - Créer fichier json_helper qui va servir à créer, positionner les options dans le panneau de configuration
-                □ - Une fenêtre en json devra s'ouvrir et la modification des valeurs pourra se faire en roulant la molette de la souris
-                pour incrémenter ou décrémenter les valeurs.
-        □ - remplacer les deux options existantes par deux occurrences de widget pour test des listes et du json
+        🔄 - Créer fichier json_helper qui va servir à créer, positionner les options dans le panneau de configuration
 
-□ - Options rétention (pleins/vides)
+                - Une fenêtre en json devra s'ouvrir et se fermer en même temps que le panneau de configuration
+                et apparaître sur la partie droite de l'écran laissant visible le panneau de configuration pour
+                l'ajout, l'ajustement des widgets, textes lignes de séparation (fines 1px) et la modification des valeurs pourra se faire en roulant la molette de la souris pour incrémenter ou décrémenter les valeurs.
+                - Une liste sera imprimée dans un fichier avec les valeurs correspondantes au json qui pourront être copiée directement dans le setting_panel.c à l'endroit où l'on crée les widgets (étiquette de commentaire création de widgets).
+                - Les widgets déjà présents dans le code settings_panel.c devront être inscrits dans le json de manière à modifier leurs paramètres en temps réel au besoin.
+                - Question pratique, les enregistrements dans le fichier se feront à la fermeture du panneau de configuration.
+                - En début de json, un template en commentaires devra apparaître de manière à ce que moi, utilisateur puisse prendre connaissance des paramètres à ajouter aux bons emplacements. Ces commentaires apparaîtront automatiquement de manière intéractive lorsque le widget, le titre ou la ligne auront été  décommentés et seront fonctionnel dans le programme.
+                - Débogage à chaque fois que possible durant cette étape.       ← NOUS SOMMES À CE CHAPITRE
+
+
+        □ - descriptions à venir
+        □ - Adapter l'ensemble à la taille de l'écran (merci les coordonnées absolues) :-D
+
 
 🎯 PHASE 3 : CYCLE RESPIRATOIRE
 □ - Timer pour inspiration/expiration

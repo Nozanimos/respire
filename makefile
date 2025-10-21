@@ -2,7 +2,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
 SDL_FLAGS = `sdl2-config --cflags --libs`
-LIBS = -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lm
+LIBS = -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lm -lcjson
 
 # Dossiers
 SRC_DIR = src
@@ -22,6 +22,7 @@ all: $(TARGET)
 # Lien : .o → exécutable
 $(TARGET): $(OBJS)
 	@echo "🔗 Édition des liens..."
+	@mkdir -p $(BIN_DIR)  # Crée le dossier bin si inexistant
 	$(CC) $(OBJS) -o $(TARGET) $(LIBS) $(SDL_FLAGS)
 	@echo "✅ Compilation terminée : $(TARGET)"
 
@@ -29,11 +30,11 @@ $(TARGET): $(OBJS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "📦 Compilation de $<..."
 	@mkdir -p $(OBJ_DIR)  # Crée le dossier si inexistant
-	$(CC) $(CFLAGS) -c $< -o $@ $(SDL_FLAGS)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Nettoyage
 clean:
-	rm -rf $(OBJ_DIR)/*.o $(TARGET)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
 	@echo "🧹 Fichiers nettoyés"
 
 # Recompile tout
