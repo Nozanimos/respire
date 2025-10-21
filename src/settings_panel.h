@@ -10,6 +10,7 @@
 #include "hexagone_list.h"
 #include "widget.h"
 #include "toggle_widget.h"
+#include "widget_list.h"
 
 typedef enum {
     PANEL_CLOSED,
@@ -65,9 +66,7 @@ typedef struct {
     TTF_Font* font;
     TTF_Font* font_small;
 
-    ConfigWidget* duration_widget;
-    ConfigWidget* cycles_widget;
-    ToggleWidget* alternate_cycles_widget;
+    WidgetList* widget_list;
 
     UIButton apply_button;
     UIButton cancel_button;

@@ -189,8 +189,9 @@ void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget, TTF_Font
                          (widget->bg_hover_color.g << 8) |
                          widget->bg_hover_color.b;
 
-        boxColor(renderer, bg_rect.x, bg_rect.y,
+        roundedBoxColor(renderer, bg_rect.x, bg_rect.y,
                  bg_rect.x + bg_rect.w, bg_rect.y + bg_rect.h,
+                 bg_rect.h/2,
                  bg_color);
     }
 
@@ -217,10 +218,10 @@ void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget, TTF_Font
         current_bg_color.b = SDL_min(255, current_bg_color.b + 30);
     }
 
-    Uint32 bg_color_value = (current_bg_color.r << 24) |
-                           (current_bg_color.g << 16) |
-                            current_bg_color.b <<8 |
-                            current_bg_color.a;
+    Uint32 bg_color_value = (current_bg_color.a << 24) |
+                           (current_bg_color.r << 16) |
+                            current_bg_color.g <<8 |
+                            current_bg_color.b;
 
     // Fond arrondi du toggle
     roundedBoxColor(renderer,
@@ -240,10 +241,10 @@ void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget, TTF_Font
     int radius = absolute_thumb_rect.w / 2;
 
     filledCircleColor(renderer, center_x, center_y, radius,
-                     (widget->thumb_color.r << 24) |
-                     (widget->thumb_color.g << 16) |
-                      widget->thumb_color.b << 8 |
-                      widget->thumb_color.a);
+                     (widget->thumb_color.a << 24) |
+                     (widget->thumb_color.r << 16) |
+                      widget->thumb_color.g << 8 |
+                      widget->thumb_color.b);
 
     debug_printf("✅ Toggle '%s' rendu - État: %s\n",
                  widget->option_name, widget->value ? "ON" : "OFF");

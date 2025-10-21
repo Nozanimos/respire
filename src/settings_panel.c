@@ -207,6 +207,11 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     // INITIALISATION EXPLICITE de tous les membres
     memset(panel, 0, sizeof(SettingsPanel));
 
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // CHARGEMENT DES POLICES
+    // ══════════════════════════════════════════════════════════════════════════
+
     // Initialiser SDL_ttf
     if (TTF_Init() == -1) {
         debug_printf("Erreur TTF_Init: %s\n", TTF_GetError());
@@ -219,17 +224,17 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     if (!panel->font_title) {
         debug_printf("Erreur chargement police: %s\n", TTF_GetError());
         // Police titre
-        panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 28);
+        panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 24);
     }
     if (!panel->font) {
         debug_printf("Erreur chargement police: %s\n", TTF_GetError());
         // Police normale
-        panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 20);
+        panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 18);
     }
     if (!panel->font_small) {
         debug_printf("Erreur chargement police: %s\n", TTF_GetError());
         // Police mini
-        panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 16);
+        panel->font = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 14);
     }
 
     // Chargement configuration temporaire
@@ -241,61 +246,71 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     int largeur_max_widget = 180 + 20 + 40 + 20; // texte_max + flèches + valeur + marges
     int widget_x = (PANEL_WIDTH - largeur_max_widget) / 2; // Centrage horizontal
 
-    int duration_y = 240;
-    int cycles_y = 320;
-    int arrow_size = 6;
-    int text_size = 20;
-    int altern_y = 400;
+    // ══════════════════════════════════════════════════════════════════════════
+    // CRÉATION DE LA LISTE DE WIDGETS
+    // ══════════════════════════════════════════════════════════════════════════
+    panel->widget_list = create_widget_list();
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // WIDGETS EN DEBOGAGE AVANT PASSAGE EN LISTES
-    // ═════════════════════════════════════════════════════════════════════════
-
-    // Widget pour la durée de respiration
-    panel->duration_widget = create_config_widget(
-        "Durée respiration",   // nom
-        widget_x, duration_y,  // position
-        1, 10,                 // min, max
-        panel->temp_config.breath_duration, // valeur initiale
-        1,                     // incrément
-        arrow_size,            // taille des flèches
-        text_size,             // taille du texte
-        panel->font            // Police
+    // ──────────────────────────────────────────────────────────────────────────
+    // WIDGET 1 : DURÉE DE RESPIRATION (Incrément)
+    // ──────────────────────────────────────────────────────────────────────────
+    add_increment_widget(
+        panel->widget_list,              // Liste où ajouter le widget
+        "breath_duration",               // ID unique (pour get/set programmatique)
+        "Durée respiration",             // Nom affiché à l'écran
+        widget_x,                        // Position X (relative au panneau)
+        240,                             // Position Y (relative au panneau)
+        1,                               // Valeur MIN (1 seconde minimum)
+        10,                              // Valeur MAX (10 secondes maximum)
+        3,                               // Valeur INITIALE (3 secondes par défaut)
+        1,                               // INCRÉMENT (clic = +1 ou -1)
+        6,                               // Taille des flèches ↑↓ en pixels
+        18,                              // Taille de référence du texte
+        panel->font,                     // Police TTF pour le rendu
+        duration_value_changed           // Callback appelé à chaque changement
     );
 
-    // Widget pour le nombre de cycles
-    panel->cycles_widget = create_config_widget(
-        "Cycles",              // nom
-        widget_x, cycles_y,    // position
-        1, 20,                 // min, max
-        panel->temp_config.breath_cycles, // valeur initiale
-        1,                     // incrément
-        arrow_size,            // taille des flèches
-        text_size,             // taille du texte
-        panel->font            // Police
+    // ──────────────────────────────────────────────────────────────────────────
+    // WIDGET 2 : NOMBRE DE CYCLES (Incrément)
+    // ──────────────────────────────────────────────────────────────────────────
+    add_increment_widget(
+        panel->widget_list,              // Liste où ajouter le widget
+        "breath_cycles",                 // ID unique
+        "Cycles",                        // Nom affiché à l'écran
+        widget_x,                        // Position X (relative au panneau)
+        320,                             // Position Y (relative au panneau)
+        1,                               // Valeur MIN (1 cycle minimum)
+        20,                              // Valeur MAX (20 cycles maximum)
+        1,                               // Valeur INITIALE (1 cycle par défaut)
+        1,                               // INCRÉMENT (clic = +1 ou -1)
+        6,                               // Taille des flèches ↑↓ en pixels
+        18,                              // Taille de référence du texte
+        panel->font,                     // Police TTF pour le rendu
+        cycles_value_changed             // Callback appelé à chaque changement
     );
 
-    // Widget Cycles alternés oui/non
-    panel->alternate_cycles_widget = create_toggle_widget(
-        "Cycles alternés",    // nom
-            widget_x, altern_y,             // position (x, y)
-    false,                // état initial (OFF)
-    40, 20,               // toggle_width, toggle_height
-    20,                   // thumb_size
-    text_size,                   // text_size
-    panel->font           // police
+    // ──────────────────────────────────────────────────────────────────────────
+    // WIDGET 3 : CYCLES ALTERNÉS (Toggle ON/OFF)
+    // ──────────────────────────────────────────────────────────────────────────
+    add_toggle_widget(
+        panel->widget_list,              // Liste où ajouter le widget
+        "alternate_cycles",              // ID unique
+        "Cycles alternés",               // Nom affiché à l'écran
+        widget_x,                        // Position X (relative au panneau)
+        400,                             // Position Y (relative au panneau)
+        false,                           // État INITIAL (false = OFF, true = ON)
+        40,                              // Largeur du bouton toggle en pixels
+        18,                              // Hauteur du bouton toggle en pixels
+        18,                              // Diamètre du curseur circulaire
+        18,                              // Taille de référence du texte
+        panel->font,                     // Police TTF pour le rendu
+        alternate_cycles_changed         // Callback appelé à chaque basculement
     );
 
-    if (panel->alternate_cycles_widget) {
-        debug_printf("✅ Toggle widget créé avec succès\n");
-    } else {
-        debug_printf("❌ Échec création toggle widget\n");
-    }
-
-    // ✅ CALLBACKS pour mise à jour en temps réel
-    set_widget_value_changed_callback(panel->duration_widget, duration_value_changed);
-    set_widget_value_changed_callback(panel->cycles_widget, cycles_value_changed);
-    set_toggle_value_changed_callback(panel->alternate_cycles_widget, alternate_cycles_changed);
+    // ──────────────────────────────────────────────────────────────────────────
+    // DEBUG : Afficher le contenu de la liste
+    // ──────────────────────────────────────────────────────────────────────────
+    debug_print_widget_list(panel->widget_list);
 
     // Créer les boutons UI
     panel->apply_button = create_button("Appliquer", 200, screen_height-50, 120, 30);
@@ -389,22 +404,18 @@ void update_settings_panel(SettingsPanel* panel, float delta_time) {
     panel->current_x = panel->target_x - (int)(PANEL_WIDTH * eased);
     panel->rect.x = panel->current_x;
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // MISE À JOUR DES ANIMATIONS DES WIDGETS
-    // ═════════════════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════════════════
+    // MISE À JOUR DES ANIMATIONS DES WIDGETS (EN UNE LIGNE !)
+    // ══════════════════════════════════════════════════════════════════════════
     if (panel->state == PANEL_OPEN) {
         update_preview_animation(panel);
-
-        // Mise à jour de l'animation du toggle widget
-        if (panel->alternate_cycles_widget) {
-            update_toggle_widget(panel->alternate_cycles_widget, delta_time);
-        }
+        update_widget_list_animations(panel->widget_list, delta_time);
     }
 
-    // Animation de prévisualisation
+    /*// Animation de prévisualisation
     if (panel->state == PANEL_OPEN) {
         update_preview_animation(panel);
-    }
+    }*/
 }
 
 void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
@@ -424,7 +435,8 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         int panel_y = panel->rect.y;
 
         // === TITRE ===
-        render_text(renderer, panel->font_title,"Configuration Respiration", panel_x + 70, panel_y + 40, 0xFFFFFFFF);
+        TTF_SetFontStyle(panel->font_title, TTF_STYLE_UNDERLINE);
+        render_text(renderer, panel->font_title,"Configuration", panel_x + 50, panel_y + 10, 0xFF000000);
 
         // === ESPACE RÉSERVÉ POUR L'ANIMATION ===
         // Dessiner un cadre pour la prévisualisation
@@ -437,27 +449,11 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         render_preview(renderer, &panel->preview_system, panel_x, panel_y);
 
 
-        // === WIDGET DURÉE RESPIRATION ===
-        if (panel->duration_widget) {
-            // Passer l'offset du panneau
-            render_config_widget(renderer, panel->duration_widget, panel->font, panel_x, panel_y);
-        }
+        // ══════════════════════════════════════════════════════════════════════════
+        // ✅ RENDU DE TOUS LES WIDGETS (EN UNE SEULE LIGNE !)
+        // ══════════════════════════════════════════════════════════════════════════
+        render_all_widgets(renderer, panel->widget_list, panel->font, panel_x, panel_y);
 
-        // === WIDGET CYCLES ===
-        if (panel->cycles_widget) {
-            // Passer l'offset du panneau
-            render_config_widget(renderer, panel->cycles_widget, panel->font, panel_x, panel_y);
-        }
-
-        // ═════════════════════════════════════════════════════════════════════════
-        // ✅ AJOUT : WIDGET CYCLES ALTERNÉS
-        // ═════════════════════════════════════════════════════════════════════════
-        if (panel->alternate_cycles_widget) {
-            debug_printf("🎨 Tentative de rendu du toggle widget...\n");
-            render_toggle_widget(renderer, panel->alternate_cycles_widget, panel->font, panel_x, panel_y);
-        } else {
-            debug_printf("❌ Toggle widget est NULL!\n");
-        }
 
         // === BOUTONS ===
         render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
@@ -492,12 +488,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 load_config(&panel->temp_config);
 
                 // METTRE À JOUR les widgets avec les valeurs actuelles
-                if (panel->duration_widget) {
-                    panel->duration_widget->value = panel->temp_config.breath_duration;
-                }
-                if (panel->cycles_widget) {
-                    panel->cycles_widget->value = panel->temp_config.breath_cycles;
-                }
+                set_widget_int_value(panel->widget_list, "breath_duration", panel->temp_config.breath_duration);
+                set_widget_int_value(panel->widget_list, "breath_cycles", panel->temp_config.breath_cycles);
+                set_widget_bool_value(panel->widget_list, "alternate_cycles", panel->temp_config.alternate_cycles);
 
                 // Réinitialiser la prévisualisation avec la config actuelle
                 reinitialiser_preview_system(&panel->preview_system);
@@ -526,21 +519,10 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
         panel_x = panel->rect.x;
         panel_y = panel->rect.y;
 
-        // ─────────────────────────────────────────────────────────────────────
-        // TRANSMETTRE TOUS LES ÉVÉNEMENTS AUX WIDGETS
-        // ─────────────────────────────────────────────────────────────────────
-        // Les widgets gèrent eux-mêmes le filtrage par type d'événement
-
-        if (panel->duration_widget) {
-            handle_config_widget_events(panel->duration_widget, event, panel_x, panel_y);
-        }
-        if (panel->cycles_widget) {
-            handle_config_widget_events(panel->cycles_widget, event, panel_x, panel_y);
-        }
-        // ✅ AJOUT : GESTION DES ÉVÉNEMENTS DU TOGGLE WIDGET
-        if (panel->alternate_cycles_widget) {
-            handle_toggle_widget_events(panel->alternate_cycles_widget, event, panel_x, panel_y);
-        }
+        // ─────────────────────────────────────────────────────────────────────────
+        // TRANSMETTRE TOUS LES ÉVÉNEMENTS AUX WIDGETS (EN UNE LIGNE !)
+        // ─────────────────────────────────────────────────────────────────────────
+        handle_widget_list_events(panel->widget_list, event, panel_x, panel_y);
 
         // ─────────────────────────────────────────────────────────────────────
         // GESTION DES BOUTONS (seulement pour les clics)
@@ -591,17 +573,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 void free_settings_panel(SettingsPanel* panel) {
     if (!panel) return;
 
-    // ✅ LIBÉRER LES WIDGETS
-    if (panel->duration_widget) {
-        free_config_widget(panel->duration_widget);
-    }
-    if (panel->cycles_widget) {
-        free_config_widget(panel->cycles_widget);
-    }
-
-    // ✅ AJOUT : LIBÉRER LE TOGGLE WIDGET
-    if (panel->alternate_cycles_widget) {
-        free_toggle_widget(panel->alternate_cycles_widget);
+    // ✅ LIBÉRER LA LISTE DE WIDGETS (qui libère automatiquement tous les widgets)
+    if (panel->widget_list) {
+        free_widget_list(panel->widget_list);
     }
 
     // Libérer la prévisualisation

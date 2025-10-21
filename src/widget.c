@@ -168,7 +168,7 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget, TTF_Font
 
         roundedBoxColor(renderer, bg_rect.x, bg_rect.y,
                         bg_rect.x + bg_rect.w, bg_rect.y + bg_rect.h,
-                        15,  // Rayon de courbure des coins
+                        bg_rect.h/2,  // Rayon de courbure des coins
                         bg_color);
     }
 
