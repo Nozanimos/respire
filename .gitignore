@@ -6,3 +6,4 @@
 *.o
 debug.txt
 **/debug.txt
+template_widget.txt
