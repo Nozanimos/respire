@@ -13,6 +13,18 @@
 #define LEFT_MARGIN 50           // Marge pour les numéros de ligne
 
 // ════════════════════════════════════════════════════════════════════════════
+//  STRUCTURE POUR L'HISTORIQUE UNDO/REDO
+// ════════════════════════════════════════════════════════════════════════════
+typedef struct UndoNode {
+    char* buffer_snapshot;          // Copie du buffer à cet état
+    int curseur_position;           // Position du curseur
+    int scroll_offset;              // Scroll vertical
+    int scroll_offset_x;            // Scroll horizontal
+    struct UndoNode* prev;          // État précédent
+    struct UndoNode* next;          // État suivant (pour redo)
+} UndoNode;
+
+// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DE L'ÉDITEUR JSON
 // ════════════════════════════════════════════════════════════════════════════
 typedef struct {
@@ -37,7 +49,15 @@ typedef struct {
     // ─────────────────────────────────────────────────────────────────────────
     int curseur_position;       // Position dans le buffer (en octets)
     int scroll_offset;          // Décalage vertical (pour scroller)
+    int scroll_offset_x;        // Décalage Horizontal
     int nb_lignes;              // Nombre total de lignes
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SÉLECTION DE TEXTE
+    // ─────────────────────────────────────────────────────────────────────────
+    int selection_start;        // Début de la sélection (-1 si pas de sélection)
+    int selection_end;          // Fin de la sélection
+    bool selection_active;      // true si une sélection est en cours
 
     // ─────────────────────────────────────────────────────────────────────────
     // BOUTONS
@@ -51,6 +71,13 @@ typedef struct {
     // ÉTAT
     // ─────────────────────────────────────────────────────────────────────────
     bool est_ouvert;            // false si la fenêtre doit se fermer
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SYSTÈME UNDO/REDO
+    // ─────────────────────────────────────────────────────────────────────────
+    UndoNode* current_undo;             // Pointeur vers l'état actuel
+    int undo_count;                     // Nombre d'états dans l'historique
+    int max_undo_count;                 // Limite (ex: 100)
 
 } JsonEditor;
 
