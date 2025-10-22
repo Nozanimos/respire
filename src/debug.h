@@ -12,15 +12,15 @@ extern FILE *debug_file;
 
 // Macros pratiques pour différents niveaux de log
 #ifdef DEBUG_MODE
-    #define LOG_INFO(...) printf("[INFO] " __VA_ARGS__)
-    #define LOG_WARN(...) printf("[WARN] " __VA_ARGS__)
-    #define LOG_ERROR(...) printf("[ERROR] " __VA_ARGS__)
-    #define LOG_DEBUG(...) printf("[DEBUG] " __VA_ARGS__)
+    #define DEBUG_INFO(...) debug_printf("ℹ️ [INFO] " __VA_ARGS__)
+    #define DEBUG_WARN(...) debug_printf("⚠️ [WARN] " __VA_ARGS__)
+    #define DEBUG_ERROR(...) debug_printf("❌ [ERROR] " __VA_ARGS__)
+    #define DEBUG_TRACE(...) debug_printf("🔍 [TRACE] " __VA_ARGS__)
 #else
     #define LOG_INFO(...)
     #define LOG_WARN(...)
     #define LOG_ERROR(...)
-    #define LOG_DEBUG(...)
+    #define LOG_TRACE(...)
 #endif
 
 #endif
