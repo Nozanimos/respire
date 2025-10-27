@@ -10,7 +10,7 @@ OBJ_DIR = obj
 BIN_DIR = bin
 
 # Trouve tous les fichiers .c dans src/
-SRCS = $(wildcard $(SRC_DIR)/*.c)
+SRCS = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/json_editor/*.c)
 # Transforme src/fichier.c → obj/fichier.o
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 # Nom de l'exécutable final
@@ -29,7 +29,7 @@ $(TARGET): $(OBJS)
 # Compilation : .c → .o
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "📦 Compilation de $<..."
-	@mkdir -p $(OBJ_DIR)  # Crée le dossier si inexistant
+	@mkdir -p $(dir $@)  # Crée le dossier si inexistant
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Nettoyage
