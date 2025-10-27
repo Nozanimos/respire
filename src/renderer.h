@@ -8,7 +8,7 @@
 #include "geometry.h"
 #include "config.h"
 #include "settings_panel.h"
-#include "json_editor_window.h"
+#include "./json_editor/json_editor.h"
 
 // Structure qui contient TOUT l'état de l'application graphique
 typedef struct {
