@@ -10,6 +10,7 @@ extern void inserer_caractere(JsonEditor* editor, char c);
 extern void supprimer_caractere(JsonEditor* editor);
 extern void supprimer_caractere_apres(JsonEditor* editor);
 extern void inserer_nouvelle_ligne(JsonEditor* editor);
+extern void dupliquer_ligne_courante(JsonEditor* editor);
 
 // Depuis json_editor_clipboard.c (fonctions static → doivent être rendues non-static)
 void copier_selection(JsonEditor* editor);
@@ -99,6 +100,15 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                 // ─────────────────────────────────────────────────────────────────
                 if ((mod & KMOD_CTRL) && event->key.keysym.sym == SDLK_y) {
                     faire_redo(editor);
+                    return true;
+                }
+
+                // ─────────────────────────────────────────────────────────────────
+                // Ctrl+D → DUPLIQUER LIGNE
+                // ─────────────────────────────────────────────────────────────────
+                if ((mod & KMOD_CTRL) && event->key.keysym.sym == SDLK_d) {
+                    dupliquer_ligne_courante(editor);
+                    auto_scroll_curseur(editor);
                     return true;
                 }
 
@@ -324,11 +334,10 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                                         if (editor->buffer[pos] == '\n') ligne_courante++;
                                         pos++;
                                     }
-                                    int col = 0;
-                                    while (col < colonne_survol && editor->buffer[pos] && editor->buffer[pos] != '\n') {
-                                        pos++;
-                                        col++;
-                                    }
+
+                                    // Avancer jusqu'à la colonne (en caractères UTF-8!)
+                                    int bytes_to_advance = utf8_advance(editor->buffer + pos, colonne_survol);
+                                    pos += bytes_to_advance;
 
                                     // Activer la sélection et mettre à jour la fin
                                     editor->selection_active = true;
@@ -345,31 +354,45 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
 
                         case SDL_MOUSEWHEEL:
                             if (event->wheel.windowID == window_id) {
-                                // event->wheel.y > 0 = scroll vers le haut (reculer)
-                                // event->wheel.y < 0 = scroll vers le bas (avancer)
-                                int scroll_amount = -event->wheel.y * 3;  // 3 lignes par cran de molette
+                                // ═════════════════════════════════════════════════════════════════
+                                // VÉRIFIER SI ON EST SUR UN NOMBRE
+                                // ═════════════════════════════════════════════════════════════════
+                                int debut_nombre, fin_nombre;
+                                bool sur_nombre = trouver_nombre_au_curseur(editor, &debut_nombre, &fin_nombre);
 
-                                editor->scroll_offset += scroll_amount;
+                                if (sur_nombre) {
+                                    // ─────────────────────────────────────────────────────────────
+                                    // MODE ÉDITION : Molette modifie le nombre
+                                    // ─────────────────────────────────────────────────────────────
+                                    int delta = event->wheel.y;  // > 0 = up (incrémenter), < 0 = down (décrémenter)
+                                    modifier_nombre_au_curseur(editor, delta);
+                                    auto_scroll_curseur(editor);
 
-                                // ─────────────────────────────────────────────────────────────
-                                // LIMITES DE SCROLL
-                                // ─────────────────────────────────────────────────────────────
-                                // Ne pas scroller avant le début
-                                if (editor->scroll_offset < 0) {
-                                    editor->scroll_offset = 0;
+                                    debug_printf("🎡 MOLETTE sur nombre: delta=%d\n", delta);
+                                } else {
+                                    // ─────────────────────────────────────────────────────────────
+                                    // MODE NORMAL : Molette scroll le document
+                                    // ─────────────────────────────────────────────────────────────
+                                    int scroll_amount = -event->wheel.y * 3;  // 3 lignes par cran
+
+                                    editor->scroll_offset += scroll_amount;
+
+                                    // Ne pas scroller avant le début
+                                    if (editor->scroll_offset < 0) {
+                                        editor->scroll_offset = 0;
+                                    }
+
+                                    // Ne pas scroller au-delà de la fin
+                                    int nb_lignes_visibles = (EDITOR_HEIGHT - 100) / LINE_HEIGHT;
+                                    int max_scroll = editor->nb_lignes - nb_lignes_visibles;
+                                    if (max_scroll < 0) max_scroll = 0;
+
+                                    if (editor->scroll_offset > max_scroll) {
+                                        editor->scroll_offset = max_scroll;
+                                    }
+
+                                    debug_printf("📜 SCROLL: offset=%d\n", editor->scroll_offset);
                                 }
-
-                                // Ne pas scroller au-delà de la fin
-                                int nb_lignes_visibles = (EDITOR_HEIGHT - 100) / LINE_HEIGHT;
-                                int max_scroll = editor->nb_lignes - nb_lignes_visibles;
-                                if (max_scroll < 0) max_scroll = 0;  // Si le document tient dans l'écran
-
-                                if (editor->scroll_offset > max_scroll) {
-                                    editor->scroll_offset = max_scroll;
-                                }
-
-                                debug_printf("📜 SCROLL: offset=%d, nb_lignes=%d, max_scroll=%d\n",
-                                             editor->scroll_offset, editor->nb_lignes, max_scroll);
 
                                 return true;
                             }
@@ -454,13 +477,30 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
 
                                             editor->curseur_position = pos;
 
-                                            // Démarrer une sélection si on clique
-                                            editor->selection_start = pos;
-                                            editor->selection_end = pos;
-                                            editor->selection_active = false;  // Pas encore actif tant qu'on ne bouge pas
+                                            // ═════════════════════════════════════════════════════════════════
+                                            // GESTION DES CLICS MULTIPLES
+                                            // ═════════════════════════════════════════════════════════════════
+                                            if (event->button.clicks == 1) {
+                                                // Simple clic : démarrer une sélection potentielle
+                                                editor->selection_start = pos;
+                                                editor->selection_end = pos;
+                                                editor->selection_active = false;
 
-                                            debug_printf("🖱️ CLIC: ligne=%d, col=%d, pos=%d\n",
-                                                         ligne_cliquee, colonne_trouvee, pos);
+                                                debug_printf("🖱️ SIMPLE CLIC: ligne=%d, col=%d, pos=%d\n",
+                                                             ligne_cliquee, colonne_trouvee, pos);
+                                            }
+                                            else if (event->button.clicks == 2) {
+                                                // Double-clic : sélectionner le mot
+                                                selectionner_mot_au_curseur(editor);
+
+                                                debug_printf("🖱️🖱️ DOUBLE-CLIC: mot sélectionné\n");
+                                            }
+                                            else if (event->button.clicks >= 3) {
+                                                // Triple-clic : sélectionner la ligne
+                                                selectionner_ligne_courante(editor);
+
+                                                debug_printf("🖱️🖱️🖱️ TRIPLE-CLIC: ligne sélectionnée\n");
+                                            }
 
                                             return true;
                                         }

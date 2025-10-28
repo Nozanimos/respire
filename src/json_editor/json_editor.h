@@ -156,6 +156,15 @@ void deselectionner(JsonEditor* editor);
 // Gestion du undo/redo
 void sauvegarder_etat_undo(JsonEditor* editor);
 
+// Sélectionne le mot sous le curseur (double-clic)
+void selectionner_mot_au_curseur(JsonEditor* editor);
+
+// Sélectionne toute la ligne courante (triple-clic)
+void selectionner_ligne_courante(JsonEditor* editor);
+
+// Duplique la ligne courante (Ctrl+D)
+void dupliquer_ligne_courante(JsonEditor* editor);
+
 // ─────────────────────────────────────────────────────────────────────────
 // RENDU
 // ─────────────────────────────────────────────────────────────────────────
@@ -195,6 +204,12 @@ const char* obtenir_ligne(const char* buffer, int index_ligne, char* dest, int m
 
 // Convertit position curseur → (ligne, colonne)
 void position_vers_ligne_colonne(const char* buffer, int position, int* ligne, int* colonne);
+
+// Trouve un nombre autour du curseur
+bool trouver_nombre_au_curseur(JsonEditor* editor, int* debut, int* fin);
+
+// Modifie un nombre au curseur (delta = +1 ou -1)
+void modifier_nombre_au_curseur(JsonEditor* editor, int delta);
 
 // ─────────────────────────────────────────────────────────────────────────
 // UTILITAIRES UTF-8

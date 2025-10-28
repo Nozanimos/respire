@@ -1,4 +1,5 @@
 #include "json_editor.h"
+#include "json_syntax.h"
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 
@@ -113,10 +114,52 @@ void rendre_json_editor(JsonEditor* editor) {
             }
         }
 
-        // Maintenant le texte par-dessus
+        // ═════════════════════════════════════════════════════════════════════
+        // RENDU DU TEXTE AVEC COLORATION SYNTAXIQUE
+        // ═════════════════════════════════════════════════════════════════════
         if (ligne[0] != '\0') {
-            render_text(editor->renderer, editor->font_mono, ligne,
-                        LEFT_MARGIN - editor->scroll_offset_x, y, 0xFFEEEEEE);
+            // Parser la ligne pour obtenir les segments colorés
+            LigneColoree* ligne_coloree = parser_ligne_json(ligne);
+
+            if (ligne_coloree && ligne_coloree->nb_segments > 0) {
+                // Rendre chaque segment avec sa couleur
+                int x_offset = LEFT_MARGIN - editor->scroll_offset_x;
+
+                for (int seg_idx = 0; seg_idx < ligne_coloree->nb_segments; seg_idx++) {
+                    SegmentColore* seg = &ligne_coloree->segments[seg_idx];
+
+                    // Extraire le texte du segment
+                    char segment_text[256];
+                    int len = (seg->longueur < 255) ? seg->longueur : 255;
+                    strncpy(segment_text, ligne + seg->debut, len);
+                    segment_text[len] = '\0';
+
+                    // Mesurer la largeur du texte AVANT ce segment (pour le positionner)
+                    int x_avant = 0;
+                    if (seg->debut > 0) {
+                        char texte_avant[256];
+                        int len_avant = (seg->debut < 255) ? seg->debut : 255;
+                        strncpy(texte_avant, ligne, len_avant);
+                        texte_avant[len_avant] = '\0';
+                        TTF_SizeUTF8(editor->font_mono, texte_avant, &x_avant, NULL);
+                    }
+
+                    // Obtenir la couleur du segment
+                    SDL_Color couleur = obtenir_couleur_token(seg->type);
+                    Uint32 color_hex = (couleur.a << 24) | (couleur.r << 16) |
+                    (couleur.g << 8) | couleur.b;
+
+                    // Rendre le segment
+                    render_text(editor->renderer, editor->font_mono, segment_text,
+                                x_offset + x_avant, y, color_hex);
+                }
+
+                liberer_ligne_coloree(ligne_coloree);
+            } else {
+                // Fallback : si le parsing échoue, rendre en blanc
+                render_text(editor->renderer, editor->font_mono, ligne,
+                            LEFT_MARGIN - editor->scroll_offset_x, y, 0xFFEEEEEE);
+            }
         }
 
         y += LINE_HEIGHT;

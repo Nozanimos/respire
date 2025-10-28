@@ -357,3 +357,396 @@ const char* obtenir_ligne(const char* buffer, int index_ligne, char* dest, int m
 
     return dest;
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  DÉTECTION ET MANIPULATION DE NOMBRES
+// ════════════════════════════════════════════════════════════════════════════
+
+// Vérifie si un caractère fait partie d'un nombre JSON
+static bool est_char_nombre(char c) {
+    return isdigit(c) || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E';
+}
+
+// Trouve les limites d'un nombre autour du curseur
+// Retourne true si un nombre a été trouvé
+bool trouver_nombre_au_curseur(JsonEditor* editor, int* debut, int* fin) {
+    if (!editor || !debut || !fin) return false;
+
+    int pos = editor->curseur_position;
+
+    // Si on est après la fin du buffer, reculer d'un caractère
+    if (pos >= (int)strlen(editor->buffer)) {
+        pos--;
+    }
+
+    // Si on n'est pas sur un nombre, vérifier le caractère avant
+    if (pos >= 0 && !est_char_nombre(editor->buffer[pos])) {
+        if (pos > 0 && est_char_nombre(editor->buffer[pos - 1])) {
+            pos--;
+        } else {
+            return false;  // Pas sur un nombre
+        }
+    }
+
+    // Si on arrive ici et qu'on n'est toujours pas sur un nombre, exit
+    if (pos < 0 || !est_char_nombre(editor->buffer[pos])) {
+        return false;
+    }
+
+    // Trouver le début du nombre (reculer)
+    int start = pos;
+    while (start > 0 && est_char_nombre(editor->buffer[start - 1])) {
+        start--;
+    }
+
+    // Trouver la fin du nombre (avancer)
+    int end = pos;
+    int buffer_len = strlen(editor->buffer);
+    while (end < buffer_len && est_char_nombre(editor->buffer[end])) {
+        end++;
+    }
+
+    *debut = start;
+    *fin = end;
+    return true;
+}
+
+// Incrémente ou décrémente un nombre dans le buffer
+void modifier_nombre_au_curseur(JsonEditor* editor, int delta) {
+    if (!editor) return;
+
+    int debut, fin;
+    if (!trouver_nombre_au_curseur(editor, &debut, &fin)) {
+        return;  // Pas de nombre sous le curseur
+    }
+
+    // Sauvegarder pour undo
+    sauvegarder_etat_undo(editor);
+
+    // Extraire le nombre
+    char nombre_str[64];
+    int len = fin - debut;
+    if (len >= 64) len = 63;
+    strncpy(nombre_str, editor->buffer + debut, len);
+    nombre_str[len] = '\0';
+
+    // Parser le nombre
+    bool est_decimal = (strchr(nombre_str, '.') != NULL ||
+    strchr(nombre_str, 'e') != NULL ||
+    strchr(nombre_str, 'E') != NULL);
+
+    char nouveau_nombre[64];
+
+    if (est_decimal) {
+        // Nombre à virgule
+        double valeur = atof(nombre_str);
+        valeur += delta * 0.1;  // Incrément de 0.1 pour les décimaux
+
+        // Garder le même nombre de décimales si possible
+        int nb_decimales = 1;
+        char* point = strchr(nombre_str, '.');
+        if (point) {
+            nb_decimales = 0;
+            point++;
+            while (*point && isdigit(*point)) {
+                nb_decimales++;
+                point++;
+            }
+        }
+
+        snprintf(nouveau_nombre, sizeof(nouveau_nombre), "%.*f", nb_decimales, valeur);
+    } else {
+        // Nombre entier
+        int valeur = atoi(nombre_str);
+        valeur += delta;
+        snprintf(nouveau_nombre, sizeof(nouveau_nombre), "%d", valeur);
+    }
+
+    // Remplacer le nombre dans le buffer
+    int nouvelle_len = strlen(nouveau_nombre);
+    int ancienne_len = fin - debut;
+    int buffer_len = strlen(editor->buffer);
+
+    // Décaler le reste du buffer si les longueurs diffèrent
+    if (nouvelle_len != ancienne_len) {
+        int diff = nouvelle_len - ancienne_len;
+
+        // Vérifier qu'on a assez de place
+        if (buffer_len + diff >= JSON_BUFFER_SIZE - 1) {
+            return;  // Pas assez de place
+        }
+
+        // Décaler
+        memmove(editor->buffer + fin + diff,
+                editor->buffer + fin,
+                buffer_len - fin + 1);  // +1 pour le '\0'
+    }
+
+    // Copier le nouveau nombre
+    memcpy(editor->buffer + debut, nouveau_nombre, nouvelle_len);
+
+    // Mettre à jour le curseur (le placer après le nombre)
+    editor->curseur_position = debut + nouvelle_len;
+
+    editor->modified = true;
+    editor->nb_lignes = compter_lignes(editor->buffer);
+
+    debug_printf("🔢 Nombre modifié: '%s' → '%s' (delta: %d)\n",
+                 nombre_str, nouveau_nombre, delta);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SÉLECTION DE MOT ET DE LIGNE (UTF-8 AWARE)
+// ════════════════════════════════════════════════════════════════════════════
+
+// Retourne la longueur en octets d'un caractère UTF-8 à la position donnée
+static int longueur_char_utf8_a_pos(const char* buffer, int pos) {
+    if (!buffer || pos < 0) return 1;
+
+    unsigned char c = (unsigned char)buffer[pos];
+    if (c < 0x80) return 1;        // ASCII: 0xxxxxxx
+    if ((c & 0xE0) == 0xC0) return 2;  // 110xxxxx
+    if ((c & 0xF0) == 0xE0) return 3;  // 1110xxxx
+    if ((c & 0xF8) == 0xF0) return 4;  // 11110xxx
+    return 1;  // Défaut (invalide)
+}
+
+// Recule d'un caractère UTF-8 complet
+// Retourne la nouvelle position
+static int reculer_un_char_utf8(const char* buffer, int pos) {
+    if (pos <= 0) return 0;
+
+    pos--;  // Reculer d'au moins 1
+
+    // Si on est sur un octet de continuation (10xxxxxx), reculer jusqu'au début
+    while (pos > 0 && (buffer[pos] & 0xC0) == 0x80) {
+        pos--;
+    }
+
+    return pos;
+}
+
+// Avance d'un caractère UTF-8 complet
+// Retourne la nouvelle position
+static int avancer_un_char_utf8(const char* buffer, int pos, int buffer_len) {
+    if (pos >= buffer_len) return buffer_len;
+
+    int char_len = longueur_char_utf8_a_pos(buffer, pos);
+    pos += char_len;
+
+    if (pos > buffer_len) pos = buffer_len;
+    return pos;
+}
+
+// Vérifie si un caractère UTF-8 fait partie d'un "mot"
+// Pour ça on teste :
+// - Les ASCII alphanumériques classiques
+// - Les caractères multi-octets (lettres accentuées, etc.) sont acceptés par défaut
+// - On exclut les ponctuations communes et les espaces
+static bool est_caractere_de_mot_utf8(const char* buffer, int pos, int buffer_len) {
+    if (pos < 0 || pos >= buffer_len) return false;
+
+    unsigned char c = (unsigned char)buffer[pos];
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Caractères ASCII : test précis
+    // ─────────────────────────────────────────────────────────────────────────
+    if (c < 0x80) {
+        // Lettres et chiffres
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+            return true;
+        }
+        // Underscore et tiret (communs dans les identifiants)
+        if (c == '_' || c == '-') {
+            return true;
+        }
+        // Tout le reste (espaces, ponctuation, etc.) n'est pas un mot
+        return false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Caractères multi-octets UTF-8
+    // ─────────────────────────────────────────────────────────────────────────
+    // On pourrait faire une détection fine des plages Unicode, mais c'est complexe.
+    // Approche pragmatique : on accepte les caractères multi-octets SAUF :
+    // - Les guillemets typographiques « » " "
+    // - Les espaces insécables et autres espaces Unicode
+
+    // Vérifier si c'est le début d'un caractère multi-octets valide
+    if ((c & 0xE0) == 0xC0 || (c & 0xF0) == 0xE0 || (c & 0xF8) == 0xF0) {
+        // Pour l'instant, on accepte tous les caractères multi-octets
+        // Ça couvre : é, à, ç, œ, €, emojis, etc.
+        // Si tu veux filtrer plus finement, on peut ajouter des exclusions ici
+        return true;
+    }
+
+    return false;
+}
+
+// Sélectionne le mot sous le curseur (UTF-8 aware)
+void selectionner_mot_au_curseur(JsonEditor* editor) {
+    if (!editor) return;
+
+    int pos = editor->curseur_position;
+    int buffer_len = strlen(editor->buffer);
+
+    if (pos < 0 || pos >= buffer_len) return;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // Sélectionner le mot sous le curseur (avec support UTF-8)
+    // ═════════════════════════════════════════════════════════════════════════
+
+    // Vérifier qu'on est sur un caractère de mot
+    if (!est_caractere_de_mot_utf8(editor->buffer, pos, buffer_len)) {
+        // Essayer le caractère avant
+        int pos_avant = reculer_un_char_utf8(editor->buffer, pos);
+        if (pos_avant < pos && est_caractere_de_mot_utf8(editor->buffer, pos_avant, buffer_len)) {
+            pos = pos_avant;
+        } else {
+            // Pas sur un mot, peut-être qu'on est sur un guillemet ou ponctuation
+            // Dans ce cas, ne rien sélectionner
+            debug_printf("⚠️ Pas sur un mot, abandon de sélection\n");
+            return;
+        }
+    }
+
+    // Trouver le début du mot (reculer caractère par caractère)
+    int debut = pos;
+    while (debut > 0) {
+        int pos_avant = reculer_un_char_utf8(editor->buffer, debut);
+        if (!est_caractere_de_mot_utf8(editor->buffer, pos_avant, buffer_len)) {
+            break;  // On a atteint le début du mot
+        }
+        debut = pos_avant;
+    }
+
+    // Trouver la fin du mot (avancer caractère par caractère)
+    int fin = pos;
+    while (fin < buffer_len) {
+        if (!est_caractere_de_mot_utf8(editor->buffer, fin, buffer_len)) {
+            break;  // On a atteint la fin du mot
+        }
+        fin = avancer_un_char_utf8(editor->buffer, fin, buffer_len);
+    }
+
+    // Sélectionner le mot
+    editor->selection_start = debut;
+    editor->selection_end = fin;
+    editor->selection_active = true;
+    editor->curseur_position = fin;
+
+    debug_printf("📝 MOT UTF-8 sélectionné: pos %d à %d\n", debut, fin);
+}
+
+// Sélectionne toute la ligne courante
+void selectionner_ligne_courante(JsonEditor* editor) {
+    if (!editor) return;
+
+    int pos = editor->curseur_position;
+    int buffer_len = strlen(editor->buffer);
+
+    // Trouver le début de la ligne (reculer jusqu'au \n précédent ou début)
+    int debut = pos;
+    while (debut > 0 && editor->buffer[debut - 1] != '\n') {
+        debut--;
+    }
+
+    // Trouver la fin de la ligne (avancer jusqu'au \n suivant ou fin)
+    int fin = pos;
+    while (fin < buffer_len && editor->buffer[fin] != '\n') {
+        fin++;
+    }
+
+    // Inclure le \n final si présent
+    if (fin < buffer_len && editor->buffer[fin] == '\n') {
+        fin++;
+    }
+
+    // Sélectionner la ligne
+    editor->selection_start = debut;
+    editor->selection_end = fin;
+    editor->selection_active = true;
+    editor->curseur_position = fin;
+
+    debug_printf("📝 LIGNE sélectionnée: pos %d à %d\n", debut, fin);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  DUPLICATION DE LIGNE
+// ════════════════════════════════════════════════════════════════════════════
+void dupliquer_ligne_courante(JsonEditor* editor) {
+    if (!editor) return;
+
+    // Sauvegarder pour undo
+    sauvegarder_etat_undo(editor);
+
+    int buffer_len = strlen(editor->buffer);
+    int pos = editor->curseur_position;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Trouver le début de la ligne courante
+    // ─────────────────────────────────────────────────────────────────────────
+    int debut_ligne = pos;
+    while (debut_ligne > 0 && editor->buffer[debut_ligne - 1] != '\n') {
+        debut_ligne--;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Trouver la fin de la ligne courante
+    // ─────────────────────────────────────────────────────────────────────────
+    int fin_ligne = pos;
+    while (fin_ligne < buffer_len && editor->buffer[fin_ligne] != '\n') {
+        fin_ligne++;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Calculer la longueur de la ligne (sans le \n final)
+    // ─────────────────────────────────────────────────────────────────────────
+    int longueur_ligne = fin_ligne - debut_ligne;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Vérifier qu'on a assez de place dans le buffer
+    // ─────────────────────────────────────────────────────────────────────────
+    // On va ajouter : la ligne + \n (donc longueur_ligne + 1)
+    if (buffer_len + longueur_ligne + 1 >= JSON_BUFFER_SIZE - 1) {
+        debug_printf("❌ Pas assez de place pour dupliquer la ligne\n");
+        return;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Copier la ligne dans un buffer temporaire
+    // ─────────────────────────────────────────────────────────────────────────
+    char ligne_temp[JSON_BUFFER_SIZE];
+    strncpy(ligne_temp, editor->buffer + debut_ligne, longueur_ligne);
+    ligne_temp[longueur_ligne] = '\0';
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Insérer la ligne dupliquée juste après la ligne courante
+    // ─────────────────────────────────────────────────────────────────────────
+    // Position d'insertion : après le \n de la ligne courante (ou à fin_ligne si pas de \n)
+    int pos_insertion = fin_ligne;
+    if (fin_ligne < buffer_len && editor->buffer[fin_ligne] == '\n') {
+        pos_insertion = fin_ligne + 1;
+    }
+
+    // Décaler tout ce qui est après pour faire de la place
+    memmove(editor->buffer + pos_insertion + longueur_ligne + 1,
+            editor->buffer + pos_insertion,
+            buffer_len - pos_insertion + 1);  // +1 pour le '\0'
+
+            // Insérer la ligne dupliquée
+            memcpy(editor->buffer + pos_insertion, ligne_temp, longueur_ligne);
+
+            // Ajouter un \n après la ligne dupliquée
+            editor->buffer[pos_insertion + longueur_ligne] = '\n';
+
+            // ─────────────────────────────────────────────────────────────────────────
+            // Déplacer le curseur au début de la ligne dupliquée
+            // ─────────────────────────────────────────────────────────────────────────
+            editor->curseur_position = pos_insertion;
+
+            editor->modified = true;
+            editor->nb_lignes = compter_lignes(editor->buffer);
+
+            debug_printf("📋 Ligne dupliquée: pos %d, longueur %d\n", debut_ligne, longueur_ligne);
+}
