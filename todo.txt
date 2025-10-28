@@ -43,6 +43,22 @@ Mon tout premier programme en langage C + SDL2
                 - Débogage à chaque fois que possible durant cette étape.       ← NOUS SOMMES À CE CHAPITRE
 
 
+        ✅ - JSON Editor créé avec coloration syntaxique
+        ✅ - Scroll horizontal/vertical
+        ✅ - Sélection UTF-8 (simple/double/triple clic)
+        ✅ - Molette pour incrémenter/décrémenter les nombres
+        ✅ - Ctrl+D : Dupliquer ligne
+        ✅ - Undo/Redo (Ctrl+Z / Ctrl+Shift+Z)
+        ✅ - Copier/Coller/Couper (Ctrl+C/V/X)
+        ✅ - Touches Delete et Backspace UTF-8 aware
+
+        🔥 PROCHAINES FONCTIONNALITÉS JSON EDITOR (Session suivante) :
+        □ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c
+        □ - Validation JSON en temps réel : icône ✅/❌ pour savoir si le JSON est valide
+        □ - Format/Prettify (Ctrl+Shift+F) : réindenter proprement le JSON automatiquement
+        □ - Template/Snippet : bouton pour insérer un template de widget vide
+        □ - Preview en direct : voir les widgets se mettre à jour dans le panneau en live (HOT RELOAD!)
+
         □ - descriptions à venir
         □ - Adapter l'ensemble à la taille de l'écran (merci les coordonnées absolues) :-D
 
