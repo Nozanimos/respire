@@ -6,50 +6,10 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include "widget_types.h"
 #include "widget_list.h"
 
-// ════════════════════════════════════════════════════════════════════════════
-//  TYPES D'ÉLÉMENTS DANS LE PANNEAU
-// ════════════════════════════════════════════════════════════════════════════
-// Ces types correspondent aux différents éléments qu'on peut placer dans
-// le panneau de configuration (pas seulement des widgets interactifs)
-typedef enum {
-    ELEMENT_TYPE_TITRE,         // Titre statique (ex: "Configuration")
-    ELEMENT_TYPE_SEPARATEUR,    // Ligne horizontale de séparation
-    ELEMENT_TYPE_INCREMENT,     // Widget numérique avec flèches
-    ELEMENT_TYPE_TOGGLE,        // Interrupteur ON/OFF
-    ELEMENT_TYPE_TEXTE          // Texte informatif simple
-} ElementType;
 
-// ════════════════════════════════════════════════════════════════════════════
-//  STRUCTURE POUR UN ÉLÉMENT TITRE
-// ════════════════════════════════════════════════════════════════════════════
-typedef struct {
-    char texte[100];
-    int x, y;
-    int taille_police;
-    bool souligne;
-} TitreConfig;
-
-// ════════════════════════════════════════════════════════════════════════════
-//  STRUCTURE POUR UN SÉPARATEUR
-// ════════════════════════════════════════════════════════════════════════════
-typedef struct {
-    int x, y;
-    int largeur;
-    int hauteur;
-    SDL_Color couleur;
-} SeparateurConfig;
-
-// ════════════════════════════════════════════════════════════════════════════
-//  STRUCTURE POUR UN TEXTE SIMPLE
-// ════════════════════════════════════════════════════════════════════════════
-typedef struct {
-    char texte[200];
-    int x, y;
-    int taille_police;
-    SDL_Color couleur;
-} TexteConfig;
 
 // ════════════════════════════════════════════════════════════════════════════
 //  CONTEXTE DE CHARGEMENT
@@ -110,10 +70,10 @@ bool parser_separateur(void* json_obj, LoaderContext* ctx);
 
 // Rend un titre (sera appelé depuis settings_panel.c)
 void rendre_titre(SDL_Renderer* renderer, TTF_Font* font,
-                  const TitreConfig* config, int offset_x, int offset_y);
+                  const WidgetConfig* config, int offset_x, int offset_y);
 
 // Rend un séparateur (ligne horizontale)
 void rendre_separateur(SDL_Renderer* renderer,
-                       const SeparateurConfig* config, int offset_x, int offset_y);
+                       const WidgetConfig* config, int offset_x, int offset_y);
 
 #endif
