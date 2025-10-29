@@ -18,6 +18,19 @@ typedef struct {
     int screen_width;             // Largeur écran
     int screen_height;            // Hauteur écran
 
+    // ════════════════════════════════════════════════════════════════════════
+    // SYSTÈME D'ÉCHELLE RESPONSIVE
+    // ════════════════════════════════════════════════════════════════════════
+    // Facteur d'échelle calculé automatiquement selon la taille d'écran
+    // Référence : 1280x720 (HD Ready) = facteur 1.0
+    // Exemples :
+    //   - Téléphone 360x640  → scale ≈ 0.28
+    //   - Tablette  768x1024 → scale ≈ 0.60
+    //   - Desktop   1920x1080 → scale ≈ 1.50
+    //   - 4K        3840x2160 → scale = 3.00 (plafonné)
+    // ════════════════════════════════════════════════════════════════════════
+    float scale_factor;
+
     // État de l'application
     HexagoneList* hexagones;
     SettingsPanel* settings_panel;
@@ -35,5 +48,10 @@ void handle_app_events(AppState* app, SDL_Event* event);
 void update_app(AppState* app, float delta_time);
 void render_app(AppState* app);
 void regulate_fps(Uint32 frame_start);
+
+// Fonctions d'échelle responsive
+float calculate_scale_factor(int width, int height);
+int scale_value(int value, float scale);
+int calculate_panel_width(int screen_width, float scale);
 
 #endif

@@ -60,6 +60,14 @@ typedef struct {
     int current_x;
     float animation_progress;
 
+    // ════════════════════════════════════════════════════════════════════════
+    // FACTEUR D'ÉCHELLE RESPONSIVE
+    // ════════════════════════════════════════════════════════════════════════
+    // Copie du scale_factor de AppState pour faciliter l'accès
+    // Mis à jour lors du redimensionnement de la fenêtre
+    // ════════════════════════════════════════════════════════════════════════
+    float scale_factor;
+
     // Éléments UI
     AppConfig temp_config;
     TTF_Font* font_title;
@@ -83,7 +91,7 @@ typedef struct {
 } SettingsPanel;
 
 // PROTOTYPES
-SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, int screen_height);
+SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, int screen_height, float scale_factor);
 void update_settings_panel(SettingsPanel* panel, float delta_time);
 void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel);
 void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConfig* main_config);
@@ -106,5 +114,8 @@ void update_slider_thumb_position(Slider* slider);
 void render_slider(SDL_Renderer* renderer, Slider* slider, TTF_Font* font, int offset_x, int offset_y);
 bool handle_slider_event(Slider* slider, SDL_Event* event);
 bool is_point_in_rect(int x, int y, SDL_Rect rect);
+
+// Adaptation d'échelle
+void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_height, float scale_factor);
 
 #endif

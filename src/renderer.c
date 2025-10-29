@@ -6,6 +6,85 @@
 #include "debug.h"
 
 
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SYSTÈME D'ÉCHELLE RESPONSIVE
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Résolution de référence (HD Ready)
+#define REFERENCE_WIDTH  1280
+#define REFERENCE_HEIGHT 720
+
+// Limites du facteur d'échelle
+#define MIN_SCALE 0.3f   // Très petits écrans (smartwatches, etc.)
+#define MAX_SCALE 3.0f   // Très grands écrans (4K+)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CALCULE LE FACTEUR D'ÉCHELLE EN FONCTION DE LA TAILLE D'ÉCRAN
+// ─────────────────────────────────────────────────────────────────────────────
+// Cette fonction calcule un facteur d'échelle uniforme basé sur la résolution
+// actuelle par rapport à la résolution de référence (1280x720).
+//
+// Logique :
+//   1. Calcule le ratio largeur et hauteur séparément
+//   2. Prend le MINIMUM des deux pour garder tout visible
+//   3. Applique des limites (0.3 à 3.0)
+//
+// Exemples :
+//   - 1280x720  → scale = 1.0  (référence)
+//   - 1920x1080 → scale = 1.5  (Full HD)
+//   - 3840x2160 → scale = 3.0  (4K, plafonné)
+//   - 800x480   → scale = 0.625 (petit écran)
+//   - 360x640   → scale = 0.28 (smartphone)
+// ─────────────────────────────────────────────────────────────────────────────
+float calculate_scale_factor(int width, int height) {
+    // Calculer les ratios par rapport à la référence
+    float width_ratio = (float)width / REFERENCE_WIDTH;
+    float height_ratio = (float)height / REFERENCE_HEIGHT;
+
+    // Prendre le minimum pour garantir que tout reste visible
+    float scale = (width_ratio < height_ratio) ? width_ratio : height_ratio;
+
+    // Appliquer les limites
+    if (scale < MIN_SCALE) scale = MIN_SCALE;
+    if (scale > MAX_SCALE) scale = MAX_SCALE;
+
+    return scale;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPLIQUE LE FACTEUR D'ÉCHELLE À UNE VALEUR
+// ─────────────────────────────────────────────────────────────────────────────
+// Fonction utilitaire pour scaler n'importe quelle dimension
+// ─────────────────────────────────────────────────────────────────────────────
+int scale_value(int value, float scale) {
+    return (int)(value * scale);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CALCULE LA LARGEUR DU PANNEAU EN FONCTION DE L'ÉCRAN
+// ─────────────────────────────────────────────────────────────────────────────
+// Règles spéciales :
+//   - Téléphone (< 600px) : 100% de la largeur
+//   - Tablette/Desktop : 500px * scale, max 80% de l'écran
+// ─────────────────────────────────────────────────────────────────────────────
+int calculate_panel_width(int screen_width, float scale) {
+    const int BASE_PANEL_WIDTH = 500;  // Largeur de référence
+
+    // Cas 1 : Téléphone (écran très étroit)
+    if (screen_width < 600) {
+        return screen_width;  // Prendre toute la largeur
+    }
+
+    // Cas 2 : Tablette/Desktop
+    int scaled_width = scale_value(BASE_PANEL_WIDTH, scale);
+    int max_width = (int)(screen_width * 0.8f);  // Maximum 80% de l'écran
+
+    // Retourner le minimum entre la largeur scalée et le maximum
+    return (scaled_width < max_width) ? scaled_width : max_width;
+}
+
+
 // Initialise toute la partie SDL et graphique
 bool initialize_app(AppState* app, const char* title, const char* image_path) {
     // 1. Initialisation SDL
@@ -49,24 +128,85 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
         return false;
     }
 
-    // 5. Récupération taille écran pour usage futur
-    SDL_DisplayMode dm;
-    SDL_GetCurrentDisplayMode(0, &dm);
-    app->screen_width = dm.w;
-    app->screen_height = dm.h;
+    // 5. Récupération taille FENÊTRE (pas écran) pour usage futur
+    // ════════════════════════════════════════════════════════════════════════
+    SDL_GetWindowSize(app->window, &app->screen_width, &app->screen_height);
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 5b. CALCUL DU FACTEUR D'ÉCHELLE RESPONSIVE
+    // ════════════════════════════════════════════════════════════════════════
+    app->scale_factor = calculate_scale_factor(app->screen_width, app->screen_height);
+
+    debug_printf("📐 Taille fenêtre : %dx%d\n", app->screen_width, app->screen_height);
+    debug_printf("📏 Facteur d'échelle : %.2f\n", app->scale_factor);
 
     // 6. Initialisation des autres champs
     app->hexagones = NULL;
     app->is_running = true;
-    app->settings_panel = create_settings_panel(app->renderer, app->screen_width, app->screen_height);
+    app->settings_panel = create_settings_panel(
+        app->renderer,
+        app->screen_width,
+        app->screen_height,
+        app->scale_factor  // ← Nouveau paramètre !
+    );
 
     // ─────────────────────────────────────────────────────────────────────────
     // CRÉATION DE LA FENÊTRE ÉDITEUR JSON
     // ─────────────────────────────────────────────────────────────────────────
-    // Positionner la fenêtre à droite de la fenêtre principale
-    int editor_pos_x = 100 + 1280 + 20;  // Juste à droite de la fenêtre principale
-    int editor_pos_y = 100;
+    // ⚠️ IMPORTANT : Positionner la fenêtre de manière RESPONSIVE !
+    //
+    // PROBLÈME RÉSOLU : L'ancienne version utilisait une position fixe (1400px)
+    // qui sortait de l'écran sur les petits moniteurs, causant un SDL_QUIT et
+    // fermant immédiatement toute l'application !
+    //
+    // NOUVELLE LOGIQUE :
+    // - Si l'écran est assez large (> 2000px) : placer à droite de la fenêtre
+    // - Sinon : placer la fenêtre JSON au centre de l'écran
+    // ─────────────────────────────────────────────────────────────────────────
 
+    int editor_pos_x, editor_pos_y;
+
+    // Récupérer la taille totale de l'écran (pas juste la fenêtre)
+    SDL_DisplayMode display_mode;
+    SDL_GetCurrentDisplayMode(0, &display_mode);  // 0 = écran principal
+    int screen_total_width = display_mode.w;
+    int screen_total_height = display_mode.h;
+
+    debug_printf("📺 Résolution écran détectée : %dx%d\n",
+                 screen_total_width, screen_total_height);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // CHOIX INTELLIGENT DE LA POSITION
+    // ═════════════════════════════════════════════════════════════════════════
+    if (screen_total_width >= 2000) {
+        // Écran large : placer à droite de la fenêtre principale
+        int main_window_x, main_window_y;
+        SDL_GetWindowPosition(app->window, &main_window_x, &main_window_y);
+
+        editor_pos_x = main_window_x + app->screen_width + 20;  // 20px de marge
+        editor_pos_y = main_window_y;
+
+        debug_printf("🖥️ Écran large : JSON à droite de la fenêtre (%d, %d)\n",
+                     editor_pos_x, editor_pos_y);
+    } else {
+        // Écran normal/petit : centrer la fenêtre JSON
+        // EDITOR_WIDTH est défini dans json_editor.h (typiquement 600)
+        // EDITOR_HEIGHT est défini dans json_editor.h (typiquement 800)
+        const int JSON_EDITOR_WIDTH = 600;   // Valeur par défaut
+        const int JSON_EDITOR_HEIGHT = 800;  // Valeur par défaut
+
+        editor_pos_x = (screen_total_width - JSON_EDITOR_WIDTH) / 2;
+        editor_pos_y = (screen_total_height - JSON_EDITOR_HEIGHT) / 2;
+
+        // Sécurité : ne jamais sortir de l'écran
+        if (editor_pos_x < 0) editor_pos_x = 50;
+        if (editor_pos_y < 0) editor_pos_y = 50;
+
+        debug_printf("💻 Écran standard : JSON centrée (%d, %d)\n",
+                     editor_pos_x, editor_pos_y);
+    }
+
+    // Créer la fenêtre avec la position calculée
     app->json_editor = creer_json_editor(
         "../config/widgets_config.json",
         editor_pos_x,
@@ -106,15 +246,150 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             app->is_running = false;
             break;
 
-        case SDL_WINDOWEVENT:  // ← AJOUTER CECI
+        case SDL_WINDOWEVENT:
+            // ════════════════════════════════════════════════════════════════
+            // GESTION DES ÉVÉNEMENTS DE FENÊTRE
+            // ════════════════════════════════════════════════════════════════
+            // IMPORTANT : Filtrer UNIQUEMENT les événements de la fenêtre PRINCIPALE
+            // pour éviter que l'éditeur JSON ne ferme l'application
+            // ════════════════════════════════════════════════════════════════
+        {
+            // Récupérer l'ID de la fenêtre principale
+            Uint32 main_window_id = SDL_GetWindowID(app->window);
+
+            // IGNORER tous les événements qui ne concernent PAS la fenêtre principale
+            if (event->window.windowID != main_window_id) {
+                break;  // ← CRITIQUE : Ignorer les événements des autres fenêtres
+            }
+
+            // Maintenant on traite UNIQUEMENT les événements de la fenêtre principale
             if (event->window.event == SDL_WINDOWEVENT_CLOSE) {
                 // Fermeture de la fenêtre principale
-                Uint32 main_window_id = SDL_GetWindowID(app->window);
-                if (event->window.windowID == main_window_id) {
-                    app->is_running = false;
+                app->is_running = false;
+                debug_printf("🚪 Fermeture de la fenêtre principale demandée\n");
+            }
+            else if (event->window.event == SDL_WINDOWEVENT_RESIZED ||
+                event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                // 2. Redimensionnement de la fenêtre
+                // ─────────────────────────────────────────────────────────────
+                // Quand l'utilisateur redimensionne la fenêtre, on met à jour
+                // les dimensions et on repositionne TOUS les éléments
+                // ─────────────────────────────────────────────────────────────
+
+                // Sauvegarder l'ancienne taille AVANT de la mettre à jour
+                int old_width = app->screen_width;
+                int old_height = app->screen_height;
+
+                // Récupérer la nouvelle taille
+                SDL_GetWindowSize(app->window, &app->screen_width, &app->screen_height);
+
+                debug_printf("🔄 Fenêtre redimensionnée : %dx%d → %dx%d\n",
+                             old_width, old_height,
+                             app->screen_width, app->screen_height);
+
+                // ═══════════════════════════════════════════════════════════════
+                // RECALCULER LE FACTEUR D'ÉCHELLE
+                // ═══════════════════════════════════════════════════════════════
+                app->scale_factor = calculate_scale_factor(app->screen_width, app->screen_height);
+
+                debug_printf("📏 Nouveau facteur d'échelle : %.2f\n", app->scale_factor);
+
+                // ═══════════════════════════════════════════════════════════════
+                // ÉTAPE 1 : RECENTRER L'HEXAGONE PRINCIPAL
+                // ═══════════════════════════════════════════════════════════════
+                if (app->hexagones && app->hexagones->first) {
+                    // Calculer le nouveau centre de la fenêtre
+                    int new_center_x = app->screen_width / 2;
+                    int new_center_y = app->screen_height / 2;
+
+                    // Calculer l'ancien centre (pour les offsets)
+                    int old_center_x = old_width / 2;
+                    int old_center_y = old_height / 2;
+
+                    // Calculer la nouvelle taille du conteneur
+                    int new_container_size = (app->screen_width < app->screen_height)
+                    ? app->screen_width
+                    : app->screen_height;
+
+                    debug_printf("📐 Ancien centre: (%d,%d), Nouveau centre: (%d,%d)\n",
+                                 old_center_x, old_center_y, new_center_x, new_center_y);
+
+                    // IMPORTANT : Parcourir TOUS les hexagones
+                    HexagoneNode* node = app->hexagones->first;
+                    int hex_count = 0;
+
+                    // ═══════════════════════════════════════════════════════════════
+                    // CALCULER LE RATIO DE REDIMENSIONNEMENT
+                    // ═══════════════════════════════════════════════════════════════
+                    // Pour que les hexagones gardent leurs proportions, on calcule
+                    // le ratio entre l'ancienne et la nouvelle taille de conteneur.
+                    //
+                    // Exemple : 1280x720 → 640x360 donne un ratio de 0.5
+                    //           Les hexagones doivent être 2x plus petits
+                    // ═══════════════════════════════════════════════════════════════
+                    int old_container_size = (old_width < old_height) ? old_width : old_height;
+                    float scale_ratio = (float)new_container_size / (float)old_container_size;
+
+                    debug_printf("📏 Ratio redimensionnement : %.3f (container: %d→%d)\n",
+                                 scale_ratio, old_container_size, new_container_size);
+
+                    while (node && node->data) {
+                        Hexagon* hex = node->data;
+
+                        // ─────────────────────────────────────────────────────────────
+                        // ÉTAPE 1 : REPOSITIONNER LE CENTRE
+                        // ─────────────────────────────────────────────────────────────
+                        // Calculer l'offset de CET hexagone par rapport à l'ANCIEN centre
+                        int offset_x = hex->center_x - old_center_x;
+                        int offset_y = hex->center_y - old_center_y;
+
+                        // Appliquer le NOUVEAU centre + offset
+                        hex->center_x = new_center_x + offset_x;
+                        hex->center_y = new_center_y + offset_y;
+
+                        // ─────────────────────────────────────────────────────────────
+                        // ÉTAPE 2 : METTRE À JOUR L'ÉCHELLE
+                        // ─────────────────────────────────────────────────────────────
+                        // ⚠️ IMPORTANT : On ne recalcule PAS les sommets !
+                        //
+                        // Les hexagones utilisent un système de coordonnées RELATIVES :
+                        // - vx[i], vy[i] = coordonnées relatives au centre (fixes)
+                        // - current_scale = facteur d'échelle appliqué lors du rendu
+                        //
+                        // Dans make_hexagone() (geometry.c ligne 29) :
+                        //   absolute_x = center_x + (vx[i] * current_scale)
+                        //
+                        // Donc pour redimensionner, on multiplie juste le scale !
+                        // ─────────────────────────────────────────────────────────────
+                        hex->current_scale *= scale_ratio;
+
+                        debug_printf("  ✅ Hexagone %d - Centre:(%d,%d) Scale:%.3f\n",
+                                     hex_count, hex->center_x, hex->center_y,
+                                     hex->current_scale);
+
+                        hex_count++;
+                        node = node->next;
+                    }
+
+                    debug_printf("✅ %d hexagones redimensionnés (ratio: %.3f)\n",
+                                 hex_count, scale_ratio);
+                }
+
+                // ═══════════════════════════════════════════════════════════════
+                // ÉTAPE 2 : REPOSITIONNER LE PANNEAU DE CONFIGURATION
+                // ═══════════════════════════════════════════════════════════════
+                if (app->settings_panel) {
+                    // Mettre à jour le scale du panneau
+                    update_panel_scale(app->settings_panel,
+                                       app->screen_width,
+                                       app->screen_height,
+                                       app->scale_factor);
+
+                    debug_printf("✅ Panneau mis à jour avec nouveau scale\n");
                 }
             }
-            break;
+        }
+        break;
 
         case SDL_KEYDOWN:
             if (event->key.keysym.sym == SDLK_ESCAPE) {
@@ -122,7 +397,18 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             }
             break;
 
+            // ═════════════════════════════════════════════════════════════════
+            // GESTION DES ÉVÉNEMENTS DU PANNEAU DE CONFIGURATION
+            // ═════════════════════════════════════════════════════════════════
+            // IMPORTANT : Les widgets ont besoin de 3 types d'événements :
+            //   1. SDL_MOUSEMOTION    → détection du hovering (fond gris)
+            //   2. SDL_MOUSEWHEEL     → modification valeur avec molette
+            //   3. SDL_MOUSEBUTTONDOWN → clics sur flèches et boutons
+            // ═════════════════════════════════════════════════════════════════
+        case SDL_MOUSEMOTION:
+        case SDL_MOUSEWHEEL:
         case SDL_MOUSEBUTTONDOWN:
+            // Transmettre TOUS ces événements au panneau quand il existe
             if (app->settings_panel) {
                 handle_settings_panel_event(app->settings_panel, event, &app->config);
             }

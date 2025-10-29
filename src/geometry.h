@@ -21,6 +21,7 @@ typedef struct Hexagon {
 // Prototypes
 void make_hexagone(SDL_Renderer *renderer, Hexagon* hex);
 Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, float size_ratio, unsigned char element_id);
+void recalculer_sommets(Hexagon* hex, int container_size);
 void free_hexagon(Hexagon* hex);
 HexagoneList* create_all_hexagones(int center_x, int center_y, int container_size, float size_ratio);
 void move_hexagon(Hexagon* hex, int new_center_x, int new_center_y);

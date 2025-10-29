@@ -140,6 +140,45 @@ void transform_hexagon(Hexagon* hex, int new_center_x, int new_center_y, float n
     hex->current_scale = new_scale;
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// RECALCUL DES SOMMETS D'UN HEXAGONE APRÈS REDIMENSIONNEMENT
+// ═════════════════════════════════════════════════════════════════════════════
+// Cette fonction recalcule les sommets relatifs d'un hexagone en fonction
+// du nouveau container_size. Les points vx/vy sont recalculés comme des
+// coordonnées RELATIVES au centre (0, 0).
+//
+// IMPORTANT : Les hexagones utilisent des coordonnées relatives qui sont
+// ensuite transformées en absolues lors du rendu dans make_hexagone().
+// On doit donc recréer les points relatifs avec le nouveau rayon.
+// ═════════════════════════════════════════════════════════════════════════════
+void recalculer_sommets(Hexagon* hex, int container_size) {
+    if (!hex) return;
+
+    // 1. Calculer le rayon de base pour ce container
+    //    (en utilisant le même ratio que lors de la création)
+    float size_ratio = 0.75f;  // Même valeur que dans main.c ligne 70
+    int base_radius = (int)(container_size * size_ratio / 2);
+
+    // 2. Ajuster le rayon selon l'élément (comme dans create_single_hexagon)
+    //    Les hexagones intérieurs sont légèrement plus petits
+    int current_radius = (int)(base_radius * (1.0f - hex->element_id * ADJUST));
+
+    // 3. Recalculer les 6 sommets en coordonnées RELATIVES
+    //    Un hexagone régulier a des angles de 0°, 60°, 120°, 180°, 240°, 300°
+    //    (ou en radians : 0, π/3, 2π/3, π, 4π/3, 5π/3)
+    for (int i = 0; i < NB_SIDE; i++) {
+        // Calculer l'angle du sommet i (en radians)
+        double angle_rad = 2.0 * i * PI / NB_SIDE;  // 0, 60°, 120°, etc.
+
+        // Calculer les coordonnées relatives (centrées sur 0,0)
+        hex->vx[i] = (Sint16)(current_radius * cos(angle_rad));
+        hex->vy[i] = (Sint16)(current_radius * sin(angle_rad));
+    }
+
+    debug_printf("🔄 Sommets recalculés pour hexagone %d - Nouveau rayon: %d\n",
+                 hex->element_id, current_radius);
+}
+
 /*----------------------------------------------------*/
 
 void free_hexagon(Hexagon* hex) {
