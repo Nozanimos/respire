@@ -1,6 +1,6 @@
 # Compilateur et flags
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic
+CFLAGS = -Wall -Wextra -pedantic -g
 SDL_FLAGS = `sdl2-config --cflags --libs`
 LIBS = -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lm -lcjson
 
