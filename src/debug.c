@@ -17,3 +17,39 @@ void debug_printf(const char *format, ...) {
     vprintf(format, args2);
     va_end(args2);*/
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  FONCTIONS D'AMÉLIORATION VISUELLE DU DEBUG
+// ════════════════════════════════════════════════════════════════════════════
+
+void debug_blank_line() {
+    if (debug_file) {
+        fprintf(debug_file, "\n");
+        fflush(debug_file);
+    }
+}
+
+void debug_separator() {
+    if (debug_file) {
+        fprintf(debug_file, "────────────────────────────────────────────────────────────────────────────────\n");
+        fflush(debug_file);
+    }
+}
+
+void debug_section(const char* title) {
+    if (debug_file) {
+        fprintf(debug_file, "\n");
+        fprintf(debug_file, "════════════════════════════════════════════════════════════════════════════════\n");
+        fprintf(debug_file, "  %s\n", title);
+        fprintf(debug_file, "════════════════════════════════════════════════════════════════════════════════\n");
+        fflush(debug_file);
+    }
+}
+
+void debug_subsection(const char* title) {
+    if (debug_file) {
+        fprintf(debug_file, "\n");
+        fprintf(debug_file, "─── %s ───\n", title);
+        fflush(debug_file);
+    }
+}

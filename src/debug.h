@@ -8,7 +8,14 @@
 void init_debug_mode(int argc, char **argv);
 void cleanup_debug_mode();
 void debug_printf(const char *format, ...);
+
 extern FILE *debug_file;
+
+// Fonctions d'amélioration visuelle du debug
+void debug_separator();              // Ligne de séparation fine
+void debug_section(const char* title); // Section avec titre encadré
+void debug_blank_line();              // Ligne vide pour aérer
+void debug_subsection(const char* title); // Sous-section
 
 // Macros pratiques pour différents niveaux de log
 #ifdef DEBUG_MODE
