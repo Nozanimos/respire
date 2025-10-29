@@ -286,33 +286,37 @@ bool charger_widgets_depuis_json(const char* filename,
 //  RENDU D'UN TITRE
 // ════════════════════════════════════════════════════════════════════════════
 void rendre_titre(SDL_Renderer* renderer, TTF_Font* font,
-                  const TitreConfig* config, int offset_x, int offset_y) {
+                  const WidgetConfig* config, int offset_x, int offset_y) {
     if (!renderer || !font || !config) return;
 
-    if (config->souligne) {
+    // Accéder au membre 'souligne' via l'union 'titre'
+    if (config->titre.souligne) {
         TTF_SetFontStyle(font, TTF_STYLE_UNDERLINE);
     }
 
-    render_text(renderer, font, config->texte,
+    // Utiliser 'label' pour le texte (membre direct de WidgetConfig)
+    render_text(renderer, font, config->label,
                 config->x + offset_x, config->y + offset_y, 0xFF000000);
 
-    if (config->souligne) {
+    // Réinitialiser le style si nécessaire
+    if (config->titre.souligne) {
         TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
     }
-}
+                  }
 
 // ════════════════════════════════════════════════════════════════════════════
 //  RENDU D'UN SÉPARATEUR
 // ════════════════════════════════════════════════════════════════════════════
 void rendre_separateur(SDL_Renderer* renderer,
-                       const SeparateurConfig* config, int offset_x, int offset_y) {
+                       const WidgetConfig* config, int offset_x, int offset_y) {
     if (!renderer || !config) return;
 
+    // Accéder aux membres via l'union 'separateur'
     rectangleColor(renderer,
                    config->x + offset_x,
                    config->y + offset_y,
-                   config->x + offset_x + config->largeur,
-                   config->y + offset_y + config->hauteur,
-                   (config->couleur.a << 24) | (config->couleur.r << 16) |
-                   (config->couleur.g << 8) | config->couleur.b);
+                   config->x + offset_x + config->separateur.largeur,
+                   config->y + offset_y + config->separateur.hauteur,
+                   (config->separateur.couleur.a << 24) | (config->separateur.couleur.r << 16) |
+                   (config->separateur.couleur.g << 8) | config->separateur.couleur.b);
 }
