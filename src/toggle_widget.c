@@ -165,11 +165,11 @@ void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget, TTF_Font
         widget->thumb_rect.h
     };
 
-    debug_printf("🎨 Rendu toggle '%s' - Texte: (%d,%d), Toggle: (%d,%d %dx%d)\n",
+    /*debug_printf("🎨 Rendu toggle '%s' - Texte: (%d,%d), Toggle: (%d,%d %dx%d)\n",
                  widget->option_name,
                  absolute_name_x, absolute_y,
                  absolute_toggle_rect.x, absolute_toggle_rect.y,
-                 absolute_toggle_rect.w, absolute_toggle_rect.h);
+                 absolute_toggle_rect.w, absolute_toggle_rect.h);*/
 
     // ─────────────────────────────────────────────────────────────────────────
     // FOND AU SURVOL DU WIDGET COMPLET
