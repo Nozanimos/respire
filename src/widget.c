@@ -228,7 +228,7 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
 //  RENDU DU WIDGET
 // ════════════════════════════════════════════════════════════════════════════
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
-                          TTF_Font* font, int offset_x, int offset_y) {
+                          int offset_x, int offset_y) {
     if (!widget || !renderer) return;
 
     int widget_screen_x = offset_x + widget->base.x;

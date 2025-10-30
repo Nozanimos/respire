@@ -110,6 +110,8 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
 //  PARSING D'UN WIDGET TOGGLE
 // ════════════════════════════════════════════════════════════════════════════
 bool parser_widget_toggle(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
+    (void)ctx;  // Paramètre non utilisé
+
     // Récupération des champs
     cJSON* id = cJSON_GetObjectItem(json_obj, "id");
     cJSON* nom_affichage = cJSON_GetObjectItem(json_obj, "nom_affichage");
@@ -147,7 +149,6 @@ bool parser_widget_toggle(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
         cJSON_IsNumber(hauteur_toggle) ? hauteur_toggle->valueint : 18,
         cJSON_IsNumber(taille_curseur) ? taille_curseur->valueint : 18,
         cJSON_IsNumber(taille_texte) ? taille_texte->valueint : 18,
-        ctx->font_normal,
         callback_func
     );
 

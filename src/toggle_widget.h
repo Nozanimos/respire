@@ -115,13 +115,13 @@ typedef struct ToggleWidget {
 // Crée un nouveau widget toggle
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,
                                    int toggle_width, int toggle_height, int thumb_size,
-                                   int text_size, TTF_Font* font);
+                                   int text_size);
 
 // Met à jour l'animation du widget
 void update_toggle_widget(ToggleWidget* widget, float delta_time);
 
 // Rend le widget à l'écran (la police doit être à current_text_size)
-void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget, TTF_Font* font,
+void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget,
                           int offset_x, int offset_y);
 
 // Gère les événements souris du widget

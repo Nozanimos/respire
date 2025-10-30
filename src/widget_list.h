@@ -87,7 +87,6 @@ bool add_toggle_widget(WidgetList* list,
                        bool start_state,
                        int toggle_width, int toggle_height, int thumb_size,
                        int text_size,
-                       TTF_Font* font,
                        void (*callback)(bool));
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -95,7 +94,7 @@ bool add_toggle_widget(WidgetList* list,
 // ─────────────────────────────────────────────────────────────────────────
 // Ces fonctions parcourent TOUTE la liste et appellent les bonnes fonctions
 // pour chaque widget selon son type
-void render_all_widgets(SDL_Renderer* renderer, WidgetList* list, TTF_Font* font,
+void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
                         int offset_x, int offset_y);
 
 void handle_widget_list_events(WidgetList* list, SDL_Event* event,

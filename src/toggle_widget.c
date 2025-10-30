@@ -10,7 +10,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,
                                    int toggle_width, int toggle_height, int thumb_size,
-                                   int text_size, TTF_Font* font) {
+                                   int text_size) {
     ToggleWidget* widget = malloc(sizeof(ToggleWidget));
     if (!widget) {
         debug_printf("❌ Erreur allocation ToggleWidget: %s\n", name);
@@ -152,7 +152,7 @@ void update_toggle_widget(ToggleWidget* widget, float delta_time) {
 // ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU WIDGET
 // ════════════════════════════════════════════════════════════════════════════
-void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget, TTF_Font* font,
+void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget,
                           int offset_x, int offset_y) {
     if (!widget || !renderer) return;
 

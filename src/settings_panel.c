@@ -235,7 +235,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
                           widget_x, scale_value(400, scale_factor), false,
                           scale_value(40, scale_factor), scale_value(18, scale_factor),
                           scale_value(18, scale_factor), scale_value(18, scale_factor),
-                          panel->font, alternate_cycles_changed);
+                          alternate_cycles_changed);
     }
 
     debug_print_widget_list(panel->widget_list);
@@ -424,7 +424,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         }
 
         // Widgets
-        render_all_widgets(renderer, panel->widget_list, panel->font, panel_x, panel_y);
+        render_all_widgets(renderer, panel->widget_list, panel_x, panel_y);
 
         // Boutons
         render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);

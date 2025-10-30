@@ -155,7 +155,6 @@ bool add_toggle_widget(WidgetList* list,
                       bool start_state,
                       int toggle_width, int toggle_height, int thumb_size,
                       int text_size,
-                      TTF_Font* font,
                       void (*callback)(bool)) {
     if (!list || !id || !display_name) {
         debug_printf("❌ Paramètres invalides pour add_toggle_widget\n");
@@ -185,7 +184,7 @@ bool add_toggle_widget(WidgetList* list,
         display_name, x, y,
         start_state,
         toggle_width, toggle_height, thumb_size,
-        text_size, font
+        text_size
     );
 
     if (!node->widget.toggle_widget) {
@@ -239,9 +238,8 @@ bool add_toggle_widget(WidgetList* list,
 // PARAMÈTRES :
 //   - renderer : Le renderer SDL
 //   - list : La liste de widgets à afficher
-//   - font : Police par défaut pour le texte
 //   - offset_x, offset_y : Offset du conteneur parent (panneau)
-void render_all_widgets(SDL_Renderer* renderer, WidgetList* list, TTF_Font* font,
+void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
                        int offset_x, int offset_y) {
     if (!renderer || is_widget_list_empty(list)) return;
 
@@ -254,14 +252,14 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list, TTF_Font* font
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
                     render_config_widget(renderer, node->widget.increment_widget,
-                                       font, offset_x, offset_y);
+                                       offset_x, offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_TOGGLE:
                 if (node->widget.toggle_widget) {
                     render_toggle_widget(renderer, node->widget.toggle_widget,
-                                       font, offset_x, offset_y);
+                                       offset_x, offset_y);
                 }
                 break;
 

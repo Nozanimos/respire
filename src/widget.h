@@ -108,7 +108,7 @@ void update_config_widget(ConfigWidget* widget, float delta_time);
 
 // Rend le widget à l'écran (la police doit être à current_text_size)
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
-                          TTF_Font* font, int offset_x, int offset_y);
+                          int offset_x, int offset_y);
 
 // Gère les événements souris du widget
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
