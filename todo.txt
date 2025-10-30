@@ -42,6 +42,16 @@ Mon tout premier programme en langage C + SDL2
                 - En début de json, un template en commentaires devra apparaître de manière à ce que moi, utilisateur puisse prendre connaissance des paramètres à ajouter aux bons emplacements. Ces commentaires apparaîtront automatiquement de manière intéractive lorsque le widget, le titre ou la ligne auront été  décommentés et seront fonctionnel dans le programme.
                 - Débogage à chaque fois que possible durant cette étape.       ← NOUS SOMMES À CE CHAPITRE
 
+                ⚠️  NOTES IMPORTANTES RESPONSIVE :
+                    □ - Intégrer le scale_factor directement dans add_increment_widget() et add_toggle_widget()
+                        pour que le JSON loader hérite automatiquement du responsive
+                        important : Prèter scrupuleusement attention à l'UTF8 qui est utilisé pour les calculs de longueur de caractères.
+                    □ - Après finalisation du JSON editor : recompiler TOUS les widgets en dur dans settings_panel.c
+                        avec le scaling intégré (débrancher le JSON loader pour la version finale)
+                    □ - Corriger la barre de séparation : elle doit rester fixe tant que le panneau garde sa largeur
+                        de base (500px), et ne bouger QUE quand le panneau touche le bord droit de la fenêtre
+                    □ - Important : l'appli finale sera en fullscreen, donc le responsive mobile est critique
+
 
         ✅ - JSON Editor créé avec coloration syntaxique
         ✅ - Scroll horizontal/vertical
@@ -52,7 +62,31 @@ Mon tout premier programme en langage C + SDL2
         ✅ - Copier/Coller/Couper (Ctrl+C/V/X)
         ✅ - Touches Delete et Backspace UTF-8 aware
 
+        Plan des fonctionnalités ci-dessous :
+            ÉTAPE 1 : Système de callbacks flexibles (30-45 min)
+            ├─ Créer le CallbackRegistry
+            ├─ Créer find_callback()
+            └─ Tester que ça compile
+
+            ÉTAPE 2 : load_widgets_from_json() (1-2h)
+            ├─ Créer la fonction qui lit le JSON
+            ├─ Parser et créer les widgets dynamiquement
+            ├─ Assigner les callbacks automatiquement
+            └─ ⚠️ GARDER les widgets hardcodés en PARALLÈLE pour comparer
+
+            ÉTAPE 3 : Tester que JSON = Hard-coded (30 min)
+            ├─ Créer un JSON avec les 3 widgets actuels
+            ├─ Les charger dynamiquement
+            ├─ Vérifier que tout fonctionne identiquement
+            └─ Si OK → Supprimer le code hardcodé ✂️
+
+            ÉTAPE 4 : Hot reload (1-2h)
+            ├─ Ajouter watch sur le fichier JSON
+            ├─ Appeler reload_panel_widgets() au changement
+            └─ Tester en modifiant le JSON en live
+
         🔥 PROCHAINES FONCTIONNALITÉS JSON EDITOR (Session suivante) :
+        □ - Réviser en priorité les callbacks pour une meilleure fluidité du système
         □ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c
         □ - Validation JSON en temps réel : icône ✅/❌ pour savoir si le JSON est valide
         □ - Format/Prettify (Ctrl+Shift+F) : réindenter proprement le JSON automatiquement
