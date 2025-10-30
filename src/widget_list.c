@@ -263,19 +263,43 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
                 }
                 break;
 
-            case WIDGET_TYPE_SLIDER:
-                // TODO: À implémenter plus tard
-                debug_printf("⚠️ SLIDER non implémenté\n");
+            case WIDGET_TYPE_LABEL:
+                if (node->widget.label_widget) {
+                    render_label_widget(renderer, node->widget.label_widget,
+                                       offset_x, offset_y);
+                }
+                break;
+
+            case WIDGET_TYPE_SEPARATOR:
+                if (node->widget.separator_widget) {
+                    // Pour le separator on a besoin de la largeur du panneau
+                    // On va utiliser une valeur par défaut de 500px pour l'instant
+                    // TODO: Passer panel_width en paramètre
+                    render_separator_widget(renderer, node->widget.separator_widget,
+                                          offset_x, offset_y, 500);
+                }
+                break;
+
+            case WIDGET_TYPE_PREVIEW:
+                if (node->widget.preview_widget) {
+                    render_preview_widget(renderer, node->widget.preview_widget,
+                                        offset_x, offset_y);
+                }
                 break;
 
             case WIDGET_TYPE_BUTTON:
+                if (node->widget.button_widget) {
+                    render_button_widget(renderer, node->widget.button_widget,
+                                       offset_x, offset_y);
+                }
+                break;
+
+            case WIDGET_TYPE_SLIDER:
                 // TODO: À implémenter plus tard
-                debug_printf("⚠️ BUTTON non implémenté\n");
                 break;
 
             case WIDGET_TYPE_SELECTOR:
                 // TODO: À implémenter plus tard
-                debug_printf("⚠️ SELECTOR non implémenté\n");
                 break;
 
             default:
@@ -321,16 +345,19 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
                 }
                 break;
 
-            case WIDGET_TYPE_SLIDER:
-                // TODO: À implémenter plus tard
-                break;
-
             case WIDGET_TYPE_BUTTON:
-                // TODO: À implémenter plus tard
+                if (node->widget.button_widget) {
+                    handle_button_widget_events(node->widget.button_widget,
+                                              event, offset_x, offset_y);
+                }
                 break;
 
+            // Les autres widgets ne gèrent pas d'événements
+            case WIDGET_TYPE_LABEL:
+            case WIDGET_TYPE_SEPARATOR:
+            case WIDGET_TYPE_PREVIEW:
+            case WIDGET_TYPE_SLIDER:
             case WIDGET_TYPE_SELECTOR:
-                // TODO: À implémenter plus tard
                 break;
 
             default:
@@ -363,7 +390,14 @@ void update_widget_list_animations(WidgetList* list, float delta_time) {
                 }
                 break;
 
-            // Les autres widgets n'ont pas d'animation pour l'instant
+            case WIDGET_TYPE_PREVIEW:
+                // Le preview a une animation d'hexagones
+                if (node->widget.preview_widget) {
+                    update_preview_widget(node->widget.preview_widget, delta_time);
+                }
+                break;
+
+            // Les autres widgets n'ont pas d'animation
             default:
                 break;
         }
@@ -508,6 +542,167 @@ bool set_widget_bool_value(WidgetList* list, const char* id, bool new_value) {
 // ════════════════════════════════════════════════════════════════════════════
 //  AFFICHAGE DEBUG DE LA LISTE
 // ════════════════════════════════════════════════════════════════════════════
+//  AJOUT D'UN WIDGET LABEL (texte/titre)
+// ════════════════════════════════════════════════════════════════════════════
+bool add_label_widget(WidgetList* list,
+                      const char* id,
+                      const char* display_name,
+                      int x, int y,
+                      int text_size,
+                      SDL_Color color,
+                      bool underlined) {
+    if (!list || !id || !display_name) return false;
+
+    WidgetNode* node = malloc(sizeof(WidgetNode));
+    if (!node) return false;
+
+    node->type = WIDGET_TYPE_LABEL;
+    node->id = strdup(id);
+    node->display_name = strdup(display_name);
+    node->widget.label_widget = create_label_widget(display_name, x, y, text_size, color, underlined);
+
+    if (!node->widget.label_widget) {
+        free((void*)node->id);
+        free((void*)node->display_name);
+        free(node);
+        return false;
+    }
+
+    node->on_int_value_changed = NULL;
+    node->on_bool_value_changed = NULL;
+    node->on_float_value_changed = NULL;
+    node->on_void_callback = NULL;
+    node->next = NULL;
+    node->prev = list->last;
+
+    if (list->last) list->last->next = node;
+    else list->first = node;
+    list->last = node;
+    list->count++;
+
+    debug_printf("✅ Widget LABEL '%s' ajouté (total: %d)\n", id, list->count);
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  AJOUT D'UN WIDGET SEPARATOR (barre de séparation)
+// ════════════════════════════════════════════════════════════════════════════
+bool add_separator_widget(WidgetList* list, const char* id, int y,
+                          int start_margin, int end_margin, int thickness, SDL_Color color) {
+    if (!list || !id) return false;
+
+    WidgetNode* node = malloc(sizeof(WidgetNode));
+    if (!node) return false;
+
+    node->type = WIDGET_TYPE_SEPARATOR;
+    node->id = strdup(id);
+    node->display_name = strdup("separator");
+    node->widget.separator_widget = create_separator_widget(y, start_margin, end_margin, thickness, color);
+
+    if (!node->widget.separator_widget) {
+        free((void*)node->id);
+        free((void*)node->display_name);
+        free(node);
+        return false;
+    }
+
+    node->on_int_value_changed = NULL;
+    node->on_bool_value_changed = NULL;
+    node->on_float_value_changed = NULL;
+    node->on_void_callback = NULL;
+    node->next = NULL;
+    node->prev = list->last;
+
+    if (list->last) list->last->next = node;
+    else list->first = node;
+    list->last = node;
+    list->count++;
+
+    debug_printf("✅ Widget SEPARATOR '%s' ajouté (total: %d)\n", id, list->count);
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  AJOUT D'UN WIDGET PREVIEW (zone d'animation)
+// ════════════════════════════════════════════════════════════════════════════
+bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
+                        int frame_size, float size_ratio, float breath_duration) {
+    if (!list || !id) return false;
+
+    WidgetNode* node = malloc(sizeof(WidgetNode));
+    if (!node) return false;
+
+    node->type = WIDGET_TYPE_PREVIEW;
+    node->id = strdup(id);
+    node->display_name = strdup("preview");
+    node->widget.preview_widget = create_preview_widget(x, y, frame_size, size_ratio, breath_duration);
+
+    if (!node->widget.preview_widget) {
+        free((void*)node->id);
+        free((void*)node->display_name);
+        free(node);
+        return false;
+    }
+
+    node->on_int_value_changed = NULL;
+    node->on_bool_value_changed = NULL;
+    node->on_float_value_changed = NULL;
+    node->on_void_callback = NULL;
+    node->next = NULL;
+    node->prev = list->last;
+
+    if (list->last) list->last->next = node;
+    else list->first = node;
+    list->last = node;
+    list->count++;
+
+    debug_printf("✅ Widget PREVIEW '%s' ajouté (total: %d)\n", id, list->count);
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  AJOUT D'UN WIDGET BUTTON (bouton cliquable)
+// ════════════════════════════════════════════════════════════════════════════
+bool add_button_widget(WidgetList* list, const char* id, const char* display_name,
+                       int x, int y, int width, int height, int text_size,
+                       SDL_Color bg_color, void (*callback)(void)) {
+    if (!list || !id || !display_name) return false;
+
+    WidgetNode* node = malloc(sizeof(WidgetNode));
+    if (!node) return false;
+
+    node->type = WIDGET_TYPE_BUTTON;
+    node->id = strdup(id);
+    node->display_name = strdup(display_name);
+    node->widget.button_widget = create_button_widget(display_name, x, y, width, height, text_size, bg_color);
+
+    if (!node->widget.button_widget) {
+        free((void*)node->id);
+        free((void*)node->display_name);
+        free(node);
+        return false;
+    }
+
+    node->on_int_value_changed = NULL;
+    node->on_bool_value_changed = NULL;
+    node->on_float_value_changed = NULL;
+    node->on_void_callback = callback;
+
+    if (callback) set_button_click_callback(node->widget.button_widget, callback);
+
+    node->next = NULL;
+    node->prev = list->last;
+
+    if (list->last) list->last->next = node;
+    else list->first = node;
+    list->last = node;
+    list->count++;
+
+    debug_printf("✅ Widget BUTTON '%s' ajouté (total: %d)\n", id, list->count);
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // Affiche le contenu de la liste pour debug
 void debug_print_widget_list(WidgetList* list) {
     if (is_widget_list_empty(list)) {
@@ -524,8 +719,11 @@ void debug_print_widget_list(WidgetList* list) {
         switch (node->type) {
             case WIDGET_TYPE_INCREMENT: type_name = "INCREMENT"; break;
             case WIDGET_TYPE_TOGGLE:    type_name = "TOGGLE";    break;
-            case WIDGET_TYPE_SLIDER:    type_name = "SLIDER";    break;
+            case WIDGET_TYPE_LABEL:     type_name = "LABEL";     break;
+            case WIDGET_TYPE_SEPARATOR: type_name = "SEPARATOR"; break;
+            case WIDGET_TYPE_PREVIEW:   type_name = "PREVIEW";   break;
             case WIDGET_TYPE_BUTTON:    type_name = "BUTTON";    break;
+            case WIDGET_TYPE_SLIDER:    type_name = "SLIDER";    break;
             case WIDGET_TYPE_SELECTOR:  type_name = "SELECTOR";  break;
             default:                    type_name = "UNKNOWN";   break;
         }
@@ -569,6 +767,30 @@ void free_widget_list(WidgetList* list) {
             case WIDGET_TYPE_TOGGLE:
                 if (current->widget.toggle_widget) {
                     free_toggle_widget(current->widget.toggle_widget);
+                }
+                break;
+
+            case WIDGET_TYPE_LABEL:
+                if (current->widget.label_widget) {
+                    free_label_widget(current->widget.label_widget);
+                }
+                break;
+
+            case WIDGET_TYPE_SEPARATOR:
+                if (current->widget.separator_widget) {
+                    free_separator_widget(current->widget.separator_widget);
+                }
+                break;
+
+            case WIDGET_TYPE_PREVIEW:
+                if (current->widget.preview_widget) {
+                    free_preview_widget(current->widget.preview_widget);
+                }
+                break;
+
+            case WIDGET_TYPE_BUTTON:
+                if (current->widget.button_widget) {
+                    free_button_widget(current->widget.button_widget);
                 }
                 break;
 

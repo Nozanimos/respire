@@ -7,6 +7,10 @@
 #include "widget_types.h"
 #include "widget.h"
 #include "toggle_widget.h"
+#include "label_widget.h"
+#include "separator_widget.h"
+#include "preview_widget.h"
+#include "button_widget.h"
 
 // ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE D'UN NŒUD DE LA LISTE DE WIDGETS
@@ -27,6 +31,10 @@ typedef struct WidgetNode {
     union {
         ConfigWidget* increment_widget;   // Pour WIDGET_TYPE_INCREMENT
         ToggleWidget* toggle_widget;      // Pour WIDGET_TYPE_TOGGLE
+        LabelWidget* label_widget;        // Pour WIDGET_TYPE_LABEL
+        SeparatorWidget* separator_widget;// Pour WIDGET_TYPE_SEPARATOR
+        PreviewWidget* preview_widget;    // Pour WIDGET_TYPE_PREVIEW
+        ButtonWidget* button_widget;      // Pour WIDGET_TYPE_BUTTON
         void* generic_widget;             // Pour les futurs types
     } widget;
 
@@ -37,6 +45,7 @@ typedef struct WidgetNode {
     void (*on_int_value_changed)(int new_value);      // Pour les widgets numériques
     void (*on_bool_value_changed)(bool new_value);    // Pour les toggles
     void (*on_float_value_changed)(float new_value);  // Pour les futurs sliders
+    void (*on_void_callback)(void);                   // Pour les boutons
 
     // ─────────────────────────────────────────────────────────────────────────
     // CHAÎNAGE
@@ -88,6 +97,42 @@ bool add_toggle_widget(WidgetList* list,
                        int toggle_width, int toggle_height, int thumb_size,
                        int text_size,
                        void (*callback)(bool));
+
+// Ajoute un widget LABEL (texte/titre)
+bool add_label_widget(WidgetList* list,
+                      const char* id,
+                      const char* display_name,
+                      int x, int y,
+                      int text_size,
+                      SDL_Color color,
+                      bool underlined);
+
+// Ajoute un widget SEPARATOR (ligne de séparation)
+bool add_separator_widget(WidgetList* list,
+                          const char* id,
+                          int y,
+                          int start_margin,
+                          int end_margin,
+                          int thickness,
+                          SDL_Color color);
+
+// Ajoute un widget PREVIEW (zone d'animation)
+bool add_preview_widget(WidgetList* list,
+                        const char* id,
+                        int x, int y,
+                        int frame_size,
+                        float size_ratio,
+                        float breath_duration);
+
+// Ajoute un widget BUTTON (bouton cliquable)
+bool add_button_widget(WidgetList* list,
+                       const char* id,
+                       const char* display_name,
+                       int x, int y,
+                       int width, int height,
+                       int text_size,
+                       SDL_Color bg_color,
+                       void (*callback)(void));
 
 // ─────────────────────────────────────────────────────────────────────────
 // RENDU ET ÉVÉNEMENTS (FACTORISATION MAGIQUE ✨)

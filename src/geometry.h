@@ -45,4 +45,47 @@ void draw_triangle(SDL_Renderer *renderer, Triangle* tri);
 void draw_triangle_with_offset(SDL_Renderer *renderer, Triangle* tri, int offset_x, int offset_y);
 void free_triangle(Triangle* tri);
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRIMITIVES DE DESSIN POUR L'UI (dessin pur, sans logique métier)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Dessine une ligne horizontale de séparation
+// x1, y1 : point de départ (coordonnées absolues après offset)
+// x2, y2 : point d'arrivée
+// thickness : épaisseur en pixels
+// color : couleur de la ligne
+void draw_separator_line(SDL_Renderer* renderer, int x1, int y1, int x2, int y2,
+                         int thickness, SDL_Color color);
+
+// Dessine un cadre rectangulaire (pour le preview)
+// x, y : coin supérieur gauche (coordonnées absolues)
+// width, height : dimensions
+// color : couleur du cadre
+void draw_frame_rect(SDL_Renderer* renderer, int x, int y, int width, int height,
+                     SDL_Color color);
+
+// Dessine un rectangle arrondi rempli (pour les boutons)
+// x, y : coin supérieur gauche (coordonnées absolues)
+// width, height : dimensions
+// radius : rayon des coins arrondis
+// bg_color : couleur de fond
+// border_color : couleur de la bordure
+void draw_rounded_rect(SDL_Renderer* renderer, int x, int y, int width, int height,
+                       int radius, SDL_Color bg_color, SDL_Color border_color);
+
+// Dessine le fond du toggle (rectangle arrondi)
+// x, y : coin supérieur gauche (coordonnées absolues)
+// width, height : dimensions du toggle
+// radius : rayon des coins
+// is_on : état du toggle (change la couleur)
+void draw_toggle_background(SDL_Renderer* renderer, int x, int y, int width, int height,
+                            int radius, bool is_on);
+
+// Dessine le cercle mobile du toggle
+// center_x, center_y : centre du cercle (coordonnées absolues)
+// radius : rayon du cercle
+// color : couleur du cercle
+void draw_toggle_circle(SDL_Renderer* renderer, int center_x, int center_y,
+                        int radius, SDL_Color color);
+
 #endif

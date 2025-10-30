@@ -10,15 +10,15 @@
 // ════════════════════════════════════════════════════════════════════════════
 typedef enum {
     // ─── ÉLÉMENTS NON-INTERACTIFS ───
-    ELEMENT_TYPE_TITRE,         // Titre statique (ex: "Configuration")
-    ELEMENT_TYPE_SEPARATEUR,    // Ligne horizontale de séparation
-    ELEMENT_TYPE_TEXTE,         // Texte informatif simple
+    WIDGET_TYPE_LABEL,          // Label / Titre statique (ex: "Configuration")
+    WIDGET_TYPE_SEPARATOR,      // Ligne horizontale de séparation
+    WIDGET_TYPE_PREVIEW,        // Zone d'animation de prévisualisation
 
     // ─── WIDGETS INTERACTIFS ───
     WIDGET_TYPE_INCREMENT,      // Widget numérique avec flèches ↑↓
     WIDGET_TYPE_TOGGLE,         // Interrupteur ON/OFF
     WIDGET_TYPE_SLIDER,         // Curseur horizontal (pour l'audio)
-    WIDGET_TYPE_BUTTON,         // Bouton simple (pour plus tard)
+    WIDGET_TYPE_BUTTON,         // Bouton cliquable
     WIDGET_TYPE_SELECTOR        // Liste déroulante (pour plus tard)
 } WidgetType;
 

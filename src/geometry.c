@@ -18,14 +18,14 @@
 void make_hexagone(SDL_Renderer *renderer, Hexagon* hex) {
     if (!renderer || !hex) return;
 
-    // ✅ CALCUL DES COORDONNÉES ABSOLUES à la volée
+    // âœ… CALCUL DES COORDONNÃ‰ES ABSOLUES Ã  la volÃ©e
     Sint16 absolute_vx[NB_SIDE];
     Sint16 absolute_vy[NB_SIDE];
 
     for (int i = 0; i < NB_SIDE; i++) {
-        // ✅ Les points vx/vy peuvent être soit :
+        // âœ… Les points vx/vy peuvent Ãªtre soit :
         // - Les points relatifs de base (sans animation)
-        // - Les points transformés relatifs (avec animation précalculée)
+        // - Les points transformÃ©s relatifs (avec animation prÃ©calculÃ©e)
         absolute_vx[i] = hex->center_x + (Sint16)(hex->vx[i] * hex->current_scale);
         absolute_vy[i] = hex->center_y + (Sint16)(hex->vy[i] * hex->current_scale);
     }
@@ -39,7 +39,7 @@ void make_hexagone(SDL_Renderer *renderer, Hexagon* hex) {
 Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, float size_ratio, unsigned char element_id) {
     Hexagon* hex = malloc(sizeof(Hexagon));
     if (!hex) {
-        fprintf(stderr,"Problème d'allocation structure Hexagon\n");
+        fprintf(stderr,"ProblÃ¨me d'allocation structure Hexagon\n");
         return NULL;
     }
 
@@ -48,37 +48,37 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
     hex->vx = malloc(NB_SIDE * sizeof(Sint16));
     hex->vy = malloc(NB_SIDE * sizeof(Sint16));
     if (!hex->vx || !hex->vy) {
-        fprintf(stderr,"Problème d'allocation dynamique (create_single_hexagon)\n");
+        fprintf(stderr,"ProblÃ¨me d'allocation dynamique (create_single_hexagon)\n");
         free(hex->vx);
         free(hex->vy);
         free(hex);
         return NULL;
     }
 
-    // ✅ NOUVEAU : Stocker la position et l'échelle
+    // âœ… NOUVEAU : Stocker la position et l'Ã©chelle
     hex->center_x = center_x;
     hex->center_y = center_y;
     hex->current_scale = 1.0f;
 
-    // Calcul du rayon basé sur le container et ratio
+    // Calcul du rayon basÃ© sur le container et ratio
     int base_radius = (int)(container_size * size_ratio / 2);
     int current_radius = (int) (base_radius * (1.0f - element_id * ADJUST));
 
-    // ✅ MODIFICATION : Créer des points RELATIFS (centrés sur 0,0)
+    // âœ… MODIFICATION : CrÃ©er des points RELATIFS (centrÃ©s sur 0,0)
     for(int i = 0; i < NB_SIDE; i++) {
         hex->vx[i] = (Sint16)(current_radius * cos(2*i*PI/NB_SIDE));  // RELATIF
         hex->vy[i] = (Sint16)(current_radius * sin(2*i*PI/NB_SIDE));  // RELATIF
     }
 
     SDL_Color colors[] = {
-        {137, 36, 144, 150},   // Violet foncé
+        {137, 36, 144, 150},   // Violet foncÃ©
         {217, 61, 228, 150},   // Violet
-        {228, 129, 235, 150},  // Violet pâle
+        {228, 129, 235, 150},  // Violet pÃ¢le
         {255, 255, 255, 130}   // Blanc
     };
     hex->color = colors[element_id % 4];
 
-    debug_printf("✅ Hexagone %d créé - Centre: (%d,%d), Points relatifs\n",
+    debug_printf("âœ… Hexagone %d crÃ©Ã© - Centre: (%d,%d), Points relatifs\n",
            element_id, center_x, center_y);
 
     return hex;
@@ -95,7 +95,7 @@ HexagoneList* create_all_hexagones(int center_x, int center_y, int container_siz
         bool clockwise = (i % 2 == 0);
         double angle;
 
-        // SWITCH identique à celui de main.c original
+        // SWITCH identique Ã  celui de main.c original
         switch(i) {
             case 0: angle = ANGLE_1; break;
             case 1: angle = ANGLE_2; break;
@@ -106,7 +106,7 @@ HexagoneList* create_all_hexagones(int center_x, int center_y, int container_siz
 
         Animation* anim = create_animation(clockwise, angle);
         add_hexagone(list, hex, anim);
-        debug_printf("Hexagone %d créé - Angle: %.1f° - Container: %d, Ratio: %.2f\n",
+        debug_printf("Hexagone %d crÃ©Ã© - Angle: %.1fÂ° - Container: %d, Ratio: %.2f\n",
                i, angle, container_size, size_ratio);
     }
 
@@ -115,7 +115,7 @@ HexagoneList* create_all_hexagones(int center_x, int center_y, int container_siz
 
 /*----------------------------------------------------*/
 
-// Déplacer un hexagone
+// DÃ©placer un hexagone
 void move_hexagon(Hexagon* hex, int new_center_x, int new_center_y) {
     if (!hex) return;
     hex->center_x = new_center_x;
@@ -132,50 +132,52 @@ void scale_hexagon(Hexagon* hex, float new_scale) {
 
 /*----------------------------------------------------*/
 
-// Déplacer ET redimensionner un hexagone
+// DÃ©placer ET redimensionner un hexagone
 void transform_hexagon(Hexagon* hex, int new_center_x, int new_center_y, float new_scale) {
     if (!hex) return;
     hex->center_x = new_center_x;
     hex->center_y = new_center_y;
     hex->current_scale = new_scale;
 }
+// ═══════════════════════════════════════════════════════════════════════════════
+// RECALCUL DES SOMMETS D'UN HEXAGONE APRÃˆS REDIMENSIONNEMENT
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ═════════════════════════════════════════════════════════════════════════════
-// RECALCUL DES SOMMETS D'UN HEXAGONE APRÈS REDIMENSIONNEMENT
-// ═════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
 // Cette fonction recalcule les sommets relatifs d'un hexagone en fonction
-// du nouveau container_size. Les points vx/vy sont recalculés comme des
-// coordonnées RELATIVES au centre (0, 0).
+// du nouveau container_size. Les points vx/vy sont recalculÃ©s comme des
+// coordonnÃ©es RELATIVES au centre (0, 0).
 //
-// IMPORTANT : Les hexagones utilisent des coordonnées relatives qui sont
-// ensuite transformées en absolues lors du rendu dans make_hexagone().
-// On doit donc recréer les points relatifs avec le nouveau rayon.
-// ═════════════════════════════════════════════════════════════════════════════
+// IMPORTANT : Les hexagones utilisent des coordonnÃ©es relatives qui sont
+// ensuite transformÃ©es en absolues lors du rendu dans make_hexagone().
+// On doit donc recrÃ©er les points relatifs avec le nouveau rayon.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 void recalculer_sommets(Hexagon* hex, int container_size) {
     if (!hex) return;
 
     // 1. Calculer le rayon de base pour ce container
-    //    (en utilisant le même ratio que lors de la création)
-    float size_ratio = 0.75f;  // Même valeur que dans main.c ligne 70
+    //    (en utilisant le mÃªme ratio que lors de la crÃ©ation)
+    float size_ratio = 0.75f;  // MÃªme valeur que dans main.c ligne 70
     int base_radius = (int)(container_size * size_ratio / 2);
 
-    // 2. Ajuster le rayon selon l'élément (comme dans create_single_hexagon)
-    //    Les hexagones intérieurs sont légèrement plus petits
+    // 2. Ajuster le rayon selon l'Ã©lÃ©ment (comme dans create_single_hexagon)
+    //    Les hexagones intÃ©rieurs sont lÃ©gÃ¨rement plus petits
     int current_radius = (int)(base_radius * (1.0f - hex->element_id * ADJUST));
 
-    // 3. Recalculer les 6 sommets en coordonnées RELATIVES
-    //    Un hexagone régulier a des angles de 0°, 60°, 120°, 180°, 240°, 300°
-    //    (ou en radians : 0, π/3, 2π/3, π, 4π/3, 5π/3)
+    // 3. Recalculer les 6 sommets en coordonnÃ©es RELATIVES
+    //    Un hexagone rÃ©gulier a des angles de 0Â°, 60Â°, 120Â°, 180Â°, 240Â°, 300Â°
+    //    (ou en radians : 0, Ï€/3, 2Ï€/3, Ï€, 4Ï€/3, 5Ï€/3)
     for (int i = 0; i < NB_SIDE; i++) {
         // Calculer l'angle du sommet i (en radians)
-        double angle_rad = 2.0 * i * PI / NB_SIDE;  // 0, 60°, 120°, etc.
+        double angle_rad = 2.0 * i * PI / NB_SIDE;  // 0, 60Â°, 120Â°, etc.
 
-        // Calculer les coordonnées relatives (centrées sur 0,0)
+        // Calculer les coordonnÃ©es relatives (centrÃ©es sur 0,0)
         hex->vx[i] = (Sint16)(current_radius * cos(angle_rad));
         hex->vy[i] = (Sint16)(current_radius * sin(angle_rad));
     }
 
-    debug_printf("🔄 Sommets recalculés pour hexagone %d - Nouveau rayon: %d\n",
+    debug_printf("ðŸ”„ Sommets recalculÃ©s pour hexagone %d - Nouveau rayon: %d\n",
                  hex->element_id, current_radius);
 }
 
@@ -190,23 +192,23 @@ void free_hexagon(Hexagon* hex) {
 
 /*----------------------------------------------------*/
 
-// Crée un triangle isocèle générique
+// CrÃ©e un triangle isocÃ¨le gÃ©nÃ©rique
 Triangle* create_triangle(int center_x, int center_y, int height, bool points_up, SDL_Color color) {
     Triangle* tri = malloc(sizeof(Triangle));
     if (!tri) {
-        debug_printf("❌ Erreur allocation triangle\n");
+        debug_printf("âŒ Erreur allocation triangle\n");
         return NULL;
     }
 
-    // Selon ta spécification : base = 2 × hauteur
-    int base_half = height;  // base/2 = hauteur, donc base = 2 × hauteur
+    // Selon ta spÃ©cification : base = 2 Ã— hauteur
+    int base_half = height;  // base/2 = hauteur, donc base = 2 Ã— hauteur
 
     tri->center_x = center_x;
     tri->center_y = center_y;
     tri->color = color;
 
     if (points_up) {
-        // Flèche vers le haut - sommet en haut
+        // FlÃ¨che vers le haut - sommet en haut
         tri->vx[0] = center_x;              // Sommet
         tri->vy[0] = center_y - height/2;   // Ajustement pour centrage
 
@@ -216,7 +218,7 @@ Triangle* create_triangle(int center_x, int center_y, int height, bool points_up
         tri->vx[2] = center_x + base_half;  // Base droite
         tri->vy[2] = center_y + height/2;   // Ajustement pour centrage
     } else {
-        // Flèche vers le bas - sommet en bas
+        // FlÃ¨che vers le bas - sommet en bas
         tri->vx[0] = center_x;              // Sommet
         tri->vy[0] = center_y + height/2;   // Ajustement pour centrage
 
@@ -227,7 +229,7 @@ Triangle* create_triangle(int center_x, int center_y, int height, bool points_up
         tri->vy[2] = center_y - height/2;   // Ajustement pour centrage
     }
 
-    debug_printf("🔺 Triangle créé - Centre: (%d,%d), Hauteur: %d, Orientation: %s\n",
+    debug_printf("ðŸ”º Triangle crÃ©Ã© - Centre: (%d,%d), Hauteur: %d, Orientation: %s\n",
                  center_x, center_y, height, points_up ? "haut" : "bas");
 
     return tri;
@@ -249,7 +251,7 @@ void draw_triangle(SDL_Renderer *renderer, Triangle* tri) {
 void draw_triangle_with_offset(SDL_Renderer *renderer, Triangle* tri, int offset_x, int offset_y) {
     if (!renderer || !tri) return;
 
-    // Créer des tableaux temporaires avec les coordonnées décalées
+    // CrÃ©er des tableaux temporaires avec les coordonnÃ©es dÃ©calÃ©es
     Sint16 vx_offset[3];
     Sint16 vy_offset[3];
 
@@ -263,7 +265,7 @@ void draw_triangle_with_offset(SDL_Renderer *renderer, Triangle* tri, int offset
 }
 /*----------------------------------------------------*/
 
-// Fonctions spécifiques pour flèches (utilisent create_triangle)
+// Fonctions spÃ©cifiques pour flÃ¨ches (utilisent create_triangle)
 Triangle* create_up_arrow(int center_x, int center_y, int size, SDL_Color color) {
     return create_triangle(center_x, center_y, size, true, color);
 }
@@ -274,24 +276,90 @@ Triangle* create_down_arrow(int center_x, int center_y, int size, SDL_Color colo
 
 /*----------------------------------------------------*/
 
-// Libère un triangle
+// LibÃ¨re un triangle
 void free_triangle(Triangle* tri) {
     if (tri) {
         free(tri);
-        debug_printf("🔻 Triangle libéré\n");
+        debug_printf("ðŸ”» Triangle libÃ©rÃ©\n");
     }
 }
 
 /*----------------------------------------------------*/
 
-/*----------------------------------------------------*/
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRIMITIVES DE DESSIN POUR L'UI
+// ═══════════════════════════════════════════════════════════════════════════════
 
-/*----------------------------------------------------*/
+// Dessine une ligne horizontale de séparation
+void draw_separator_line(SDL_Renderer* renderer, int x1, int y1, int x2, int y2,
+                         int thickness, SDL_Color color) {
+    if (!renderer) return;
 
-/*----------------------------------------------------*/
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
-/*----------------------------------------------------*/
+    // Dessiner plusieurs lignes pour l'épaisseur
+    for (int i = 0; i < thickness; i++) {
+        SDL_RenderDrawLine(renderer, x1, y1 + i, x2, y2 + i);
+    }
+}
 
-/*----------------------------------------------------*/
+// Dessine un cadre rectangulaire (pour le preview)
+void draw_frame_rect(SDL_Renderer* renderer, int x, int y, int width, int height,
+                     SDL_Color color) {
+    if (!renderer) return;
 
+    rectangleColor(renderer, x, y, x + width, y + height,
+                   (color.r << 24) | (color.g << 16) | (color.b << 8) | color.a);
+}
 
+// Dessine un rectangle arrondi rempli (pour les boutons)
+void draw_rounded_rect(SDL_Renderer* renderer, int x, int y, int width, int height,
+                       int radius, SDL_Color bg_color, SDL_Color border_color) {
+    if (!renderer) return;
+
+    // Fond arrondi
+    if (radius > 0) {
+        roundedBoxRGBA(renderer, x, y, x + width, y + height, radius,
+                       bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+        // Bordure
+        roundedRectangleRGBA(renderer, x, y, x + width, y + height, radius,
+                             border_color.r, border_color.g, border_color.b, border_color.a);
+    } else {
+        // Rectangle simple
+        boxRGBA(renderer, x, y, x + width, y + height,
+                bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+        rectangleRGBA(renderer, x, y, x + width, y + height,
+                      border_color.r, border_color.g, border_color.b, border_color.a);
+    }
+}
+
+// Dessine le fond du toggle (rectangle arrondi)
+void draw_toggle_background(SDL_Renderer* renderer, int x, int y, int width, int height,
+                            int radius, bool is_on) {
+    if (!renderer) return;
+
+    // Couleur selon l'état : vert si ON, gris si OFF
+    SDL_Color bg_color = is_on ?
+        (SDL_Color){100, 200, 100, 255} :  // Vert pâle
+        (SDL_Color){150, 150, 150, 255};   // Gris
+
+    roundedBoxRGBA(renderer, x, y, x + width, y + height, radius,
+                   bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+
+    // Bordure noire
+    roundedRectangleRGBA(renderer, x, y, x + width, y + height, radius,
+                         0, 0, 0, 255);
+}
+
+// Dessine le cercle mobile du toggle
+void draw_toggle_circle(SDL_Renderer* renderer, int center_x, int center_y,
+                        int radius, SDL_Color color) {
+    if (!renderer) return;
+
+    filledCircleRGBA(renderer, center_x, center_y, radius,
+                     color.r, color.g, color.b, color.a);
+
+    // Bordure pour plus de relief
+    circleRGBA(renderer, center_x, center_y, radius,
+               0, 0, 0, 255);
+}
