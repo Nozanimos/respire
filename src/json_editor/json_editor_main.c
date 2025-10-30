@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "../widget_base.h"
 
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -55,13 +56,14 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     // ─────────────────────────────────────────────────────────────────────────
     // CHARGEMENT DES POLICES
     // ─────────────────────────────────────────────────────────────────────────
-    editor->font_mono = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 14);
-    editor->font_ui = TTF_OpenFont("../fonts/arial/ARIAL.TTF", 16);
+    // Obtenir les polices depuis le gestionnaire centralisé
+    editor->font_mono = get_font_for_size(14);
+    editor->font_ui = get_font_for_size(16);
 
     if (!editor->font_mono || !editor->font_ui) {
-        debug_printf("⚠️ Police non trouvée, essai fallback\n");
-        editor->font_mono = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeMono.otf", 14);
-        editor->font_ui = TTF_OpenFont("/usr/share/fonts/gnu-free/FreeSans.otf", 16);
+        debug_printf("❌ JSON Editor: impossible d'obtenir les polices\n");
+        free(editor);
+        return NULL;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -103,8 +105,6 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
 void detruire_json_editor(JsonEditor* editor) {
     if (!editor) return;
 
-    if (editor->font_mono) TTF_CloseFont(editor->font_mono);
-    if (editor->font_ui) TTF_CloseFont(editor->font_ui);
     if (editor->renderer) SDL_DestroyRenderer(editor->renderer);
     if (editor->window) SDL_DestroyWindow(editor->window);
 

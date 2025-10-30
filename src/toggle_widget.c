@@ -1,28 +1,19 @@
 #include "toggle_widget.h"
-#include "settings_panel.h"
 #include "debug.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 // ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION D'UN WIDGET TOGGLE
 // ════════════════════════════════════════════════════════════════════════════
-// Crée un widget interrupteur avec animation de transition
-//
-// PARAMÈTRES :
-//   - name : Texte affiché à gauche (ex: "Cycles alternés")
-//   - x, y : Position RELATIVE au conteneur parent
-//   - start_state : État initial (true = ON, false = OFF)
-//   - toggle_width, toggle_height : Dimensions du bouton toggle
-//   - thumb_size : Diamètre du curseur circulaire
-//   - text_size : Taille de référence du texte
-//   - font : Police TTF pour calculer les dimensions
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,
                                    int toggle_width, int toggle_height, int thumb_size,
                                    int text_size, TTF_Font* font) {
     ToggleWidget* widget = malloc(sizeof(ToggleWidget));
     if (!widget) {
-        debug_printf("❌ Erreur allocation toggle widget: %s\n", name);
+        debug_printf("❌ Erreur allocation ToggleWidget: %s\n", name);
         return NULL;
     }
 
@@ -31,15 +22,22 @@ ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_st
     // ─────────────────────────────────────────────────────────────────────────
     snprintf(widget->option_name, sizeof(widget->option_name), "%s", name);
     widget->value = start_state;
-    widget->x = x;
-    widget->y = y;
     widget->toggle_width = toggle_width;
     widget->toggle_height = toggle_height;
     widget->thumb_size = thumb_size;
+    widget->base_toggle_width = toggle_width;
+    widget->base_toggle_height = toggle_height;
+    widget->base_thumb_size = thumb_size;
     widget->animation_progress = start_state ? 1.0f : 0.0f;
     widget->is_animating = false;
-    widget->whole_widget_hovered = false;
     widget->toggle_hovered = false;
+
+    // Stocker la taille de police de base
+    widget->base_text_size = text_size;
+    widget->current_text_size = text_size;
+
+    // Espacement de base
+    widget->base_espace_apres_texte = 20;
 
     // ─────────────────────────────────────────────────────────────────────────
     // COULEURS DU WIDGET (style moderne)
@@ -51,51 +49,72 @@ ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_st
     widget->bg_hover_color = (SDL_Color){0, 0, 0, 50};           // Fond transparent
 
     // ─────────────────────────────────────────────────────────────────────────
-    // CALCUL DU LAYOUT
+    // MESURE DU TEXTE (pour calculer les dimensions)
     // ─────────────────────────────────────────────────────────────────────────
     int text_width = 0;
-    if (font) {
-        TTF_SizeUTF8(font, name, &text_width, &widget->text_height);
+    int text_height = 0;
+
+    TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
+    if (correct_font) {
+        TTF_SizeUTF8(correct_font, name, &text_width, &text_height);
     } else {
         text_width = strlen(name) * (text_size / 2);
-        widget->text_height = text_size;
+        text_height = text_size;
     }
 
-    int espace_apres_texte = 20;    // Espace entre le texte et le toggle
-
-    widget->name_x = x;
-    widget->toggle_x = x + text_width + espace_apres_texte;
-    widget->text_center_y = y + widget->text_height / 2;
+    widget->text_height = text_height;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // CALCUL DES RECTANGLES (positions RELATIVES)
+    // LAYOUT INTERNE (coordonnées LOCALES au widget)
     // ─────────────────────────────────────────────────────────────────────────
-    // Rectangle du bouton toggle
-    widget->toggle_rect = (SDL_Rect){
-        widget->toggle_x,
-        widget->text_center_y - (toggle_height / 2),  // Centré verticalement
-        toggle_width,
-        toggle_height
-    };
+    widget->local_text_x = 0;
+    widget->local_text_y = 0;
 
-    // Rectangle du curseur (position initiale basée sur l'état)
+    widget->local_toggle_x = text_width + widget->base_espace_apres_texte;
+    widget->local_toggle_y = (text_height - toggle_height) / 2;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // POSITION DU THUMB DANS LE TOGGLE (coordonnées LOCALES au toggle)
+    // ─────────────────────────────────────────────────────────────────────────
     int thumb_offset = (toggle_height - thumb_size) / 2;
-    int start_x = start_state ?
-        (widget->toggle_rect.x + toggle_width - thumb_size - thumb_offset) :
-        (widget->toggle_rect.x + thumb_offset);
 
-    widget->thumb_rect = (SDL_Rect){
-        start_x,
-        widget->toggle_rect.y + thumb_offset,
-        thumb_size,
-        thumb_size
-    };
+    if (start_state) {
+        widget->thumb_local_x = toggle_width - thumb_size - thumb_offset;
+    } else {
+        widget->thumb_local_x = thumb_offset;
+    }
+    widget->thumb_local_y = thumb_offset;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DE LA BOUNDING BOX TOTALE
+    // ─────────────────────────────────────────────────────────────────────────
+    int total_width = widget->local_toggle_x + toggle_width + 10;
+    int total_height = text_height > toggle_height ? text_height : toggle_height;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // INITIALISATION DE LA BASE (WidgetBase)
+    // ─────────────────────────────────────────────────────────────────────────
+    widget->base.x = x;
+    widget->base.y = y;
+    widget->base.base_x = x;
+    widget->base.base_y = y;
+    widget->base.width = total_width;
+    widget->base.height = total_height;
+    widget->base.base_width = total_width;
+    widget->base.base_height = total_height;
+    widget->base.hovered = false;
+    widget->base.enabled = true;
 
     widget->on_value_changed = NULL;
 
-    debug_printf("✅ Toggle widget '%s' créé - Layout: nom@%d, toggle@%d, état: %s\n",
-                 name, widget->name_x, widget->toggle_x,
-                 start_state ? "ON" : "OFF");
+    debug_subsection("Création ToggleWidget");
+    debug_printf("  Nom : %s\n", name);
+    debug_printf("  Position : (%d, %d)\n", x, y);
+    debug_printf("  Taille : %dx%d\n", total_width, total_height);
+    debug_printf("  Police : %dpx\n", text_size);
+    debug_printf("  Largeur texte mesuré : %dpx\n", text_width);
+    debug_printf("  État : %s\n", start_state ? "ON" : "OFF");
+    debug_blank_line();
 
     return widget;
 }
@@ -103,219 +122,165 @@ ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_st
 // ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DE L'ANIMATION
 // ════════════════════════════════════════════════════════════════════════════
-// Gère l'interpolation du curseur pour un effet fluide
 void update_toggle_widget(ToggleWidget* widget, float delta_time) {
     if (!widget || !widget->is_animating) return;
 
-    // Vitesse d'animation (ajustable)
-    float animation_speed = 8.0f;
-    float delta = animation_speed * delta_time;
+    float animation_speed = 6.0f;
 
     if (widget->value) {
-        // Animation vers ON
-        widget->animation_progress += delta;
+        widget->animation_progress += animation_speed * delta_time;
         if (widget->animation_progress >= 1.0f) {
             widget->animation_progress = 1.0f;
             widget->is_animating = false;
         }
     } else {
-        // Animation vers OFF
-        widget->animation_progress -= delta;
+        widget->animation_progress -= animation_speed * delta_time;
         if (widget->animation_progress <= 0.0f) {
             widget->animation_progress = 0.0f;
             widget->is_animating = false;
         }
     }
 
-    // Mise à jour de la position du curseur
+    // Calculer la position du thumb selon l'animation
     int thumb_offset = (widget->toggle_height - widget->thumb_size) / 2;
-    int min_x = widget->toggle_rect.x + thumb_offset;
-    int max_x = widget->toggle_rect.x + widget->toggle_width - widget->thumb_size - thumb_offset;
+    int thumb_min = thumb_offset;
+    int thumb_max = widget->toggle_width - widget->thumb_size - thumb_offset;
 
-    widget->thumb_rect.x = min_x + (int)((max_x - min_x) * widget->animation_progress);
+    widget->thumb_local_x = thumb_min + (int)((thumb_max - thumb_min) * widget->animation_progress);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  RENDU DU WIDGET TOGGLE
+//  RENDU DU WIDGET
 // ════════════════════════════════════════════════════════════════════════════
 void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget, TTF_Font* font,
-                         int offset_x, int offset_y) {
-    if (!widget || !renderer) {
-        debug_printf("❌ Rendu toggle: widget ou renderer NULL\n");
-        return;
+                          int offset_x, int offset_y) {
+    if (!widget || !renderer) return;
+
+    int widget_screen_x = offset_x + widget->base.x;
+    int widget_screen_y = offset_y + widget->base.y;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FOND AU SURVOL (rectangle arrondi)
+    // ─────────────────────────────────────────────────────────────────────────
+    if (widget->base.hovered) {
+        roundedBoxRGBA(renderer,
+                       widget_screen_x - 5,
+                       widget_screen_y - 5,
+                       widget_screen_x + widget->base.width + 5,
+                       widget_screen_y + widget->base.height + 5,
+                       5,
+                       widget->bg_hover_color.r,
+                       widget->bg_hover_color.g,
+                       widget->bg_hover_color.b,
+                       widget->bg_hover_color.a);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // CALCUL DES POSITIONS ABSOLUES
+    // RENDU DU TEXTE (nom de l'option)
     // ─────────────────────────────────────────────────────────────────────────
-    int absolute_name_x = widget->name_x + offset_x;
-    int absolute_y = widget->y + offset_y;
-
-    SDL_Rect absolute_toggle_rect = {
-        widget->toggle_rect.x + offset_x,
-        widget->toggle_rect.y + offset_y,
-        widget->toggle_rect.w,
-        widget->toggle_rect.h
-    };
-
-    SDL_Rect absolute_thumb_rect = {
-        widget->thumb_rect.x + offset_x,
-        widget->thumb_rect.y + offset_y,
-        widget->thumb_rect.w,
-        widget->thumb_rect.h
-    };
-
-    /*debug_printf("🎨 Rendu toggle '%s' - Texte: (%d,%d), Toggle: (%d,%d %dx%d)\n",
-                 widget->option_name,
-                 absolute_name_x, absolute_y,
-                 absolute_toggle_rect.x, absolute_toggle_rect.y,
-                 absolute_toggle_rect.w, absolute_toggle_rect.h);*/
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // FOND AU SURVOL DU WIDGET COMPLET
-    // ─────────────────────────────────────────────────────────────────────────
-    if (widget->whole_widget_hovered) {
-        // Calcul de la zone totale (texte + toggle)
-        int total_width = (widget->toggle_x + widget->toggle_width) - widget->name_x;
-        SDL_Rect bg_rect = {
-            absolute_name_x - 10,
-            absolute_y - 5,
-            total_width + 20,
-            widget->text_height + 10
-        };
-
-        Uint32 bg_color = (widget->bg_hover_color.a << 24) |
-                         (widget->bg_hover_color.r << 16) |
-                         (widget->bg_hover_color.g << 8) |
-                         widget->bg_hover_color.b;
-
-        roundedBoxColor(renderer, bg_rect.x, bg_rect.y,
-                 bg_rect.x + bg_rect.w, bg_rect.y + bg_rect.h,
-                 bg_rect.h/2,
-                 bg_color);
+    TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
+    if (correct_font) {
+        SDL_Surface* text_surface = TTF_RenderUTF8_Blended(correct_font, widget->option_name, widget->text_color);
+        if (text_surface) {
+            SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+            if (text_texture) {
+                SDL_Rect text_rect = {
+                    widget_screen_x + widget->local_text_x,
+                    widget_screen_y + widget->local_text_y,
+                    text_surface->w,
+                    text_surface->h
+                };
+                SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
+                SDL_DestroyTexture(text_texture);
+            }
+            SDL_FreeSurface(text_surface);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // RENDU DU TEXTE
+    // RENDU DU TOGGLE (rectangle avec bords arrondis)
     // ─────────────────────────────────────────────────────────────────────────
-    if (font) {
-        render_text(renderer, font, widget->option_name, absolute_name_x, absolute_y,
-                    (widget->text_color.r << 16) | (widget->text_color.g << 8) | widget->text_color.b);
+    int toggle_screen_x = widget_screen_x + widget->local_toggle_x;
+    int toggle_screen_y = widget_screen_y + widget->local_toggle_y;
+
+    // Interpoler la couleur de fond selon l'animation
+    SDL_Color bg_color;
+    if (widget->animation_progress == 0.0f) {
+        bg_color = widget->bg_off_color;
+    } else if (widget->animation_progress == 1.0f) {
+        bg_color = widget->bg_on_color;
     } else {
-        debug_printf("❌ Police non disponible pour le toggle widget\n");
+        float t = widget->animation_progress;
+        bg_color.r = (Uint8)(widget->bg_off_color.r * (1 - t) + widget->bg_on_color.r * t);
+        bg_color.g = (Uint8)(widget->bg_off_color.g * (1 - t) + widget->bg_on_color.g * t);
+        bg_color.b = (Uint8)(widget->bg_off_color.b * (1 - t) + widget->bg_on_color.b * t);
+        bg_color.a = 255;
     }
 
+    int radius = widget->toggle_height / 2;
+    roundedBoxRGBA(renderer,
+                   toggle_screen_x,
+                   toggle_screen_y,
+                   toggle_screen_x + widget->toggle_width,
+                   toggle_screen_y + widget->toggle_height,
+                   radius,
+                   bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+
     // ─────────────────────────────────────────────────────────────────────────
-    // RENDU DU BOUTON TOGGLE
+    // RENDU DU THUMB (cercle blanc)
     // ─────────────────────────────────────────────────────────────────────────
-    // Fond du toggle (arrondi)
-    SDL_Color current_bg_color = widget->value ? widget->bg_on_color : widget->bg_off_color;
+    int thumb_screen_x = toggle_screen_x + widget->thumb_local_x + widget->thumb_size / 2;
+    int thumb_screen_y = toggle_screen_y + widget->thumb_local_y + widget->thumb_size / 2;
 
-    // Si survolé, éclaircir la couleur
-    if (widget->toggle_hovered) {
-        current_bg_color.r = SDL_min(255, current_bg_color.r + 30);
-        current_bg_color.g = SDL_min(255, current_bg_color.g + 30);
-        current_bg_color.b = SDL_min(255, current_bg_color.b + 30);
-    }
-
-    Uint32 bg_color_value = (current_bg_color.a << 24) |
-                           (current_bg_color.r << 16) |
-                            current_bg_color.g <<8 |
-                            current_bg_color.b;
-
-    // Fond arrondi du toggle
-    roundedBoxColor(renderer,
-                   absolute_toggle_rect.x, absolute_toggle_rect.y,
-                   absolute_toggle_rect.x + absolute_toggle_rect.w,
-                   absolute_toggle_rect.y + absolute_toggle_rect.h,
-                   absolute_toggle_rect.h / 2,  // Rayon = moitié de la hauteur
-                   bg_color_value);
-
-    debug_printf("🎨 RENDU TOGGLE - Rect absolu: x=%d, y=%d, w=%d, h=%d\n",
-                 absolute_toggle_rect.x, absolute_toggle_rect.y,
-                 absolute_toggle_rect.w, absolute_toggle_rect.h);
-
-    // Curseur (cercle blanc)
-    int center_x = absolute_thumb_rect.x + (absolute_thumb_rect.w / 2);
-    int center_y = absolute_thumb_rect.y + (absolute_thumb_rect.h / 2);
-    int radius = absolute_thumb_rect.w / 2;
-
-    filledCircleColor(renderer, center_x, center_y, radius,
-                     (widget->thumb_color.a << 24) |
-                     (widget->thumb_color.r << 16) |
-                      widget->thumb_color.g << 8 |
-                      widget->thumb_color.b);
-
-    debug_printf("✅ Toggle '%s' rendu - État: %s\n",
-                 widget->option_name, widget->value ? "ON" : "OFF");
+    filledCircleRGBA(renderer,
+                     thumb_screen_x,
+                     thumb_screen_y,
+                     widget->thumb_size / 2,
+                     widget->thumb_color.r,
+                     widget->thumb_color.g,
+                     widget->thumb_color.b,
+                     widget->thumb_color.a);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES ÉVÉNEMENTS
 // ════════════════════════════════════════════════════════════════════════════
 void handle_toggle_widget_events(ToggleWidget* widget, SDL_Event* event,
-                                int offset_x, int offset_y) {
+                                 int offset_x, int offset_y) {
     if (!widget || !event) return;
 
-    switch (event->type) {
-        case SDL_MOUSEMOTION: {
-            int mouse_x = event->motion.x;
-            int mouse_y = event->motion.y;
+    int widget_screen_x = offset_x + widget->base.x;
+    int widget_screen_y = offset_y + widget->base.y;
 
-            // Zone complète du widget
-            int total_width = (widget->toggle_x + widget->toggle_width) - widget->name_x;
-            SDL_Rect widget_rect = {
-                widget->name_x + offset_x - 10,
-                widget->y + offset_y - 5,
-                total_width + 20,
-                widget->text_height + 10
-            };
-            widget->whole_widget_hovered = is_point_in_rect(mouse_x, mouse_y, widget_rect);
+    if (event->type == SDL_MOUSEMOTION) {
+        int mx = event->motion.x;
+        int my = event->motion.y;
 
-            // Zone du bouton toggle
-            SDL_Rect toggle_abs_rect = {
-                widget->toggle_rect.x + offset_x,
-                widget->toggle_rect.y + offset_y,
-                widget->toggle_rect.w,
-                widget->toggle_rect.h
-            };
-            widget->toggle_hovered = is_point_in_rect(mouse_x, mouse_y, toggle_abs_rect);
-            break;
-        }
+        widget->base.hovered = widget_contains_point(&widget->base, mx, my, offset_x, offset_y);
 
-        case SDL_MOUSEBUTTONDOWN: {
-            if (event->button.button != SDL_BUTTON_LEFT) break;
+        int toggle_screen_x = widget_screen_x + widget->local_toggle_x;
+        int toggle_screen_y = widget_screen_y + widget->local_toggle_y;
 
-            int mouse_x = event->button.x;
-            int mouse_y = event->button.y;
-
-            SDL_Rect toggle_abs_rect = {
-                widget->toggle_rect.x + offset_x,
-                widget->toggle_rect.y + offset_y,
-                widget->toggle_rect.w,
-                widget->toggle_rect.h
-            };
-
-            if (is_point_in_rect(mouse_x, mouse_y, toggle_abs_rect)) {
-                toggle_widget_value(widget);
-            }
-            break;
+        widget->toggle_hovered = (mx >= toggle_screen_x &&
+                                  mx < toggle_screen_x + widget->toggle_width &&
+                                  my >= toggle_screen_y &&
+                                  my < toggle_screen_y + widget->toggle_height);
+    }
+    else if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_LEFT) {
+        if (widget->base.hovered) {
+            toggle_widget_value(widget);
         }
     }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  BASculement de la valeur
+//  BASCULER LA VALEUR DU WIDGET
 // ════════════════════════════════════════════════════════════════════════════
 void toggle_widget_value(ToggleWidget* widget) {
     if (!widget) return;
 
     widget->value = !widget->value;
     widget->is_animating = true;
-
-    debug_printf("🔄 Toggle '%s' basculé: %s\n",
-                 widget->option_name,
-                 widget->value ? "ON" : "OFF");
 
     if (widget->on_value_changed) {
         widget->on_value_changed(widget->value);
@@ -332,14 +297,91 @@ void set_toggle_value_changed_callback(ToggleWidget* widget, void (*callback)(bo
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  RESPONSIVE : RESCALE DU WIDGET (INTELLIGENT)
+// ════════════════════════════════════════════════════════════════════════════
+void rescale_toggle_widget(ToggleWidget* widget, float panel_ratio) {
+    if (!widget) return;
+
+    debug_subsection("Rescale TOGGLE (intelligent)");
+    debug_printf("  Widget : %s\n", widget->option_name);
+    debug_printf("  Ratio : %.2f\n", panel_ratio);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 1. SCALER LA BASE (position du widget)
+    // ─────────────────────────────────────────────────────────────────────────
+    rescale_widget_base(&widget->base, panel_ratio);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 2. CALCULER LA NOUVELLE TAILLE DE POLICE
+    // ─────────────────────────────────────────────────────────────────────────
+    int new_text_size = (int)(widget->base_text_size * panel_ratio);
+    widget->current_text_size = new_text_size;
+
+    debug_printf("  Police : %dpx → %dpx\n", widget->base_text_size, new_text_size);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 3. OBTENIR LA POLICE À CETTE TAILLE (avec minimum garanti)
+    // ─────────────────────────────────────────────────────────────────────────
+    TTF_Font* scaled_font = get_font_for_size(new_text_size);
+    if (!scaled_font) {
+        debug_printf("  ⚠️ Impossible d'obtenir police\n");
+        debug_blank_line();
+        return;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 4. REMESURER LE TEXTE AVEC LA NOUVELLE POLICE
+    // ─────────────────────────────────────────────────────────────────────────
+    int new_text_width = 0;
+    int new_text_height = 0;
+    TTF_SizeUTF8(scaled_font, widget->option_name, &new_text_width, &new_text_height);
+
+    widget->text_height = new_text_height;
+
+    debug_printf("  Texte remesuré : %dpx × %dpx\n", new_text_width, new_text_height);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 5. SCALER L'ESPACEMENT
+    // ─────────────────────────────────────────────────────────────────────────
+    int scaled_espace_texte = (int)(widget->base_espace_apres_texte * panel_ratio);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 6. RECALCULER LES OFFSETS AVEC LES VRAIES DIMENSIONS
+    // ─────────────────────────────────────────────────────────────────────────
+    widget->local_toggle_x = new_text_width + scaled_espace_texte;
+
+    // Scaler les dimensions du toggle
+    widget->toggle_width = (int)(widget->base_toggle_width * panel_ratio);
+    widget->toggle_height = (int)(widget->base_toggle_height * panel_ratio);
+    widget->thumb_size = (int)(widget->base_thumb_size * panel_ratio);
+
+    if (widget->toggle_width < 20) widget->toggle_width = 20;
+    if (widget->toggle_height < 10) widget->toggle_height = 10;
+    if (widget->thumb_size < 8) widget->thumb_size = 8;
+
+    // Recentrer le toggle verticalement
+    widget->local_toggle_y = (widget->text_height - widget->toggle_height) / 2;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 7. RECALCULER LA POSITION DU THUMB
+    // ─────────────────────────────────────────────────────────────────────────
+    int thumb_offset = (widget->toggle_height - widget->thumb_size) / 2;
+    int thumb_min = thumb_offset;
+    int thumb_max = widget->toggle_width - widget->thumb_size - thumb_offset;
+
+    widget->thumb_local_x = thumb_min + (int)((thumb_max - thumb_min) * widget->animation_progress);
+    widget->thumb_local_y = thumb_offset;
+
+    debug_printf("  ✓ Toggle : %dx%d, thumb : %d\n",
+                 widget->toggle_width, widget->toggle_height, widget->thumb_size);
+    debug_printf("  ✓ Offset toggle : %d\n", widget->local_toggle_x);
+    debug_blank_line();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION DU WIDGET
 // ════════════════════════════════════════════════════════════════════════════
 void free_toggle_widget(ToggleWidget* widget) {
     if (!widget) return;
-
-    char widget_name[50];
-    snprintf(widget_name, sizeof(widget_name), "%s", widget->option_name);
-
     free(widget);
-    debug_printf("🗑️ Toggle widget '%s' libéré\n", widget_name);
 }

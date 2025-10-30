@@ -1,9 +1,10 @@
-// renderer.c
 #include "renderer.h"
-//#include <stdio.h>
-#include "config.h"
-#include "settings_panel.h"
+#include "hexagone_list.h"
+#include "widget_base.h"
 #include "debug.h"
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+
 
 
 
@@ -92,6 +93,38 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
         SDL_Log("ERREUR SDL_Init: %s", SDL_GetError());
         return false;
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 1.5 Initialisation TTF et gestionnaire de polices
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (TTF_Init() == -1) {
+        debug_printf("❌ Erreur TTF_Init: %s\n", TTF_GetError());
+        SDL_Quit();
+        return false;
+    }
+
+    debug_section("INITIALISATION POLICES");
+
+    // Initialiser le gestionnaire avec le chemin de la police
+    const char* font_path = "../fonts/arial/ARIAL.TTF";
+    init_font_manager(font_path);
+
+    // Fallback si la police n'existe pas
+    if (!get_font_for_size(18)) {
+        debug_printf("⚠️ Police par défaut introuvable, essai fallback...\n");
+        init_font_manager("/usr/share/fonts/gnu-free/FreeSans.otf");
+
+        if (!get_font_for_size(18)) {
+            debug_printf("❌ Aucune police disponible !\n");
+            cleanup_font_manager();
+            TTF_Quit();
+            SDL_Quit();
+            return false;
+        }
+    }
+
+    debug_printf("✅ Gestionnaire de polices prêt\n");
+    debug_blank_line();
 
     // 2. Création fenêtre plein écran
     app->window = SDL_CreateWindow(title,

@@ -67,6 +67,7 @@ typedef struct {
     // Mis à jour lors du redimensionnement de la fenêtre
     // ════════════════════════════════════════════════════════════════════════
     float scale_factor;
+    float panel_ratio;
 
     // Éléments UI
     AppConfig temp_config;
@@ -81,6 +82,14 @@ typedef struct {
 
     // Système de prévisualisation
     PreviewSystem preview_system;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // POSITIONS DES BARRES DE SÉPARATION (RESPONSIVE)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Stockées ici pour suivre le panel_ratio, comme le preview
+    int separator_y;          // Position Y de la barre (scalée avec panel_ratio)
+    int separator_start_x;    // Position X de début de barre
+    int separator_end_x;      // Position X de fin de barre
 
     // Anciens éléments (à supprimer progressivement)
     SDL_Texture* apply_button_texture;

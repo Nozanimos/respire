@@ -3,11 +3,14 @@
 #include <string.h>
 #include <time.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "geometry.h"
 #include "hexagone_list.h"
 #include "renderer.h"
 #include "config.h"
 #include "debug.h"
+#include "widget_base.h"
+
 
 
 void init_debug_mode(int argc, char **argv) {
@@ -139,8 +142,15 @@ int main(int argc, char **argv) {
 
     // === NETTOYAGE ===
     debug_printf("Nettoyage...\n");
+
+    // Libérer les polices AVANT TTF_Quit
+    cleanup_font_manager();
+    TTF_Quit();
+
     cleanup_debug_mode();
+
     free_hexagone_list(hex_list);
+
     cleanup_app(&app);
 
     debug_printf("Application terminée\n");

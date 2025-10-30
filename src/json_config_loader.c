@@ -1,5 +1,6 @@
 // json_config_loader.c
 #include "json_config_loader.h"
+#include "settings_panel.h"
 #include "debug.h"
 #include <cjson/cJSON.h>
 #include <stdio.h>
