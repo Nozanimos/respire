@@ -1,6 +1,6 @@
 // json_config_loader.c
 #include "json_config_loader.h"
-#include "settings_panel.h"
+//#include "settings_panel.h"
 #include "debug.h"
 #include <cjson/cJSON.h>
 #include <stdio.h>
@@ -158,6 +158,125 @@ bool parser_widget_toggle(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
 
     return success;
 }
+// ════════════════════════════════════════════════════════════════════════════
+//  PARSING D'UN TITRE (éléments statiques)
+// ════════════════════════════════════════════════════════════════════════════
+bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
+    if (!json_obj || !ctx || !list) return false;
+
+    // Cast du void* vers cJSON*
+    cJSON* obj = (cJSON*)json_obj;
+
+    // Récupération des champs
+    cJSON* texte = cJSON_GetObjectItem(obj, "texte");
+    cJSON* x = cJSON_GetObjectItem(obj, "x");
+    cJSON* y = cJSON_GetObjectItem(obj, "y");
+    cJSON* taille = cJSON_GetObjectItem(obj, "taille_texte");
+    cJSON* souligne = cJSON_GetObjectItem(obj, "souligne");
+
+    // Validation minimale
+    if (!cJSON_IsString(texte) || !cJSON_IsNumber(x) || !cJSON_IsNumber(y)) {
+        debug_printf("❌ Titre invalide : champs manquants\n");
+        return false;
+    }
+
+    // Paramètres
+    int text_size = cJSON_IsNumber(taille) ? taille->valueint : 24;
+    bool underlined = (cJSON_IsBool(souligne) && cJSON_IsTrue(souligne));
+    SDL_Color color = {0, 0, 0, 255};  // Noir par défaut
+
+    // ═══ AJOUTER À LA WIDGET LIST ═══
+    // Générer un id unique pour le titre
+    char id[50];
+    snprintf(id, sizeof(id), "titre_%d", list->count);
+
+    bool success = add_label_widget(
+        list,
+        id,
+        texte->valuestring,
+        x->valueint,
+        y->valueint,
+        text_size,
+        color,
+        underlined
+    );
+
+    if (success) {
+        debug_printf("✅ Titre '%s' ajouté à la liste\n", texte->valuestring);
+    }
+
+    return success;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  PARSING D'UN SÉPARATEUR (éléments statiques)
+// ════════════════════════════════════════════════════════════════════════════
+bool parser_separateur(void* json_obj, LoaderContext* ctx, WidgetList* list) {
+    if (!json_obj || !ctx || !list) return false;
+
+    // Cast du void* vers cJSON*
+    cJSON* obj = (cJSON*)json_obj;
+
+    // Récupération des champs
+    cJSON* x = cJSON_GetObjectItem(obj, "x");
+    cJSON* y = cJSON_GetObjectItem(obj, "y");
+    cJSON* largeur = cJSON_GetObjectItem(obj, "largeur");
+    cJSON* hauteur = cJSON_GetObjectItem(obj, "hauteur");
+    cJSON* couleur = cJSON_GetObjectItem(obj, "couleur");
+
+    // Validation minimale
+    if (!cJSON_IsNumber(x) || !cJSON_IsNumber(y)) {
+        debug_printf("❌ Séparateur invalide : coordonnées manquantes\n");
+        return false;
+    }
+
+    // Paramètres
+    int x_val = x->valueint;
+    int y_val = y->valueint;
+    int width = cJSON_IsNumber(largeur) ? largeur->valueint : 460;
+    int thickness = cJSON_IsNumber(hauteur) ? hauteur->valueint : 1;
+
+    // Couleur par défaut : gris clair
+    SDL_Color color = {200, 200, 200, 255};
+    if (cJSON_IsObject(couleur)) {
+        cJSON* r = cJSON_GetObjectItem(couleur, "r");
+        cJSON* g = cJSON_GetObjectItem(couleur, "g");
+        cJSON* b = cJSON_GetObjectItem(couleur, "b");
+        cJSON* a = cJSON_GetObjectItem(couleur, "a");
+        if (cJSON_IsNumber(r)) color.r = r->valueint;
+        if (cJSON_IsNumber(g)) color.g = g->valueint;
+        if (cJSON_IsNumber(b)) color.b = b->valueint;
+        if (cJSON_IsNumber(a)) color.a = a->valueint;
+    }
+
+    // ═══ CONVERTIR x,largeur EN marges ═══
+    // add_separator_widget() attend start_margin et end_margin
+    // Avec PANEL_WIDTH = 500 (largeur de référence du panneau)
+    const int PANEL_WIDTH = 500;
+    int start_margin = x_val;
+    int end_margin = PANEL_WIDTH - (x_val + width);
+
+    // Générer un id unique
+    char id[50];
+    snprintf(id, sizeof(id), "sep_%d", list->count);
+
+    // ═══ AJOUTER À LA WIDGET LIST ═══
+    bool success = add_separator_widget(
+        list,
+        id,
+        y_val,
+        start_margin,
+        end_margin,
+        thickness,
+        color
+    );
+
+    if (success) {
+        debug_printf("✅ Séparateur ajouté à la liste\n");
+    }
+
+    return success;
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 //  FONCTION PRINCIPALE : CHARGER TOUS LES WIDGETS
@@ -259,11 +378,11 @@ bool charger_widgets_depuis_json(const char* filename,
             success = parser_widget_toggle(widget, context, widget_list);
         }
         else if (strcmp(type_str, "titre") == 0) {
-            // TODO: À implémenter (les titres seront gérés différemment)
+            success = parser_titre(widget, context, widget_list);
             debug_printf("⚠️ Type 'titre' pas encore implémenté\n");
         }
         else if (strcmp(type_str, "separateur") == 0) {
-            // TODO: À implémenter
+            success = parser_separateur(widget, context, widget_list);
             debug_printf("⚠️ Type 'separateur' pas encore implémenté\n");
         }
         else {
@@ -282,43 +401,4 @@ bool charger_widgets_depuis_json(const char* filename,
                  compteur_success, nb_widgets);
 
     return (compteur_success > 0);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-//  RENDU D'UN TITRE
-// ════════════════════════════════════════════════════════════════════════════
-void rendre_titre(SDL_Renderer* renderer, TTF_Font* font,
-                  const WidgetConfig* config, int offset_x, int offset_y) {
-    if (!renderer || !font || !config) return;
-
-    // Accéder au membre 'souligne' via l'union 'titre'
-    if (config->titre.souligne) {
-        TTF_SetFontStyle(font, TTF_STYLE_UNDERLINE);
-    }
-
-    // Utiliser 'label' pour le texte (membre direct de WidgetConfig)
-    render_text(renderer, font, config->label,
-                config->x + offset_x, config->y + offset_y, 0xFF000000);
-
-    // Réinitialiser le style si nécessaire
-    if (config->titre.souligne) {
-        TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
-    }
-                  }
-
-// ════════════════════════════════════════════════════════════════════════════
-//  RENDU D'UN SÉPARATEUR
-// ════════════════════════════════════════════════════════════════════════════
-void rendre_separateur(SDL_Renderer* renderer,
-                       const WidgetConfig* config, int offset_x, int offset_y) {
-    if (!renderer || !config) return;
-
-    // Accéder aux membres via l'union 'separateur'
-    rectangleColor(renderer,
-                   config->x + offset_x,
-                   config->y + offset_y,
-                   config->x + offset_x + config->separateur.largeur,
-                   config->y + offset_y + config->separateur.hauteur,
-                   (config->separateur.couleur.a << 24) | (config->separateur.couleur.r << 16) |
-                   (config->separateur.couleur.g << 8) | config->separateur.couleur.b);
 }

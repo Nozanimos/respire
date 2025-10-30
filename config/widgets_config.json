@@ -5,6 +5,26 @@
   "widgets": [
     {
       "_commentaire": "═══════════════════════════════════════════════════════",
+      "_description": "TITRE - Texte statique avec option soulignée",
+      "_template": {
+        "type": "titre",
+        "texte": "Mon Titre",
+        "x": 50,
+        "y": 10,
+        "taille_texte": 24,
+        "souligne": true
+      },
+      "_fin_template": "═══════════════════════════════════════════════════════",
+
+      "type": "titre",
+      "texte": "Configuration",
+      "x": 50,
+      "y": 10,
+      "taille_texte": 24,
+      "souligne": true
+    },
+    {
+      "_commentaire": "═══════════════════════════════════════════════════════",
       "_description": "WIDGET INCREMENT - Valeur numérique avec flèches",
       "_template": {
         "type": "increment",
@@ -80,6 +100,26 @@
       "taille_curseur": 18,
       "taille_texte": 18,
       "callback": "alternate_cycles_changed"
+    },
+    {
+      "_commentaire": "═══════════════════════════════════════════════════════",
+      "_description": "SEPARATEUR - Ligne horizontale de séparation",
+      "_template": {
+        "type": "separateur",
+        "x": 20,
+        "y": 200,
+        "largeur": 460,
+        "hauteur": 1,
+        "couleur": {"r": 200, "g": 200, "b": 200, "a": 255}
+      },
+      "_fin_template": "═══════════════════════════════════════════════════════",
+
+      "type": "separateur",
+      "x": 20,
+      "y": 200,
+      "largeur": 460,
+      "hauteur": 1,
+      "couleur": {"r": 0, "g": 0, "b": 0, "a": 255}
     }
   ]
 }

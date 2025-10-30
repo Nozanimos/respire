@@ -213,20 +213,27 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     if (!charger_widgets_depuis_json(json_path, &ctx, panel->widget_list)) {
         debug_printf("⚠️ Échec chargement JSON, utilisation config par défaut\n");
 
-        // FALLBACK : widgets hardcodés (avec scaling de base)
+        /*// FALLBACK : widgets hardcodés (avec scaling de base)
         int panel_width_scaled = calculate_panel_width(screen_width, scale_factor);
         int largeur_max_widget = scale_value(180, scale_factor) +
         scale_value(20, scale_factor) +
         scale_value(40, scale_factor) +
         scale_value(20, scale_factor);
-        int widget_x = (panel_width_scaled - largeur_max_widget) / 2;
+        //int widget_x = (panel_width_scaled - largeur_max_widget) / 2;*/
 
-        add_increment_widget(panel->widget_list, "breath_duration", "Durée respiration",
-                             widget_x, scale_value(240, scale_factor), 1, 10, 3, 1,
-                             scale_value(6, scale_factor), scale_value(18, scale_factor),
-                             panel->font, duration_value_changed);
+        // ════════════════════════════════════════════════════════════════════════
+        // ⚠️  WIDGETS DÉSACTIVÉS - Géré par JSON
+        // ════════════════════════════════════════════════════════════════════════
+        // Ce widget est maintenant chargé depuis widgets_config.json
+        // Si tu veux revenir au hardcodé, décommente les lignes ci-dessous :
+        /*
+         *       add_increment_widget(panel->widget_list, "breath_duration", "Durée respiration",
+         *                            widget_x, scale_value(240, scale_factor), 1, 10, 3, 1,
+         *                            scale_value(6, scale_factor), scale_value(18, scale_factor),
+         *                            panel->font, duration_value_changed);
+         */
 
-        add_increment_widget(panel->widget_list, "breath_cycles", "Cycles",
+       /* add_increment_widget(panel->widget_list, "breath_cycles", "Cycles",
                              widget_x, scale_value(320, scale_factor), 1, 20, 1, 1,
                              scale_value(6, scale_factor), scale_value(18, scale_factor),
                              panel->font, cycles_value_changed);
@@ -235,7 +242,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
                           widget_x, scale_value(400, scale_factor), false,
                           scale_value(40, scale_factor), scale_value(18, scale_factor),
                           scale_value(18, scale_factor), scale_value(18, scale_factor),
-                          alternate_cycles_changed);
+                          alternate_cycles_changed);*/
     }
 
     debug_print_widget_list(panel->widget_list);
@@ -378,13 +385,13 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         int panel_x = panel->rect.x;
         int panel_y = panel->rect.y;
 
-        // Titre
+        /*// Titre
         TTF_SetFontStyle(panel->font_title, TTF_STYLE_UNDERLINE);
         render_text(renderer, panel->font_title, "Configuration",
                     panel_x + scale_value(50, panel->scale_factor),
                     panel_y + scale_value(10, panel->scale_factor),
                     0xFF000000);
-        TTF_SetFontStyle(panel->font_title, TTF_STYLE_NORMAL);
+        TTF_SetFontStyle(panel->font_title, TTF_STYLE_NORMAL);*/
 
         // Cadre du preview
         int frame_x1 = panel_x + panel->preview_system.frame_x;
@@ -396,7 +403,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         // Hexagone de prévisualisation
         render_preview(renderer, &panel->preview_system, panel_x, panel_y);
 
-        // ═════════════════════════════════════════════════════════════════════════
+        /*// ═════════════════════════════════════════════════════════════════════════
         // BARRE DE SÉPARATION
         // ═════════════════════════════════════════════════════════════════════════
         // On la dessine tant que le panneau a au moins 80px de large
@@ -411,7 +418,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
                 if (thickness < 1) thickness = 1;
 
 
-                                // Ligne noire de la barre par-dessus
+                // Ligne noire de la barre par-dessus
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 for (int i = 0; i < thickness; i++) {
                     SDL_RenderDrawLine(renderer,
@@ -421,7 +428,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
                                        panel_y + panel->separator_y + i);
                 }
             }
-        }
+        }*/
 
         // Widgets
         render_all_widgets(renderer, panel->widget_list, panel_x, panel_y);

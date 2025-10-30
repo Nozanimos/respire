@@ -57,23 +57,9 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
 bool parser_widget_toggle(cJSON* json_obj, LoaderContext* ctx, WidgetList* list);
 
 // Parse un objet JSON représentant un titre
-bool parser_titre(void* json_obj, LoaderContext* ctx);
+bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list);
 
 // Parse un objet JSON représentant un séparateur
-bool parser_separateur(void* json_obj, LoaderContext* ctx);
-
-// ─────────────────────────────────────────────────────────────────────────
-// FONCTIONS DE RENDU POUR LES ÉLÉMENTS NON-WIDGETS
-// ─────────────────────────────────────────────────────────────────────────
-// Ces éléments (titres, séparateurs) ne sont pas dans widget_list car
-// ils ne sont pas interactifs. On les rend directement.
-
-// Rend un titre (sera appelé depuis settings_panel.c)
-void rendre_titre(SDL_Renderer* renderer, TTF_Font* font,
-                  const WidgetConfig* config, int offset_x, int offset_y);
-
-// Rend un séparateur (ligne horizontale)
-void rendre_separateur(SDL_Renderer* renderer,
-                       const WidgetConfig* config, int offset_x, int offset_y);
+bool parser_separateur(void* json_obj, LoaderContext* ctx, WidgetList* list);
 
 #endif
