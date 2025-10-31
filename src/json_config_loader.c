@@ -22,6 +22,8 @@
 extern void duration_value_changed(int value);
 extern void cycles_value_changed(int value);
 extern void alternate_cycles_changed(bool value);
+extern void apply_button_clicked(void);
+extern void cancel_button_clicked(void);
 
 // Fonction helper pour récupérer un callback INT par son nom
 static void (*obtenir_callback_int(const char* nom))(int) {
@@ -47,6 +49,21 @@ static void (*obtenir_callback_bool(const char* nom))(bool) {
     }
 
     debug_printf("⚠️ Callback BOOL inconnu: '%s'\n", nom);
+    return NULL;
+}
+
+// Fonction helper pour récupérer un callback VOID (pour les boutons) par son nom
+static void (*obtenir_callback_void(const char* nom))(void) {
+    if (!nom) return NULL;
+
+    if (strcmp(nom, "apply_button_clicked") == 0) {
+        return apply_button_clicked;
+    }
+    if (strcmp(nom, "cancel_button_clicked") == 0) {
+        return cancel_button_clicked;
+    }
+
+    debug_printf("⚠️ Callback VOID inconnu: '%s'\n", nom);
     return NULL;
 }
 
@@ -279,6 +296,117 @@ bool parser_separateur(void* json_obj, LoaderContext* ctx, WidgetList* list) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  PARSING D'UN WIDGET PREVIEW
+// ════════════════════════════════════════════════════════════════════════════
+bool parser_widget_preview(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
+    if (!json_obj || !ctx || !list) return false;
+
+    // Récupération des champs
+    cJSON* id = cJSON_GetObjectItem(json_obj, "id");
+    cJSON* x = cJSON_GetObjectItem(json_obj, "x");
+    cJSON* y = cJSON_GetObjectItem(json_obj, "y");
+    cJSON* frame_size = cJSON_GetObjectItem(json_obj, "frame_size");
+    cJSON* size_ratio = cJSON_GetObjectItem(json_obj, "size_ratio");
+    cJSON* breath_duration = cJSON_GetObjectItem(json_obj, "breath_duration");
+
+    // Validation
+    if (!cJSON_IsString(id) || !cJSON_IsNumber(x) || !cJSON_IsNumber(y)) {
+        debug_printf("❌ Widget preview invalide : champs manquants\n");
+        return false;
+    }
+
+    // Valeurs par défaut
+    int size = cJSON_IsNumber(frame_size) ? frame_size->valueint : 100;
+    float ratio = cJSON_IsNumber(size_ratio) ? (float)size_ratio->valuedouble : 0.90f;
+    float duration = cJSON_IsNumber(breath_duration) ? (float)breath_duration->valuedouble : 3.0f;
+
+    // Création du widget
+    bool success = add_preview_widget(
+        list,
+        id->valuestring,
+        x->valueint,
+        y->valueint,
+        size,
+        ratio,
+        duration
+    );
+
+    if (success) {
+        debug_printf("✅ Widget preview '%s' chargé depuis JSON\n", id->valuestring);
+    }
+
+    return success;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  PARSING D'UN WIDGET BUTTON
+// ════════════════════════════════════════════════════════════════════════════
+bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
+    if (!json_obj || !ctx || !list) return false;
+
+    // Récupération des champs
+    cJSON* id = cJSON_GetObjectItem(json_obj, "id");
+    cJSON* texte = cJSON_GetObjectItem(json_obj, "texte");
+    cJSON* x = cJSON_GetObjectItem(json_obj, "x");
+    cJSON* y = cJSON_GetObjectItem(json_obj, "y");
+    cJSON* largeur = cJSON_GetObjectItem(json_obj, "largeur");
+    cJSON* hauteur = cJSON_GetObjectItem(json_obj, "hauteur");
+    cJSON* taille_texte = cJSON_GetObjectItem(json_obj, "taille_texte");
+    cJSON* couleur = cJSON_GetObjectItem(json_obj, "couleur");
+    cJSON* callback = cJSON_GetObjectItem(json_obj, "callback");
+
+    // Validation
+    if (!cJSON_IsString(id) || !cJSON_IsString(texte) ||
+        !cJSON_IsNumber(x) || !cJSON_IsNumber(y) ||
+        !cJSON_IsNumber(largeur) || !cJSON_IsNumber(hauteur)) {
+        debug_printf("❌ Widget button invalide : champs manquants\n");
+        return false;
+    }
+
+    // Taille de texte par défaut
+    int text_size = cJSON_IsNumber(taille_texte) ? taille_texte->valueint : 16;
+
+    // Couleur de fond par défaut : bleu
+    SDL_Color bg_color = {70, 130, 180, 255};
+    if (cJSON_IsObject(couleur)) {
+        cJSON* r = cJSON_GetObjectItem(couleur, "r");
+        cJSON* g = cJSON_GetObjectItem(couleur, "g");
+        cJSON* b = cJSON_GetObjectItem(couleur, "b");
+        cJSON* a = cJSON_GetObjectItem(couleur, "a");
+        if (cJSON_IsNumber(r)) bg_color.r = r->valueint;
+        if (cJSON_IsNumber(g)) bg_color.g = g->valueint;
+        if (cJSON_IsNumber(b)) bg_color.b = b->valueint;
+        if (cJSON_IsNumber(a)) bg_color.a = a->valueint;
+    }
+
+    // Récupération du callback
+    void (*callback_func)(void) = NULL;
+    if (cJSON_IsString(callback)) {
+        callback_func = obtenir_callback_void(callback->valuestring);
+    }
+
+    // Création du widget
+    bool success = add_button_widget(
+        list,
+        id->valuestring,
+        texte->valuestring,
+        x->valueint,
+        y->valueint,
+        largeur->valueint,
+        hauteur->valueint,
+        text_size,
+        bg_color,
+        callback_func
+    );
+
+    if (success) {
+        debug_printf("✅ Widget button '%s' chargé depuis JSON\n", id->valuestring);
+    }
+
+    return success;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  FONCTION PRINCIPALE : CHARGER TOUS LES WIDGETS
 // ════════════════════════════════════════════════════════════════════════════
 bool charger_widgets_depuis_json(const char* filename,
@@ -379,11 +507,15 @@ bool charger_widgets_depuis_json(const char* filename,
         }
         else if (strcmp(type_str, "titre") == 0) {
             success = parser_titre(widget, context, widget_list);
-            debug_printf("⚠️ Type 'titre' pas encore implémenté\n");
         }
         else if (strcmp(type_str, "separateur") == 0) {
             success = parser_separateur(widget, context, widget_list);
-            debug_printf("⚠️ Type 'separateur' pas encore implémenté\n");
+        }
+        else if (strcmp(type_str, "preview") == 0) {
+            success = parser_widget_preview(widget, context, widget_list);
+        }
+        else if (strcmp(type_str, "button") == 0) {
+            success = parser_widget_button(widget, context, widget_list);
         }
         else {
             debug_printf("⚠️ Type de widget inconnu: '%s'\n", type_str);

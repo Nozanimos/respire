@@ -25,6 +25,28 @@
     },
     {
       "_commentaire": "═══════════════════════════════════════════════════════",
+      "_description": "PREVIEW - Zone d'animation hexagones",
+      "_template": {
+        "type": "preview",
+        "id": "identifiant_unique",
+        "x": 50,
+        "y": 80,
+        "frame_size": 100,
+        "size_ratio": 0.90,
+        "breath_duration": 3.0
+      },
+      "_fin_template": "═══════════════════════════════════════════════════════",
+
+      "type": "preview",
+      "id": "breath_preview",
+      "x": 50,
+      "y": 60,
+      "frame_size": 100,
+      "size_ratio": 0.90,
+      "breath_duration": 3.0
+    },
+    {
+      "_commentaire": "═══════════════════════════════════════════════════════",
       "_description": "WIDGET INCREMENT - Valeur numérique avec flèches",
       "_template": {
         "type": "increment",
@@ -120,6 +142,46 @@
       "largeur": 460,
       "hauteur": 1,
       "couleur": {"r": 0, "g": 0, "b": 0, "a": 255}
+    },
+    {
+      "_commentaire": "═══════════════════════════════════════════════════════",
+      "_description": "BOUTON - Bouton cliquable avec callback",
+      "_template": {
+        "type": "button",
+        "id": "identifiant_unique",
+        "texte": "Mon Bouton",
+        "x": 150,
+        "y": 500,
+        "largeur": 120,
+        "hauteur": 40,
+        "taille_texte": 16,
+        "couleur": {"r": 70, "g": 130, "b": 180, "a": 255},
+        "callback": "nom_fonction_callback"
+      },
+      "_fin_template": "═══════════════════════════════════════════════════════",
+
+      "type": "button",
+      "id": "apply_button",
+      "texte": "Appliquer",
+      "x": 150,
+      "y": 670,
+      "largeur": 120,
+      "hauteur": 40,
+      "taille_texte": 16,
+      "couleur": {"r": 70, "g": 130, "b": 180, "a": 255},
+      "callback": "apply_button_clicked"
+    },
+    {
+      "type": "button",
+      "id": "cancel_button",
+      "texte": "Annuler",
+      "x": 290,
+      "y": 670,
+      "largeur": 120,
+      "hauteur": 40,
+      "taille_texte": 16,
+      "couleur": {"r": 150, "g": 150, "b": 150, "a": 255},
+      "callback": "cancel_button_clicked"
     }
   ]
 }

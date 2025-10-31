@@ -2,7 +2,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include "preview_widget.h"
 #include "geometry.h"
-#include "animation.h"
+//#include "animation.h"
 #include "config.h"
 #include "debug.h"
 
@@ -204,9 +204,44 @@ void rescale_preview_widget(PreviewWidget* preview, float panel_ratio,
 //  CHANGER LA DURÉE DE RESPIRATION
 // ════════════════════════════════════════════════════════════════════════════
 void preview_set_breath_duration(PreviewWidget* preview, float new_duration) {
-    if (!preview || !preview->hex_list) return;
+    if (!preview) return;
 
     debug_printf("🔄 Changement durée respiration preview: %.1fs\n", new_duration);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // LIBÉRER LES ANCIENS HEXAGONES
+    // ═════════════════════════════════════════════════════════════════════════
+    if (preview->hex_list) {
+        free_hexagone_list(preview->hex_list);
+        preview->hex_list = NULL;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // RECALCULER LES CENTRES RELATIFS
+    // ═════════════════════════════════════════════════════════════════════════
+    // ⚠️ IMPORTANT : Les centres doivent être recalculés à partir du container_size
+    // pour rester au centre du cadre, sinon les hexagones disparaissent
+    preview->center_x = preview->container_size / 2;
+    preview->center_y = preview->container_size / 2;
+
+    debug_printf("🔄 Recréation hexagones - Container: %d, Centre: (%d,%d), Ratio: %.2f\n",
+                 preview->container_size, preview->center_x, preview->center_y,
+                 preview->size_ratio);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // RECRÉER LES HEXAGONES AVEC LES BONS CENTRES
+    // ═════════════════════════════════════════════════════════════════════════
+    preview->hex_list = create_all_hexagones(
+        preview->center_x,
+        preview->center_y,
+        preview->container_size,
+        preview->size_ratio
+    );
+
+    if (!preview->hex_list) {
+        debug_printf("❌ ERREUR: Impossible de recréer les hexagones\n");
+        return;
+    }
 
     // ═════════════════════════════════════════════════════════════════════════
     // RE-PRÉCALCULER LES CYCLES AVEC LA NOUVELLE DURÉE
@@ -216,6 +251,8 @@ void preview_set_breath_duration(PreviewWidget* preview, float new_duration) {
     // Réinitialiser le temps
     preview->current_time = 0.0;
     preview->last_update = SDL_GetTicks();
+
+    debug_printf("✅ Prévisualisation COMPLÈTEMENT réinitialisée avec nouvelle durée\n");
 }
 
 // ════════════════════════════════════════════════════════════════════════════

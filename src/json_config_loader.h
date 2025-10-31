@@ -62,4 +62,10 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list);
 // Parse un objet JSON représentant un séparateur
 bool parser_separateur(void* json_obj, LoaderContext* ctx, WidgetList* list);
 
+// Parse un objet JSON représentant le preview
+bool parser_widget_preview(cJSON* json_obj, LoaderContext* ctx, WidgetList* list);
+
+// Parse un objet JSON représentant un bouton
+bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list);
+
 #endif

@@ -811,3 +811,200 @@ void free_widget_list(WidgetList* list) {
     free(list);
     debug_printf("🗑️ Liste de widgets libérée\n");
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SCALING ET POSITIONNEMENT CENTRALISÉ
+// ════════════════════════════════════════════════════════════════════════════
+
+void rescale_and_layout_widgets(WidgetList* list, int panel_width,
+                                 int screen_width, int screen_height) {
+    if (!list) return;
+    (void)screen_width;   // Non utilisé dans la nouvelle logique
+    (void)screen_height;  // Non utilisé dans la nouvelle logique
+
+    const int MARGIN_LEFT = 20;     // Marge gauche
+    const int MARGIN_RIGHT = 20;    // Marge droite
+
+    debug_printf("🔄 Layout widgets - panel_width: %d\n", panel_width);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // PHASE 1 : CALCULER LA LARGEUR MAXIMALE DES WIDGETS (sans la barre)
+    // ═════════════════════════════════════════════════════════════════════════
+    int max_widget_width = 0;
+    WidgetNode* node = list->first;
+
+    while (node) {
+        int widget_width = 0;
+
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            // Pour INCREMENT : largeur totale = du début du texte jusqu'à la fin de la valeur
+            ConfigWidget* w = node->widget.increment_widget;
+            widget_width = w->local_value_x + 50;  // +50 pour la largeur de la valeur
+        }
+        else if (node->type == WIDGET_TYPE_TOGGLE && node->widget.toggle_widget) {
+            ToggleWidget* w = node->widget.toggle_widget;
+            widget_width = w->base.width;
+        }
+        else if (node->type == WIDGET_TYPE_BUTTON && node->widget.button_widget) {
+            ButtonWidget* w = node->widget.button_widget;
+            widget_width = w->base.width;
+        }
+        else if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
+            PreviewWidget* w = node->widget.preview_widget;
+            widget_width = w->base.width;
+        }
+        else if (node->type == WIDGET_TYPE_LABEL && node->widget.label_widget) {
+            LabelWidget* w = node->widget.label_widget;
+            widget_width = w->base.width;
+        }
+        // Ignorer les séparateurs pour le calcul de largeur max
+
+        if (widget_width > max_widget_width) {
+            max_widget_width = widget_width;
+        }
+
+        node = node->next;
+    }
+
+    debug_printf("📏 Largeur max widget: %d px\n", max_widget_width);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // PHASE 2 : REPOSITIONNER LES WIDGETS EN CAS DE COLLISION
+    // ═════════════════════════════════════════════════════════════════════════
+    // Un widget est en collision si : base_x + width + MARGIN_RIGHT > panel_width
+
+    node = list->first;
+    while (node) {
+        bool has_collision = false;
+        int widget_x = 0;
+        int widget_width = 0;
+
+        // Obtenir position et largeur actuelle
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+            widget_x = w->base.base_x;
+            widget_width = w->local_value_x + 50;
+            has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
+
+            if (has_collision) {
+                // Centrer le widget
+                int new_x = (panel_width - widget_width) / 2;
+                w->base.x = new_x;
+                debug_printf("🔄 INCREMENT centré: %d → %d (collision)\n", widget_x, new_x);
+            } else {
+                // Garder position de base
+                w->base.x = w->base.base_x;
+            }
+        }
+        else if (node->type == WIDGET_TYPE_TOGGLE && node->widget.toggle_widget) {
+            ToggleWidget* w = node->widget.toggle_widget;
+            widget_x = w->base.base_x;
+            widget_width = w->base.base_width;
+            has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
+
+            if (has_collision) {
+                int new_x = (panel_width - widget_width) / 2;
+                w->base.x = new_x;
+                debug_printf("🔄 TOGGLE centré: %d → %d (collision)\n", widget_x, new_x);
+            } else {
+                w->base.x = w->base.base_x;
+            }
+        }
+        else if (node->type == WIDGET_TYPE_BUTTON && node->widget.button_widget) {
+            ButtonWidget* w = node->widget.button_widget;
+            widget_x = w->base.x;
+            widget_width = w->base_width;
+            has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
+
+            if (has_collision) {
+                int new_x = (panel_width - widget_width) / 2;
+                w->base.x = new_x;
+                debug_printf("🔄 BUTTON centré: %d → %d (collision)\n", widget_x, new_x);
+            }
+            // Les boutons n'ont pas base_x, on garde leur position
+        }
+        else if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
+            PreviewWidget* w = node->widget.preview_widget;
+            widget_x = w->base.x;
+            widget_width = w->base.width;
+            has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
+
+            if (has_collision) {
+                int new_x = (panel_width - widget_width) / 2;
+                w->base.x = new_x;
+                debug_printf("🔄 PREVIEW centré: %d → %d (collision)\n", widget_x, new_x);
+            }
+        }
+        else if (node->type == WIDGET_TYPE_LABEL && node->widget.label_widget) {
+            LabelWidget* w = node->widget.label_widget;
+            widget_x = w->base.x;
+            widget_width = w->base.width;
+            has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
+
+            if (has_collision) {
+                int new_x = (panel_width - widget_width) / 2;
+                w->base.x = new_x;
+                debug_printf("🔄 LABEL centré: %d → %d (collision)\n", widget_x, new_x);
+            }
+        }
+        else if (node->type == WIDGET_TYPE_SEPARATOR && node->widget.separator_widget) {
+            // La barre de séparation : rester centrée avec marges constantes
+            SeparatorWidget* w = node->widget.separator_widget;
+            w->base.x = MARGIN_LEFT;
+            w->base.width = panel_width - MARGIN_LEFT - MARGIN_RIGHT;
+            debug_printf("🔄 SEPARATOR ajusté: largeur = %d\n", w->base.width);
+        }
+
+        node = node->next;
+    }
+
+    debug_printf("✅ %d widgets repositionnés\n", list->count);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  CALCUL DE LA LARGEUR MINIMALE DU PANNEAU
+// ════════════════════════════════════════════════════════════════════════════
+
+int calculate_min_panel_width(WidgetList* list) {
+    if (!list) return 100;  // Valeur par défaut sécurisée
+
+    const int MARGIN_LEFT = 20;
+    const int MARGIN_RIGHT = 20;
+
+    int max_widget_width = 0;
+    WidgetNode* node = list->first;
+
+    while (node) {
+        int widget_width = 0;
+
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+            widget_width = w->local_value_x + 50;  // Largeur totale
+        }
+        else if (node->type == WIDGET_TYPE_TOGGLE && node->widget.toggle_widget) {
+            widget_width = node->widget.toggle_widget->base.base_width;
+        }
+        else if (node->type == WIDGET_TYPE_BUTTON && node->widget.button_widget) {
+            widget_width = node->widget.button_widget->base_width;
+        }
+        else if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
+            widget_width = node->widget.preview_widget->base_frame_size;
+        }
+        else if (node->type == WIDGET_TYPE_LABEL && node->widget.label_widget) {
+            widget_width = node->widget.label_widget->base.width;
+        }
+        // Ignorer les séparateurs
+
+        if (widget_width > max_widget_width) {
+            max_widget_width = widget_width;
+        }
+
+        node = node->next;
+    }
+
+    int min_width = MARGIN_LEFT + max_widget_width + MARGIN_RIGHT;
+    debug_printf("📐 Largeur minimale panneau: %d px (widget max: %d)\n",
+                 min_width, max_widget_width);
+
+    return min_width;
+}

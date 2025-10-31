@@ -2,6 +2,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
 #include "settings_panel.h"
+#include "preview_widget.h"
 #include "debug.h"
 #include "json_config_loader.h"
 
@@ -20,12 +21,29 @@ extern int calculate_panel_width(int screen_width, float scale);
 //  CALLBACKS POUR LES WIDGETS
 // ════════════════════════════════════════════════════════════════════════════
 static SettingsPanel* current_panel_for_callbacks = NULL;
+static AppConfig* current_main_config_for_callbacks = NULL;
 
 void duration_value_changed(int new_value) {
     if (!current_panel_for_callbacks) return;
     current_panel_for_callbacks->temp_config.breath_duration = new_value;
     debug_printf("🔄 Durée respiration changée: %d secondes\n", new_value);
-    update_preview_for_new_duration(current_panel_for_callbacks, new_value);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // METTRE À JOUR LE PREVIEW DANS LA WIDGET LIST
+    // ═══════════════════════════════════════════════════════════════════════════
+    WidgetList* list = current_panel_for_callbacks->widget_list;
+    if (list) {
+        WidgetNode* node = list->first;
+        while (node) {
+            // Chercher le widget preview
+            if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
+                // Appeler la fonction du preview_widget.c
+                preview_set_breath_duration(node->widget.preview_widget, (float)new_value);
+                break;  // On a trouvé le preview, on peut sortir
+            }
+            node = node->next;
+        }
+    }
 }
 
 void cycles_value_changed(int new_value) {
@@ -41,6 +59,26 @@ void alternate_cycles_changed(bool new_value) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  CALLBACKS POUR LES BOUTONS APPLIQUER/ANNULER
+// ════════════════════════════════════════════════════════════════════════════
+void apply_button_clicked(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    save_config(&current_panel_for_callbacks->temp_config);
+    *current_main_config_for_callbacks = current_panel_for_callbacks->temp_config;
+    current_panel_for_callbacks->state = PANEL_CLOSING;
+    debug_printf("✅ Configuration appliquée\n");
+}
+
+void cancel_button_clicked(void) {
+    if (!current_panel_for_callbacks) return;
+
+    load_config(&current_panel_for_callbacks->temp_config);
+    current_panel_for_callbacks->state = PANEL_CLOSING;
+    debug_printf("❌ Modifications annulées\n");
+}
+
+/*// ════════════════════════════════════════════════════════════════════════════
 //  FONCTIONS DE PRÉVISUALISATION
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -154,7 +192,7 @@ void render_preview(SDL_Renderer* renderer, PreviewSystem* preview, int offset_x
 
         node = node->next;
     }
-}
+}*/
 
 // ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU PANNEAU
@@ -248,9 +286,11 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
     debug_print_widget_list(panel->widget_list);
 
     // ════════════════════════════════════════════════════════════════════════
-    // CRÉATION DES BOUTONS
+    // CRÉATION DES BOUTONS - DÉSACTIVÉ (géré par JSON)
     // ════════════════════════════════════════════════════════════════════════
-    int scaled_button_width = scale_value(BUTTON_WIDTH, scale_factor);
+    // ⚠️ Les boutons Appliquer/Annuler sont maintenant chargés depuis le JSON
+    // Si tu veux revenir au hardcodé, décommente les lignes ci-dessous :
+    /*int scaled_button_width = scale_value(BUTTON_WIDTH, scale_factor);
     int scaled_button_height = scale_value(BUTTON_HEIGHT, scale_factor);
 
     panel->apply_button = create_button("Appliquer", 0, 0,
@@ -259,7 +299,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
                                          scaled_button_width, scaled_button_height);
 
     debug_printf("📏 Boutons créés - Largeur: %d, Hauteur: %d\n",
-                 scaled_button_width, scaled_button_height);
+                 scaled_button_width, scaled_button_height);*/
 
     // ════════════════════════════════════════════════════════════════════════
     // CHARGEMENT DU FOND ET DE L'ICÔNE
@@ -289,10 +329,10 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, i
         gear_size
     };
 
-    // ════════════════════════════════════════════════════════════════════════
+    /*// ════════════════════════════════════════════════════════════════════════
     // INITIALISATION DU SYSTÈME DE PRÉVISUALISATION
     // ════════════════════════════════════════════════════════════════════════
-    init_preview_system(panel, 50, 80, 100, 0.90f);
+    init_preview_system(panel, 50, 80, 100, 0.90f);*/
 
     // ════════════════════════════════════════════════════════════════════════
     // CALCUL DES POSITIONS INITIALES (responsive)
@@ -361,7 +401,21 @@ void update_settings_panel(SettingsPanel* panel, float delta_time) {
 
     // Mise à jour des animations internes (preview, widgets)
     if (panel->state == PANEL_OPEN) {
-        update_preview_animation(panel);
+        // ═════════════════════════════════════════════════════════════════════════
+        // ⚠️ DOUBLON COMMENTÉ - update_preview_widget est déjà appelé dans
+        // update_widget_list_animations() ci-dessous, pas besoin de l'appeler ici !
+        // Sinon l'animation va 2x trop vite.
+        // ═════════════════════════════════════════════════════════════════════════
+        /*if (panel->widget_list) {
+            WidgetNode* node = panel->widget_list->first;
+            while (node) {
+                if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
+                    update_preview_widget(node->widget.preview_widget, delta_time);
+                    break;
+                }
+                node = node->next;
+            }
+        }*/
         update_widget_list_animations(panel->widget_list, delta_time);
     }
 }
@@ -393,7 +447,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
                     0xFF000000);
         TTF_SetFontStyle(panel->font_title, TTF_STYLE_NORMAL);*/
 
-        // Cadre du preview
+        /*// Cadre du preview
         int frame_x1 = panel_x + panel->preview_system.frame_x;
         int frame_y1 = panel_y + panel->preview_system.frame_y;
         int frame_x2 = frame_x1 + panel->preview_system.container_size;
@@ -401,7 +455,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         rectangleColor(renderer, frame_x1, frame_y1, frame_x2, frame_y2, 0xFFFFFFFF);
 
         // Hexagone de prévisualisation
-        render_preview(renderer, &panel->preview_system, panel_x, panel_y);
+        render_preview(renderer, &panel->preview_system, panel_x, panel_y);*/
 
         /*// ═════════════════════════════════════════════════════════════════════════
         // BARRE DE SÉPARATION
@@ -433,9 +487,12 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         // Widgets
         render_all_widgets(renderer, panel->widget_list, panel_x, panel_y);
 
-        // Boutons
-        render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
-        render_button(renderer, &panel->cancel_button, panel->font, panel_x, panel_y);
+        // ═════════════════════════════════════════════════════════════════════════
+        // BOUTONS - DÉSACTIVÉ (géré par JSON via widget_list)
+        // ═════════════════════════════════════════════════════════════════════════
+        // ⚠️ Les boutons sont maintenant rendus via render_all_widgets()
+        /*render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
+        render_button(renderer, &panel->cancel_button, panel->font, panel_x, panel_y);*/
     }
 }
 
@@ -447,6 +504,7 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
     if (!panel || !event) return;
 
     current_panel_for_callbacks = panel;
+    current_main_config_for_callbacks = main_config;
     int panel_x = panel->rect.x;
     int panel_y = panel->rect.y;
 
@@ -489,7 +547,18 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 set_widget_bool_value(panel->widget_list, "alternate_cycles",
                                       panel->temp_config.alternate_cycles);
 
-                update_preview_for_new_duration(panel, panel->temp_config.breath_duration);
+                // Mettre à jour la durée du preview widget via la widget_list
+                if (panel->widget_list) {
+                    WidgetNode* node = panel->widget_list->first;
+                    while (node) {
+                        if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
+                            preview_set_breath_duration(node->widget.preview_widget,
+                                                       (float)panel->temp_config.breath_duration);
+                            break;
+                        }
+                        node = node->next;
+                    }
+                }
                 debug_printf("🎯 Ouverture panneau\n");
 
             } else if (panel->state == PANEL_OPEN) {
@@ -502,7 +571,12 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
     // Événements du panneau ouvert
     if (panel->state == PANEL_OPEN) {
-        if (event->type == SDL_MOUSEBUTTONDOWN) {
+        // ═════════════════════════════════════════════════════════════════════════
+        // GESTION DES BOUTONS - DÉSACTIVÉ (géré par JSON via widget_list)
+        // ═════════════════════════════════════════════════════════════════════════
+        // ⚠️ Les boutons Appliquer/Annuler sont maintenant gérés via les callbacks
+        // dans le JSON et handle_widget_list_events()
+        /*if (event->type == SDL_MOUSEBUTTONDOWN) {
             int x = event->button.x;
             int y = event->button.y;
 
@@ -529,7 +603,7 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 debug_printf("❌ Modifications annulées\n");
                 return;
             }
-        }
+        }*/
 
         // Événements des widgets
         handle_widget_list_events(panel->widget_list, event, panel_x, panel_y);
@@ -537,6 +611,7 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
     if (event->type == SDL_MOUSEBUTTONUP) {
         current_panel_for_callbacks = NULL;
+        current_main_config_for_callbacks = NULL;
     }
 }
 
@@ -549,33 +624,65 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
 
     panel->scale_factor = scale_factor;
 
-    // Calcul de la largeur du panneau
+    // ═════════════════════════════════════════════════════════════════════════
+    // CALCUL DE LA LARGEUR MINIMALE NÉCESSAIRE (basée sur les widgets)
+    // ═════════════════════════════════════════════════════════════════════════
+    int min_panel_width = calculate_min_panel_width(panel->widget_list);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // CALCUL DE LA LARGEUR DU PANNEAU (limitée par le minimum)
+    // ═════════════════════════════════════════════════════════════════════════
     int panel_width = (screen_width >= PANEL_WIDTH) ? PANEL_WIDTH : screen_width;
+
+    // Ne jamais descendre en dessous de la largeur minimale
+    if (panel_width < min_panel_width) {
+        panel_width = min_panel_width;
+    }
+
     panel->rect.w = panel_width;
     panel->rect.h = screen_height;
 
-    // Calcul du ratio pour les éléments internes
+    // Calcul du ratio pour les éléments internes (garde pour compatibilité)
     float panel_ratio = (float)panel_width / (float)PANEL_WIDTH;
 
     // Sauvegarder le ratio dans la structure pour l'utiliser ailleurs
     panel->panel_ratio = panel_ratio;
 
-    // Positions selon l'état
+    // ═════════════════════════════════════════════════════════════════════════
+    // POSITIONS SELON L'ÉTAT
+    // ═════════════════════════════════════════════════════════════════════════
+    // ⚠️ IMPORTANT : Toujours mettre à jour target_x pour avoir la bonne cible
+    // même lors d'un resize pendant une animation
+    panel->target_x = screen_width - panel_width;  // Position ouverte
+
     if (panel->state == PANEL_CLOSED) {
         panel->rect.x = screen_width;
         panel->target_x = screen_width;
         panel->current_x = screen_width;
     }
     else if (panel->state == PANEL_OPEN) {
+        // ═════════════════════════════════════════════════════════════════════
+        // FIX: S'assurer que le panneau est bien collé au bord droit
+        // ═════════════════════════════════════════════════════════════════════
         panel->rect.x = screen_width - panel_width;
-        panel->target_x = screen_width - panel_width;
         panel->current_x = screen_width - panel_width;
     }
     else if (panel->state == PANEL_OPENING || panel->state == PANEL_CLOSING) {
-        // Mettre à jour seulement la cible, pas current_x (géré par l'animation)
-        panel->target_x = (panel->state == PANEL_OPENING)
-        ? screen_width - panel_width
-        : screen_width;
+        // Mettre à jour seulement la cible, current_x est géré par l'animation
+        // Mais recalculer la position actuelle basée sur l'animation_progress
+        if (panel->state == PANEL_CLOSING) {
+            panel->target_x = screen_width;
+        }
+        // Recalculer current_x basé sur animation_progress pour éviter les sauts
+        float eased = panel->animation_progress * panel->animation_progress *
+                      panel->animation_progress;
+        if (panel->state == PANEL_OPENING) {
+            int start_x = screen_width;
+            panel->current_x = start_x - (int)(panel_width * eased);
+        } else {
+            panel->current_x = panel->target_x - panel_width + (int)(panel_width * (1.0f - eased));
+        }
+        panel->rect.x = panel->current_x;
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -666,31 +773,11 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
         }
     }
 
-    debug_section("RESCALE DES WIDGETS");
-
     // ═════════════════════════════════════════════════════════════════════════
-    // RESCALE DES WIDGETS
+    // RESCALE ET POSITIONNEMENT CENTRALISÉ DES WIDGETS
     // ═════════════════════════════════════════════════════════════════════════
-    if (panel->widget_list) {
-        WidgetNode* node = panel->widget_list->first;
-        int widget_count = 0;
-
-        while (node) {
-            if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
-                rescale_config_widget(node->widget.increment_widget, panel_ratio);
-                widget_count++;
-            }
-            else if (node->type == WIDGET_TYPE_TOGGLE && node->widget.toggle_widget) {
-                rescale_toggle_widget(node->widget.toggle_widget, panel_ratio);
-                widget_count++;
-            }
-            node = node->next;
-        }
-
-        if (widget_count > 0) {
-            debug_printf("✅ %d widgets rescalés (ratio: %.2f)\n", widget_count, panel_ratio);
-        }
-    }
+    // Utilise la fonction centralisée qui gère tout le scaling et le positionnement
+    rescale_and_layout_widgets(panel->widget_list, panel_width, screen_width, screen_height);
 
     // Barre de séparation
 
