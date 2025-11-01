@@ -239,8 +239,9 @@ bool add_toggle_widget(WidgetList* list,
 //   - renderer : Le renderer SDL
 //   - list : La liste de widgets à afficher
 //   - offset_x, offset_y : Offset du conteneur parent (panneau)
+//   - panel_width : Largeur actuelle du panneau (pour separator responsive)
 void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
-                       int offset_x, int offset_y) {
+                       int offset_x, int offset_y, int panel_width) {
     if (!renderer || is_widget_list_empty(list)) return;
 
     WidgetNode* node = list->first;
@@ -272,11 +273,9 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
 
             case WIDGET_TYPE_SEPARATOR:
                 if (node->widget.separator_widget) {
-                    // Pour le separator on a besoin de la largeur du panneau
-                    // On va utiliser une valeur par défaut de 500px pour l'instant
-                    // TODO: Passer panel_width en paramètre
+                    // Utiliser la largeur dynamique du panneau pour le responsive
                     render_separator_widget(renderer, node->widget.separator_widget,
-                                          offset_x, offset_y, 500);
+                                          offset_x, offset_y, panel_width);
                 }
                 break;
 
@@ -665,7 +664,7 @@ bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
 // ════════════════════════════════════════════════════════════════════════════
 bool add_button_widget(WidgetList* list, const char* id, const char* display_name,
                        int x, int y, int width, int height, int text_size,
-                       SDL_Color bg_color, void (*callback)(void)) {
+                       SDL_Color bg_color, ButtonYAnchor y_anchor, void (*callback)(void)) {
     if (!list || !id || !display_name) return false;
 
     WidgetNode* node = malloc(sizeof(WidgetNode));
@@ -674,7 +673,7 @@ bool add_button_widget(WidgetList* list, const char* id, const char* display_nam
     node->type = WIDGET_TYPE_BUTTON;
     node->id = strdup(id);
     node->display_name = strdup(display_name);
-    node->widget.button_widget = create_button_widget(display_name, x, y, width, height, text_size, bg_color);
+    node->widget.button_widget = create_button_widget(display_name, x, y, width, height, text_size, bg_color, y_anchor);
 
     if (!node->widget.button_widget) {
         free((void*)node->id);
@@ -820,12 +819,11 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
                                  int screen_width, int screen_height) {
     if (!list) return;
     (void)screen_width;   // Non utilisé dans la nouvelle logique
-    (void)screen_height;  // Non utilisé dans la nouvelle logique
 
     const int MARGIN_LEFT = 20;     // Marge gauche
     const int MARGIN_RIGHT = 20;    // Marge droite
 
-    debug_printf("🔄 Layout widgets - panel_width: %d\n", panel_width);
+    debug_printf("🔄 Layout widgets - panel_width: %d, screen_height: %d\n", panel_width, screen_height);
 
     // ═════════════════════════════════════════════════════════════════════════
     // PHASE 1 : CALCULER LA LARGEUR MAXIMALE DES WIDGETS (sans la barre)
@@ -912,16 +910,37 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
         }
         else if (node->type == WIDGET_TYPE_BUTTON && node->widget.button_widget) {
             ButtonWidget* w = node->widget.button_widget;
-            widget_x = w->base.x;
+            widget_x = w->base_x - w->base_width / 2;  // Position de base (du JSON)
             widget_width = w->base_width;
             has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
 
             if (has_collision) {
+                // Centrer le widget
                 int new_x = (panel_width - widget_width) / 2;
                 w->base.x = new_x;
-                debug_printf("🔄 BUTTON centré: %d → %d (collision)\n", widget_x, new_x);
+                debug_printf("🔄 BUTTON '%s' centré: %d → %d (collision)\n",
+                            node->id, widget_x, new_x);
+            } else {
+                // Garder position de base
+                w->base.x = w->base_x - w->base_width / 2;
+                debug_printf("🔄 BUTTON '%s' position normale: x = %d\n",
+                            node->id, w->base.x);
             }
-            // Les boutons n'ont pas base_x, on garde leur position
+
+            // ═════════════════════════════════════════════════════════════════════
+            // CALCUL DE LA POSITION Y EN FONCTION DE L'ANCRAGE
+            // ═════════════════════════════════════════════════════════════════════
+            if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
+                // Position relative au bas du panneau
+                w->base.y = screen_height - w->base_y - w->base_height / 2;
+                debug_printf("🔽 BUTTON '%s' ancré en BAS: y = %d (base_y=%d)\n",
+                            node->id, w->base.y, w->base_y);
+            } else {
+                // Position relative au haut du panneau (comportement par défaut)
+                w->base.y = w->base_y - w->base_height / 2;
+                debug_printf("🔼 BUTTON '%s' ancré en HAUT: y = %d\n",
+                            node->id, w->base.y);
+            }
         }
         else if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
             PreviewWidget* w = node->widget.preview_widget;
@@ -956,6 +975,75 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
         }
 
         node = node->next;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // PHASE 3 : DÉTECTER ET RÉORGANISER LES BOUTONS QUI SE CHEVAUCHENT
+    // ═════════════════════════════════════════════════════════════════════════
+    // Collecter les boutons ancrés en bas et vérifier s'ils se chevauchent
+    typedef struct {
+        WidgetNode* node;
+        ButtonWidget* button;
+        int abs_x1, abs_x2;  // Coordonnées horizontales absolues
+    } ButtonInfo;
+
+    ButtonInfo bottom_buttons[32];  // Max 32 boutons
+    int bottom_count = 0;
+
+    node = list->first;
+    while (node && bottom_count < 32) {
+        if (node->type == WIDGET_TYPE_BUTTON && node->widget.button_widget) {
+            ButtonWidget* btn = node->widget.button_widget;
+            if (btn->y_anchor == BUTTON_ANCHOR_BOTTOM) {
+                bottom_buttons[bottom_count].node = node;
+                bottom_buttons[bottom_count].button = btn;
+                bottom_buttons[bottom_count].abs_x1 = btn->base.x;
+                bottom_buttons[bottom_count].abs_x2 = btn->base.x + btn->base.width;
+                bottom_count++;
+            }
+        }
+        node = node->next;
+    }
+
+    // Vérifier si des boutons se chevauchent
+    bool has_overlap = false;
+    for (int i = 0; i < bottom_count - 1 && !has_overlap; i++) {
+        for (int j = i + 1; j < bottom_count && !has_overlap; j++) {
+            // Deux rectangles se chevauchent si :
+            // x1_a < x2_b ET x2_a > x1_b
+            if (bottom_buttons[i].abs_x1 < bottom_buttons[j].abs_x2 &&
+                bottom_buttons[i].abs_x2 > bottom_buttons[j].abs_x1) {
+                has_overlap = true;
+                debug_printf("⚠️ Chevauchement détecté entre '%s' et '%s'\n",
+                            bottom_buttons[i].node->id,
+                            bottom_buttons[j].node->id);
+            }
+        }
+    }
+
+    // Si chevauchement, réorganiser verticalement
+    if (has_overlap && bottom_count > 0) {
+        debug_printf("📐 Réorganisation verticale de %d boutons\n", bottom_count);
+
+        const int BUTTON_SPACING = 10;  // Espacement entre boutons
+
+        // Positionner les boutons depuis le bas avec l'espacement
+        int current_y = screen_height - bottom_buttons[0].button->base_y;
+
+        for (int i = 0; i < bottom_count; i++) {
+            ButtonWidget* btn = bottom_buttons[i].button;
+
+            // Centrer horizontalement
+            btn->base.x = (panel_width - btn->base.width) / 2;
+
+            // Positionner verticalement (de bas en haut)
+            current_y -= btn->base.height;
+            btn->base.y = current_y;
+            current_y -= BUTTON_SPACING;
+
+            debug_printf("📍 BUTTON '%s' empilé: x=%d, y=%d\n",
+                        bottom_buttons[i].node->id, btn->base.x, btn->base.y);
+        }
     }
 
     debug_printf("✅ %d widgets repositionnés\n", list->count);

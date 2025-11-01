@@ -26,7 +26,8 @@ Mon tout premier programme en langage C + SDL2
                                         couleur (noir par défaut),
                                         hovered couleur (jaune pâle),
                                         position_x,
-                                        position_y};
+                                        position_y,
+                                        callback};
         ✅ - Créer widget bouton actif/inactif nom - on/off - commande
 
         ✅ - modélisation des options du panneau de configuration en listes :

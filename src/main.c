@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <locale.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "geometry.h"
@@ -16,10 +17,18 @@
 void init_debug_mode(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
+            // Configurer la locale pour UTF-8
+            setlocale(LC_ALL, "");
+
             debug_file = fopen("debug.txt", "w");
             if (debug_file) {
+                // Écrire le BOM UTF-8 pour garantir l'encodage
+                fprintf(debug_file, "\xEF\xBB\xBF");
+                // Marqueur d'encodage reconnu par les éditeurs (vim, VS Code, emacs, etc.)
+                fprintf(debug_file, "# -*- coding: utf-8 -*-\n");
+
                 // ✅ CORRECTION : Une seule redirection
-                freopen("debug.txt", "w", stdout);
+                freopen("debug.txt", "a", stdout);  // Mode 'a' pour ne pas écraser le BOM
                 // stderr reste séparé pour les vraies erreurs
 
                 setbuf(stdout, NULL);

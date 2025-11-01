@@ -6,6 +6,14 @@
 #include <stdbool.h>
 
 // ════════════════════════════════════════════════════════════════════════════
+//  ENUMÉRATION POUR L'ANCRAGE VERTICAL
+// ════════════════════════════════════════════════════════════════════════════
+typedef enum {
+    BUTTON_ANCHOR_TOP,      // Position Y relative au haut du panneau
+    BUTTON_ANCHOR_BOTTOM    // Position Y relative au bas du panneau
+} ButtonYAnchor;
+
+// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DU WIDGET BUTTON
 // ════════════════════════════════════════════════════════════════════════════
 typedef struct {
@@ -35,10 +43,13 @@ typedef struct {
     int current_text_size;           // Taille de police actuelle (après scaling)
 
     // ─────────────────────────────────────────────────────────────────────────
-    // DIMENSIONS DE BASE (pour rescaling)
+    // DIMENSIONS ET POSITION DE BASE (pour rescaling)
     // ─────────────────────────────────────────────────────────────────────────
     int base_width;
     int base_height;
+    int base_x;                      // Position X de base (du JSON)
+    int base_y;                      // Position Y de base (du JSON)
+    ButtonYAnchor y_anchor;          // Ancrage vertical (TOP ou BOTTOM)
 
     // ─────────────────────────────────────────────────────────────────────────
     // CALLBACK DE CLIC
@@ -56,9 +67,10 @@ typedef struct {
 // width, height : dimensions du bouton
 // text_size : taille de la police
 // bg_color : couleur de fond
+// y_anchor : ancrage vertical (TOP ou BOTTOM)
 ButtonWidget* create_button_widget(const char* text, int x, int y,
                                    int width, int height, int text_size,
-                                   SDL_Color bg_color);
+                                   SDL_Color bg_color, ButtonYAnchor y_anchor);
 
 // Rendu du bouton
 // offset_x, offset_y : offset du panneau parent

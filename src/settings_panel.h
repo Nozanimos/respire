@@ -6,6 +6,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <stdbool.h>
+#include <time.h>
+#include <sys/stat.h>
 #include "config.h"
 #include "hexagone_list.h"
 #include "widget.h"
@@ -84,6 +86,18 @@ typedef struct {
     PreviewSystem preview_system;
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // HOT RELOAD DU JSON ET GESTION FENÊTRE
+    // ═══════════════════════════════════════════════════════════════════════════
+    const char* json_config_path;   // Chemin vers widgets_config.json
+    time_t last_json_mtime;         // Timestamp de dernière modification
+    float json_check_interval;      // Intervalle de vérification (secondes)
+    float time_since_last_check;    // Temps écoulé depuis dernière vérification
+    SDL_Renderer* renderer;         // Nécessaire pour recharger les widgets
+    SDL_Window* window;             // Nécessaire pour SDL_SetWindowMinimumSize
+    int screen_width;               // Largeur de l'écran (mise à jour lors du resize)
+    int screen_height;              // Hauteur de l'écran (mise à jour lors du resize)
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // POSITIONS DES BARRES DE SÉPARATION (RESPONSIVE)
     // ═══════════════════════════════════════════════════════════════════════════
     // Stockées ici pour suivre le panel_ratio, comme le preview
@@ -100,7 +114,7 @@ typedef struct {
 } SettingsPanel;
 
 // PROTOTYPES
-SettingsPanel* create_settings_panel(SDL_Renderer* renderer, int screen_width, int screen_height, float scale_factor);
+SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window, int screen_width, int screen_height, float scale_factor);
 void update_settings_panel(SettingsPanel* panel, float delta_time);
 void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel);
 void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConfig* main_config);
@@ -126,5 +140,13 @@ bool is_point_in_rect(int x, int y, SDL_Rect rect);
 
 // Adaptation d'échelle
 void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_height, float scale_factor);
+
+// Hot reload du JSON
+void reload_widgets_from_json(SettingsPanel* panel, int screen_width, int screen_height);
+void check_json_hot_reload(SettingsPanel* panel, float delta_time, int screen_width, int screen_height);
+
+// Calcul de la largeur minimale de fenêtre
+int get_minimum_window_width(SettingsPanel* panel);
+void update_window_minimum_size(SettingsPanel* panel, SDL_Window* window);
 
 #endif

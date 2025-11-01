@@ -84,6 +84,12 @@ typedef struct {
     int undo_count;                     // Nombre d'états dans l'historique
     int max_undo_count;                 // Limite (ex: 100)
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // AUTO-SAVE POUR HOT RELOAD
+    // ─────────────────────────────────────────────────────────────────────────
+    Uint32 last_modification_time;      // Timestamp de dernière modification
+    float auto_save_delay;              // Délai avant auto-save (0.3 secondes)
+
 } JsonEditor;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -189,6 +195,12 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event);
 // ─────────────────────────────────────────────────────────────────────────
 // UTILITAIRES
 // ─────────────────────────────────────────────────────────────────────────
+
+// Marque qu'une modification a eu lieu (pour auto-save)
+void marquer_modification(JsonEditor* editor);
+
+// Vérifie et sauvegarde automatiquement si nécessaire
+void verifier_auto_save(JsonEditor* editor);
 
 // Déplacer curseur avec les flèches
 void deplacer_curseur_vertical(JsonEditor* editor, int direction);

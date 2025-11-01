@@ -132,6 +132,7 @@ bool add_button_widget(WidgetList* list,
                        int width, int height,
                        int text_size,
                        SDL_Color bg_color,
+                       ButtonYAnchor y_anchor,
                        void (*callback)(void));
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -140,7 +141,7 @@ bool add_button_widget(WidgetList* list,
 // Ces fonctions parcourent TOUTE la liste et appellent les bonnes fonctions
 // pour chaque widget selon son type
 void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
-                        int offset_x, int offset_y);
+                        int offset_x, int offset_y, int panel_width);
 
 void handle_widget_list_events(WidgetList* list, SDL_Event* event,
                                int offset_x, int offset_y);

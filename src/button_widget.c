@@ -11,7 +11,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 ButtonWidget* create_button_widget(const char* text, int x, int y,
                                    int width, int height, int text_size,
-                                   SDL_Color bg_color) {
+                                   SDL_Color bg_color, ButtonYAnchor y_anchor) {
     ButtonWidget* button = malloc(sizeof(ButtonWidget));
     if (!button) {
         debug_printf("❌ Erreur allocation ButtonWidget\n");
@@ -46,15 +46,19 @@ ButtonWidget* create_button_widget(const char* text, int x, int y,
     button->base_text_size = text_size;
     button->current_text_size = text_size;
 
-    // Dimensions de base
+    // Dimensions de base et ancrage
     button->base_width = width;
     button->base_height = height;
+    button->base_x = x;
+    button->base_y = y;
+    button->y_anchor = y_anchor;
 
     // Callback
     button->on_click = NULL;
 
-    debug_printf("🔘 Bouton créé - Texte: \"%s\", Centre: (%d,%d), Taille: %dx%d\n",
-                 text, x, y, width, height);
+    const char* anchor_str = (y_anchor == BUTTON_ANCHOR_TOP) ? "TOP" : "BOTTOM";
+    debug_printf("🔘 Bouton créé - Texte: \"%s\", Centre: (%d,%d), Taille: %dx%d, Anchor: %s\n",
+                 text, x, y, width, height, anchor_str);
 
     return button;
 }

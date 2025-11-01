@@ -178,10 +178,20 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     app->is_running = true;
     app->settings_panel = create_settings_panel(
         app->renderer,
+        app->window,       // ← Passer la fenêtre pour gérer la taille minimale
         app->screen_width,
         app->screen_height,
-        app->scale_factor  // ← Nouveau paramètre !
+        app->scale_factor
     );
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 6b. DÉFINIR LA LARGEUR MINIMALE DE FENÊTRE
+    // ════════════════════════════════════════════════════════════════════════
+    // Empêcher que les widgets ne sortent de la fenêtre par la droite
+    // en définissant une largeur minimale basée sur le plus grand widget
+    if (app->settings_panel) {
+        update_window_minimum_size(app->settings_panel, app->window);
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // CRÉATION DE LA FENÊTRE ÉDITEUR JSON
@@ -496,6 +506,7 @@ void render_app(AppState* app) {
     // 5. RENDU DE LA FENÊTRE ÉDITEUR JSON (seulement si ouverte)
     // ─────────────────────────────────────────────────────────────────────────
     if (app->json_editor && app->json_editor->est_ouvert) {
+        verifier_auto_save(app->json_editor);  // Auto-save pour hot reload
         rendre_json_editor(app->json_editor);
     } else if (app->json_editor && !app->json_editor->est_ouvert) {
         // ✅ Si la fenêtre est marquée comme fermée, la détruire

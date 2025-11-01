@@ -80,6 +80,12 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     editor->max_undo_count = 100;  // Maximum 100 états dans l'historique
 
     // ─────────────────────────────────────────────────────────────────────────
+    // INITIALISATION DU SYSTÈME AUTO-SAVE
+    // ─────────────────────────────────────────────────────────────────────────
+    editor->last_modification_time = 0;
+    editor->auto_save_delay = 0.3f;  // Sauvegarder 0.3s après la dernière modif
+
+    // ─────────────────────────────────────────────────────────────────────────
     // CHARGEMENT DU FICHIER
     // ─────────────────────────────────────────────────────────────────────────
     if (!charger_fichier_json(editor)) {

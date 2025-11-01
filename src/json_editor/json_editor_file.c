@@ -32,7 +32,7 @@ bool charger_fichier_json(JsonEditor* editor) {
     debug_printf("✅ Fichier chargé: %zu octets, %d lignes\n", bytes_read, editor->nb_lignes);
     debug_printf("🎯 Position initiale du curseur: %d\n", editor->curseur_position);
     debug_printf("🎯 Premier caractère du buffer: '%c'\n", editor->buffer[0]);
-    debug_printf("🎯 Caractère à position 730: '%c'\n", editor->buffer[730]);
+
 
     // ETAT INITIAL POUR UNDO :
     sauvegarder_etat_undo(editor);

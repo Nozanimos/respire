@@ -353,6 +353,7 @@ bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
     cJSON* hauteur = cJSON_GetObjectItem(json_obj, "hauteur");
     cJSON* taille_texte = cJSON_GetObjectItem(json_obj, "taille_texte");
     cJSON* couleur = cJSON_GetObjectItem(json_obj, "couleur");
+    cJSON* y_anchor_json = cJSON_GetObjectItem(json_obj, "y_anchor");
     cJSON* callback = cJSON_GetObjectItem(json_obj, "callback");
 
     // Validation
@@ -379,6 +380,14 @@ bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
         if (cJSON_IsNumber(a)) bg_color.a = a->valueint;
     }
 
+    // Ancrage Y (par défaut TOP)
+    ButtonYAnchor y_anchor = BUTTON_ANCHOR_TOP;
+    if (cJSON_IsString(y_anchor_json)) {
+        if (strcmp(y_anchor_json->valuestring, "bottom") == 0) {
+            y_anchor = BUTTON_ANCHOR_BOTTOM;
+        }
+    }
+
     // Récupération du callback
     void (*callback_func)(void) = NULL;
     if (cJSON_IsString(callback)) {
@@ -396,6 +405,7 @@ bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
         hauteur->valueint,
         text_size,
         bg_color,
+        y_anchor,
         callback_func
     );
 

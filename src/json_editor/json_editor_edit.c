@@ -54,6 +54,26 @@ void utf8_strncpy(char* dest, const char* src, int n_chars, int max_bytes) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  AUTO-SAVE POUR HOT RELOAD
+// ════════════════════════════════════════════════════════════════════════════
+void marquer_modification(JsonEditor* editor) {
+    if (!editor) return;
+    editor->last_modification_time = SDL_GetTicks();
+}
+
+void verifier_auto_save(JsonEditor* editor) {
+    if (!editor || !editor->modified) return;
+
+    Uint32 now = SDL_GetTicks();
+    float elapsed = (now - editor->last_modification_time) / 1000.0f;
+
+    if (elapsed >= editor->auto_save_delay) {
+        sauvegarder_fichier_json(editor);
+        editor->last_modification_time = now;
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  DÉSÉLECTIONNER LE TEXTE
 // ════════════════════════════════════════════════════════════════════════════
 void deselectionner(JsonEditor* editor) {
@@ -107,6 +127,7 @@ void inserer_caractere(JsonEditor* editor, char c) {
     editor->buffer[editor->curseur_position] = c;
     editor->curseur_position++;
     editor->modified = true;
+    marquer_modification(editor);
     editor->nb_lignes = compter_lignes(editor->buffer);
 
     // LOG
@@ -150,6 +171,7 @@ void supprimer_caractere(JsonEditor* editor) {
 
             editor->curseur_position = sel_min;
             editor->modified = true;
+    marquer_modification(editor);
             editor->nb_lignes = compter_lignes(editor->buffer);
 
             deselectionner(editor);
@@ -219,6 +241,7 @@ void supprimer_caractere(JsonEditor* editor) {
             // Mettre à jour le curseur
             editor->curseur_position = char_start;
             editor->modified = true;
+    marquer_modification(editor);
             editor->nb_lignes = compter_lignes(editor->buffer);
 
             debug_printf("✅ [BACKSPACE] Caractère supprimé! Nouveau curseur_pos=%d\n",
@@ -250,6 +273,7 @@ void supprimer_caractere_apres(JsonEditor* editor) {
 
             editor->curseur_position = sel_min;
             editor->modified = true;
+    marquer_modification(editor);
             editor->nb_lignes = compter_lignes(editor->buffer);
 
             deselectionner(editor);
@@ -306,6 +330,7 @@ void supprimer_caractere_apres(JsonEditor* editor) {
 
             // Le curseur reste à la même position
             editor->modified = true;
+    marquer_modification(editor);
             editor->nb_lignes = compter_lignes(editor->buffer);
 
             debug_printf("✅ [DELETE] Caractère supprimé! Curseur_pos reste à %d\n",
@@ -489,6 +514,7 @@ void modifier_nombre_au_curseur(JsonEditor* editor, int delta) {
     editor->curseur_position = debut + nouvelle_len;
 
     editor->modified = true;
+    marquer_modification(editor);
     editor->nb_lignes = compter_lignes(editor->buffer);
 
     debug_printf("🔢 Nombre modifié: '%s' → '%s' (delta: %d)\n",
@@ -746,6 +772,7 @@ void dupliquer_ligne_courante(JsonEditor* editor) {
             editor->curseur_position = pos_insertion;
 
             editor->modified = true;
+    marquer_modification(editor);
             editor->nb_lignes = compter_lignes(editor->buffer);
 
             debug_printf("📋 Ligne dupliquée: pos %d, longueur %d\n", debut_ligne, longueur_ligne);
