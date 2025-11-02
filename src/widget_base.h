@@ -69,7 +69,7 @@ typedef struct {
 // LIMITE : 10 tailles différentes en cache (largement suffisant)
 
 #define MAX_CACHED_FONTS 10      // Nombre max de polices en cache
-#define MIN_FONT_SIZE 16         // Taille minimum pour lisibilité mobile
+#define MIN_FONT_SIZE 12         // Taille minimum
 
 // Structure d'une police en cache
 typedef struct {

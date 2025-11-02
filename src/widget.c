@@ -141,11 +141,13 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     widget->current_text_size = text_size;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // ESPACEMENTS DE BASE (pour rescaling proportionnel)
+    // ESPACEMENTS DE BASE (calculés proportionnellement à la taille de police)
     // ─────────────────────────────────────────────────────────────────────────
-    widget->base_espace_apres_texte = 20;      // Marge texte → flèches
-    widget->base_espace_entre_fleches = 5;     // Espace ▲ ↔ ▼
-    widget->base_espace_apres_fleches = 15;    // Marge flèches → valeur
+    // Au lieu de valeurs fixes, on base tout sur text_size pour que les espacements
+    // soient cohérents quelle que soit la taille de police définie dans le JSON
+    widget->base_espace_apres_texte = (int)(text_size * 1.1);    // ~110% de la hauteur du texte
+    widget->base_espace_entre_fleches = (int)(text_size * 0.28); // ~28% de la hauteur du texte
+    widget->base_espace_apres_fleches = (int)(text_size * 0.83); // ~83% de la hauteur du texte
 
     // ─────────────────────────────────────────────────────────────────────────
     // COULEURS DU WIDGET
@@ -160,11 +162,18 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     int text_width = 0;
     int text_height = 0;
 
-    if (font) {
-        // Utiliser la police pour mesurer précisément
+    // IMPORTANT : Utiliser get_font_for_size() pour obtenir la police à la bonne
+    // taille (celle définie dans le JSON), pas le paramètre 'font' qui pourrait
+    // être à une taille différente (comme font_normal qui est 20px)
+    TTF_Font* correct_font = get_font_for_size(text_size);
+    if (correct_font) {
+        // Utiliser la police correcte pour mesurer précisément
+        TTF_SizeUTF8(correct_font, name, &text_width, &text_height);
+    } else if (font) {
+        // Fallback sur le font passé en paramètre si get_font_for_size échoue
         TTF_SizeUTF8(font, name, &text_width, &text_height);
     } else {
-        // Estimation grossière si pas de police
+        // Estimation grossière si pas de police du tout
         text_width = strlen(name) * (text_size / 2);
         text_height = text_size;
     }

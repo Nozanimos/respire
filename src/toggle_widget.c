@@ -36,8 +36,10 @@ ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_st
     widget->base_text_size = text_size;
     widget->current_text_size = text_size;
 
-    // Espacement de base
-    widget->base_espace_apres_texte = 20;
+    // Espacement de base (calculé proportionnellement à la taille de police)
+    // Au lieu d'une valeur fixe, on base l'espacement sur text_size pour que
+    // l'alignement soit cohérent quelle que soit la taille définie dans le JSON
+    widget->base_espace_apres_texte = (int)(text_size * 1.1);
 
     // ─────────────────────────────────────────────────────────────────────────
     // COULEURS DU WIDGET (style moderne)
