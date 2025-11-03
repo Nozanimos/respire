@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #include "widget_list.h"
 #include "debug.h"
 #include <stdlib.h>

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #ifndef __SEPARATOR_WIDGET_H__
 #define __SEPARATOR_WIDGET_H__
 

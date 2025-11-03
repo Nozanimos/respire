@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #ifndef __WIDGET_H__
 #define __WIDGET_H__
 

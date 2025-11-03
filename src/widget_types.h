@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // widget_types.h (VERSION ENRICHIE)
 #ifndef __WIDGET_TYPES_H__
 #define __WIDGET_TYPES_H__

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // json_config_loader.c
 #include "json_config_loader.h"
 //#include "settings_panel.h"

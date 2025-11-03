@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // json_config_loader.h
 #ifndef __JSON_CONFIG_LOADER_H__
 #define __JSON_CONFIG_LOADER_H__

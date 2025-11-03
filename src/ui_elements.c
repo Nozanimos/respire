@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // ui_elements.c
 #include "settings_panel.h"
 #include <SDL2/SDL2_gfxPrimitives.h>

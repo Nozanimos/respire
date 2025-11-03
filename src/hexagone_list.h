@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #ifndef __HEXAGONE_LIST_H__
 #define __HEXAGONE_LIST_H__
 

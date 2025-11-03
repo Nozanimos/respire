@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #include "toggle_widget.h"
 #include "debug.h"
 #include <stdio.h>

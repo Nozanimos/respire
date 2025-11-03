@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // settings_panel.h
 #ifndef __SETTINGS_PANEL_H__
 #define __SETTINGS_PANEL_H__

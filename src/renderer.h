@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // renderer.h
 #ifndef __RENDERER_H__
 #define __RENDERER_H__

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #include <string.h>
 #include <stdlib.h>
 #include "label_widget.h"

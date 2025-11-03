@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #include <stdlib.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include "preview_widget.h"

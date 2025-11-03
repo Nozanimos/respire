@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #include "renderer.h"
 #include "hexagone_list.h"
 #include "widget_base.h"

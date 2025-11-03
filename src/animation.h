@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #ifndef __ANIMATION_H__
 #define __ANIMATION_H__
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 #include "json_editor.h"
 #include "json_syntax.h"
 #include <SDL2/SDL2_gfxPrimitives.h>

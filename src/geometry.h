@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // geometry.h
 #ifndef __GEOMETRY_H__
 #define __GEOMETRY_H__
