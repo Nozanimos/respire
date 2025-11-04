@@ -16,86 +16,34 @@ Mon tout premier programme en langage C + SDL2
 ✅ - Panneau de configuration animé
 ✅ - Curseurs temps inspiration/expiration
 ✅ - Réglage nombre de cycles
-        ✅ - créer triangle isocèle dans géometry.c, le milieu de la base servira de point de référence et la base sera le double de la hauteur
-                - À voir si la contrainte pour les coodonnées est meilleure en valeurs relatives ou valeurs absolues
-                - Le triangle créé servira de fêches haut/bas tête-bèche espacée de quelques pixels dans le widget en dessous.
-        ✅ - remplacer les sildebar par les flèches haut/bas puis débogage.
-        ✅ - Créer un modèle de widget {"nom_option",
-                                        taille_texte,
-                                        flèches haut/bas (incrémenter/décrémenter valeur),
-                                        couleur (noir par défaut),
-                                        hovered couleur (jaune pâle),
-                                        position_x,
-                                        position_y,
-                                        callback};
-        ✅ - Créer widget bouton actif/inactif nom - on/off - commande
+✅ - créer triangle isocèle dans géometry.c, le milieu de la base servira de point de référence et la base sera le double de la hauteur
+        - À voir si la contrainte pour les coodonnées est meilleure en valeurs relatives ou valeurs absolues
+        - Le triangle créé servira de fêches haut/bas tête-bèche espacée de quelques pixels dans le widget en dessous.
+✅ - remplacer les sildebar par les flèches haut/bas puis débogage.
+✅ - Créer les principaux widgets
+✅ - Créer widget bouton actif/inactif nom - on/off - commande
+✅ - modélisation des options du panneau de configuration en listes :
+✅ - Créer fichier json_helper qui va servir à créer, positionner les options dans le panneau de configuration
+✅ - JSON Editor créé avec coloration syntaxique
+✅ - Scroll horizontal/vertical
+✅ - Sélection UTF-8 (simple/double/triple clic)
+✅ - Molette pour incrémenter/décrémenter les nombres
+✅ - Ctrl+D : Dupliquer ligne
+✅ - Undo/Redo (Ctrl+Z / Ctrl+Shift+Z)
+✅ - Copier/Coller/Couper (Ctrl+C/V/X)
+✅ - Touches Delete et Backspace UTF-8 aware
+✅ - Réviser en priorité les callbacks pour une meilleure fluidité du système
+✅ - Validation JSON en temps réel : icône ✅/❌ pour savoir si le JSON est valide
+✅ - Preview en direct : voir les widgets se mettre à jour dans le panneau en live (HOT RELOAD!)
 
-        ✅ - modélisation des options du panneau de configuration en listes :
+                        JSON EDITOR :
+NOUS SOMMES ICI ->      🔄 - Boutons recharger / sauvagarder : doivent suivre la base de la fenêtre si étirement vers le bas + rendre visible le code
+                        □ - Insertion clic-droit avec les options courantes (couper, copier, coller,etc...)
+                        □ - Format/Prettify (Ctrl+Shift+F) : réindenter proprement le JSON automatiquement
+                        □ - Template/Snippet : bouton pour insérer un template de widget vide
+                        □ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c
 
-        🔄 - Créer fichier json_helper qui va servir à créer, positionner les options dans le panneau de configuration
-
-                - Une fenêtre en json devra s'ouvrir et se fermer en même temps que le panneau de configuration
-                et apparaître sur la partie droite de l'écran laissant visible le panneau de configuration pour
-                l'ajout, l'ajustement des widgets, textes lignes de séparation (fines 1px) et la modification des valeurs pourra se faire en roulant la molette de la souris pour incrémenter ou décrémenter les valeurs.
-                - Une liste sera imprimée dans un fichier avec les valeurs correspondantes au json qui pourront être copiée directement dans le setting_panel.c à l'endroit où l'on crée les widgets (étiquette de commentaire création de widgets).
-                - Les widgets déjà présents dans le code settings_panel.c devront être inscrits dans le json de manière à modifier leurs paramètres en temps réel au besoin.
-                - Question pratique, les enregistrements dans le fichier se feront à la fermeture du panneau de configuration.
-                - En début de json, un template en commentaires devra apparaître de manière à ce que moi, utilisateur puisse prendre connaissance des paramètres à ajouter aux bons emplacements. Ces commentaires apparaîtront automatiquement de manière intéractive lorsque le widget, le titre ou la ligne auront été  décommentés et seront fonctionnel dans le programme.
-                - Débogage à chaque fois que possible durant cette étape.       ← NOUS SOMMES À CE CHAPITRE
-
-                ⚠️  NOTES IMPORTANTES RESPONSIVE :
-                    □ - Intégrer le scale_factor directement dans add_increment_widget() et add_toggle_widget()
-                        pour que le JSON loader hérite automatiquement du responsive
-                        important : Prèter scrupuleusement attention à l'UTF8 qui est utilisé pour les calculs de longueur de caractères.
-                    □ - Après finalisation du JSON editor : recompiler TOUS les widgets en dur dans settings_panel.c
-                        avec le scaling intégré (débrancher le JSON loader pour la version finale)
-                    □ - Corriger la barre de séparation : elle doit rester fixe tant que le panneau garde sa largeur
-                        de base (500px), et ne bouger QUE quand le panneau touche le bord droit de la fenêtre
-                    □ - Important : l'appli finale sera en fullscreen, donc le responsive mobile est critique
-
-
-        ✅ - JSON Editor créé avec coloration syntaxique
-        ✅ - Scroll horizontal/vertical
-        ✅ - Sélection UTF-8 (simple/double/triple clic)
-        ✅ - Molette pour incrémenter/décrémenter les nombres
-        ✅ - Ctrl+D : Dupliquer ligne
-        ✅ - Undo/Redo (Ctrl+Z / Ctrl+Shift+Z)
-        ✅ - Copier/Coller/Couper (Ctrl+C/V/X)
-        ✅ - Touches Delete et Backspace UTF-8 aware
-
-        Plan des fonctionnalités ci-dessous :
-            ÉTAPE 1 : Système de callbacks flexibles (30-45 min)
-            ├─ Créer le CallbackRegistry
-            ├─ Créer find_callback()
-            └─ Tester que ça compile
-
-            ÉTAPE 2 : load_widgets_from_json() (1-2h)
-            ├─ Créer la fonction qui lit le JSON
-            ├─ Parser et créer les widgets dynamiquement
-            ├─ Assigner les callbacks automatiquement
-            └─ ⚠️ GARDER les widgets hardcodés en PARALLÈLE pour comparer
-
-            ÉTAPE 3 : Tester que JSON = Hard-coded (30 min)
-            ├─ Créer un JSON avec les 3 widgets actuels
-            ├─ Les charger dynamiquement
-            ├─ Vérifier que tout fonctionne identiquement
-            └─ Si OK → Supprimer le code hardcodé ✂️
-
-            ÉTAPE 4 : Hot reload (1-2h)
-            ├─ Ajouter watch sur le fichier JSON
-            ├─ Appeler reload_panel_widgets() au changement
-            └─ Tester en modifiant le JSON en live
-
-        🔥 PROCHAINES FONCTIONNALITÉS JSON EDITOR (Session suivante) :
-        □ - Réviser en priorité les callbacks pour une meilleure fluidité du système
-        □ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c
-        □ - Validation JSON en temps réel : icône ✅/❌ pour savoir si le JSON est valide
-        □ - Format/Prettify (Ctrl+Shift+F) : réindenter proprement le JSON automatiquement
-        □ - Template/Snippet : bouton pour insérer un template de widget vide
-        □ - Preview en direct : voir les widgets se mettre à jour dans le panneau en live (HOT RELOAD!)
-
-        □ - descriptions à venir
-        □ - Adapter l'ensemble à la taille de l'écran (merci les coordonnées absolues) :-D
+        □ - Autre (à venir)
 
 
 🎯 PHASE 3 : CYCLE RESPIRATOIRE
@@ -115,4 +63,10 @@ Mon tout premier programme en langage C + SDL2
 □ - Animations fluides
 □ - Gestion erreurs robuste
 □ - Optimisation performances
- ptite modif pour voir
+
+                ⚠️  NOTES IMPORTANTES RESPONSIVE :
+
+                        important : Prèter scrupuleusement attention à l'UTF8 qui est utilisé pour les calculs de longueur de caractères.
+                    □ - Après finalisation de tous les widgets dans JSON editor : recompiler TOUS les widgets en dur dans settings_panel.c
+                        avec le scaling intégré (débrancher le JSON loader pour la version finale)
+                    □ - Important : l'appli finale sera en fullscreen, donc le responsive mobile est critique
