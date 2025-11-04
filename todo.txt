@@ -37,9 +37,9 @@ Mon tout premier programme en langage C + SDL2
 ✅ - Preview en direct : voir les widgets se mettre à jour dans le panneau en live (HOT RELOAD!)
 
                         JSON EDITOR :
-NOUS SOMMES ICI ->      🔄 - Boutons recharger / sauvagarder : doivent suivre la base de la fenêtre si étirement vers le bas + rendre visible le code
-                        □ - Insertion clic-droit avec les options courantes (couper, copier, coller,etc...)
-                        □ - Format/Prettify (Ctrl+Shift+F) : réindenter proprement le JSON automatiquement
+                        ✅ - Boutons recharger / sauvagarder : doivent suivre la base de la fenêtre si étirement vers le bas + rendre visible le code
+                        ✅ - Insertion clic-droit avec les options courantes (couper, copier, coller,etc...)
+NOUS SOMMES ICI ->      🔄 - Format/Prettify (Ctrl+Shift+F) : réindenter proprement le JSON automatiquement
                         □ - Template/Snippet : bouton pour insérer un template de widget vide
                         □ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c
 
