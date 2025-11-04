@@ -81,7 +81,8 @@ void auto_scroll_curseur(JsonEditor* editor) {
         }
     }
 
-    int nb_lignes_visibles = (EDITOR_HEIGHT - 100) / LINE_HEIGHT;
+    // Calcul du nombre de lignes visibles
+    int nb_lignes_visibles = obtenir_nb_lignes_visibles(editor);
 
     // Si le curseur est au-dessus de la zone visible, scroller vers le haut
     if (curseur_ligne < editor->scroll_offset) {

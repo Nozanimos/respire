@@ -68,13 +68,13 @@
       "id": "breath_duration",
       "nom_affichage": "Vitesse respiration",
       "x": 165,
-      "y": 58,
+      "y": 64,
       "valeur_min": 1,
       "valeur_max": 10,
       "valeur_depart": 3,
       "increment": 1,
       "taille_fleche": 6,
-      "taille_texte": 16,
+      "taille_texte": 14,
       "callback": "duration_value_changed"
     },
 
@@ -83,13 +83,13 @@
       "id": "breath_cycles",
       "nom_affichage": "Nombre de cycles",
       "x": 165,
-      "y": 88,
+      "y": 90,
       "valeur_min": 1,
       "valeur_max": 20,
       "valeur_depart": 1,
       "increment": 1,
       "taille_fleche": 6,
-      "taille_texte": 16,
+      "taille_texte": 14,
       "callback": "cycles_value_changed"
     },
 
@@ -98,13 +98,13 @@
       "id": "start_duration",
       "nom_affichage": "Temps avant session (s)",
       "x": 165,
-      "y": 148,
+      "y": 143,
       "valeur_min": 10,
       "valeur_max": 120,
       "valeur_depart": 10,
       "increment": 1,
       "taille_fleche": 6,
-      "taille_texte": 16,
+      "taille_texte": 14,
       "callback": "start_value_changed"
     },
 
@@ -130,12 +130,12 @@
       "id": "alternate_cycles",
       "nom_affichage": "Cycles alternés",
       "x": 165,
-      "y": 118,
+      "y": 117,
       "etat_depart": false,
       "largeur_toggle": 30,
       "hauteur_toggle": 14,
       "taille_curseur": 15,
-      "taille_texte": 16,
+      "taille_texte": 14,
       "callback": "alternate_cycles_changed"
     },
     {

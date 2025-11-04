@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "json_editor.h"
 #include "../debug.h"
+#include <SDL2/SDL_mouse.h>
 
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -42,9 +43,24 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
     switch (event->type) {
         case SDL_WINDOWEVENT:
             if (event->window.windowID == window_id) {
+                // ═════════════════════════════════════════════════════════════════
+                // FERMETURE DE LA FENÊTRE
+                // ═════════════════════════════════════════════════════════════════
                 if (event->window.event == SDL_WINDOWEVENT_CLOSE) {
                     editor->est_ouvert = false;
                 }
+
+                // ═════════════════════════════════════════════════════════════════
+                // REDIMENSIONNEMENT DE LA FENÊTRE
+                // ═════════════════════════════════════════════════════════════════
+                // Quand l'utilisateur étire ou réduit la fenêtre, SDL envoie cet événement
+                // On en profite pour recalculer les positions des éléments
+                else if (event->window.event == SDL_WINDOWEVENT_RESIZED) {
+                    recalculer_tous_boutons(editor);
+                    debug_printf("🔄 Fenêtre redimensionnée : %dx%d\n",
+                                 event->window.data1, event->window.data2);
+                }
+
                 return true;
             }
             break;
@@ -55,6 +71,11 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                 // GESTION DES RACCOURCIS CLAVIER (Ctrl+...)
                 // ═════════════════════════════════════════════════════════════════
                 SDL_Keymod mod = SDL_GetModState();
+
+                if (editor->context_menu.visible && event->key.keysym.sym == SDLK_ESCAPE) {
+                    cacher_menu_contextuel(editor);
+                    return true;
+                }
 
                 // ─────────────────────────────────────────────────────────────────
                 // Ctrl+S → SAUVEGARDER
@@ -282,22 +303,22 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                             int x = event->motion.x;
                             int y = event->motion.y;
 
-                            editor->bouton_recharger_survole =
-                            (x >= editor->bouton_recharger.x &&
-                            x <= editor->bouton_recharger.x + editor->bouton_recharger.w &&
-                            y >= editor->bouton_recharger.y &&
-                            y <= editor->bouton_recharger.y + editor->bouton_recharger.h);
+                            // Gérer le survol des boutons
+                            gerer_survol_boutons(editor, x, y);
 
-                            editor->bouton_sauvegarder_survole =
-                            (x >= editor->bouton_sauvegarder.x &&
-                            x <= editor->bouton_sauvegarder.x + editor->bouton_sauvegarder.w &&
-                            y >= editor->bouton_sauvegarder.y &&
-                            y <= editor->bouton_sauvegarder.y + editor->bouton_sauvegarder.h);
+                            // Gérer le survol du menu contextuel
+                            if (editor->context_menu.visible) {
+                                gerer_survol_menu_contextuel(editor);
+                            }
 
                             // Si bouton gauche enfoncé, on sélectionne en glissant
                             if (event->motion.state & SDL_BUTTON_LMASK) {
+                                // ─────────────────────────────────────────────────────────────────
+                                // Récupérer la hauteur actuelle pour la zone de texte
+                                // ─────────────────────────────────────────────────────────────────
+
                                 // Clic-glissé dans la zone de texte
-                                if (y >= 40 && y < EDITOR_HEIGHT - 60 && x >= LEFT_MARGIN) {
+                                if (y >= 40 && y < editor->hauteur_fenetre - 60 && x >= LEFT_MARGIN) {
                                     int ligne_survol = editor->scroll_offset + ((y - 40) / LINE_HEIGHT);
                                     if (ligne_survol >= editor->nb_lignes) {
                                         ligne_survol = editor->nb_lignes - 1;
@@ -384,7 +405,7 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                                     }
 
                                     // Ne pas scroller au-delà de la fin
-                                    int nb_lignes_visibles = (EDITOR_HEIGHT - 100) / LINE_HEIGHT;
+                                    int nb_lignes_visibles = obtenir_nb_lignes_visibles(editor);
                                     int max_scroll = editor->nb_lignes - nb_lignes_visibles;
                                     if (max_scroll < 0) max_scroll = 0;
 
@@ -404,27 +425,43 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                                 int x = event->button.x;
                                 int y = event->button.y;
 
-                                if (x >= editor->bouton_recharger.x &&
-                                    x <= editor->bouton_recharger.x + editor->bouton_recharger.w &&
-                                    y >= editor->bouton_recharger.y &&
-                                    y <= editor->bouton_recharger.y + editor->bouton_recharger.h) {
-                                    charger_fichier_json(editor);
-                                debug_printf("🔄 JSON rechargé\n");
-                                return true;
+                                // ═════════════════════════════════════════════════════════════════
+                                // CLIC DROIT - MENU CONTEXTUEL
+                                // ═════════════════════════════════════════════════════════════════
+                                if (event->button.button == SDL_BUTTON_RIGHT) {
+                                    // Si le menu est déjà visible, le cacher
+                                    if (editor->context_menu.visible) {
+                                        cacher_menu_contextuel(editor);
+                                    } else {
+                                        // Sinon, l'afficher à la position du clic
+                                        afficher_menu_contextuel(editor, x, y);
+                                    }
+                                    return true;
+                                }
+
+                                // ═════════════════════════════════════════════════════════════════
+                                // CLIC GAUCHE
+                                // ═════════════════════════════════════════════════════════════════
+                                else if (event->button.button == SDL_BUTTON_LEFT) {
+                                    // Si le menu contextuel est visible, gérer le clic dedans
+                                    if (editor->context_menu.visible) {
+                                        if (gerer_clic_menu_contextuel(editor, x, y)) {
+                                            // Un item a été cliqué, le menu se ferme automatiquement
+                                            return true;
+                                        } else {
+                                            // Clic en dehors du menu, le cacher
+                                            cacher_menu_contextuel(editor);
+                                        }
                                     }
 
-                                    if (x >= editor->bouton_sauvegarder.x &&
-                                        x <= editor->bouton_sauvegarder.x + editor->bouton_sauvegarder.w &&
-                                        y >= editor->bouton_sauvegarder.y &&
-                                        y <= editor->bouton_sauvegarder.y + editor->bouton_sauvegarder.h) {
-                                        if (sauvegarder_fichier_json(editor)) {
-                                            debug_printf("💾 JSON sauvegardé\n");
-                                        }
-                                        return true;
-                                        }
+                                // Tester d'abord les boutons
+                                if (gerer_clic_boutons(editor, x, y)) {
+                                    return true;
+                                }
 
                                         // Clic dans la zone de texte pour positionner le curseur
-                                        if (y >= 40 && y < EDITOR_HEIGHT - 60 && x >= LEFT_MARGIN) {
+                                        // Récupérer la hauteur actuelle de la fenêtre pour la zone de texte
+                                        if (y >= 40 && y < editor->hauteur_fenetre - 60 && x >= LEFT_MARGIN) {
                                             int ligne_cliquee = editor->scroll_offset + ((y - 40) / LINE_HEIGHT);
                                             if (ligne_cliquee >= editor->nb_lignes) {
                                                 ligne_cliquee = editor->nb_lignes - 1;
@@ -505,6 +542,7 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
 
                                             return true;
                                         }
+                                }
                             }
                             break;
     }

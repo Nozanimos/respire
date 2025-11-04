@@ -43,7 +43,8 @@ void rendre_json_editor(JsonEditor* editor) {
     // ─────────────────────────────────────────────────────────────────────────
     int y = 40;
     char ligne[256];
-    int nb_lignes_visibles = (EDITOR_HEIGHT - 100) / LINE_HEIGHT;
+    // Calculer combien de lignes on peut afficher selon la hauteur actuelle
+    int nb_lignes_visibles = obtenir_nb_lignes_visibles(editor);
 
 
     // Calculer les positions de sélection si active
@@ -220,7 +221,14 @@ void rendre_json_editor(JsonEditor* editor) {
         // ─────────────────────────────────────────────────────────────────────────
         // BOUTONS
         // ─────────────────────────────────────────────────────────────────────────
-        rendre_boutons(editor);
+        rendre_tous_boutons(editor);
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // MENU CONTEXTUEL
+        // ─────────────────────────────────────────────────────────────────────────
+        if (editor->context_menu.visible) {
+            dessiner_menu_contextuel(editor);
+        }
 
         // ─────────────────────────────────────────────────────────────────────────
         // PRÉSENTATION
@@ -229,36 +237,128 @@ void rendre_json_editor(JsonEditor* editor) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  RENDU DES BOUTONS
+//  RENDU DE TOUS LES BOUTONS
 // ════════════════════════════════════════════════════════════════════════════
-void rendre_boutons(JsonEditor* editor) {
-    if (!editor) return;
+void rendre_tous_boutons(JsonEditor* editor) {
+    if (!editor || !editor->font_ui) return;
 
-    // Bouton RECHARGER
-    Uint32 color_recharger = editor->bouton_recharger_survole ? 0xFF4080FF : 0xFF2060E0;
-    boxColor(editor->renderer,
-             editor->bouton_recharger.x, editor->bouton_recharger.y,
-             editor->bouton_recharger.x + editor->bouton_recharger.w,
-             editor->bouton_recharger.y + editor->bouton_recharger.h,
-             color_recharger);
+    extern void render_text(SDL_Renderer* renderer, TTF_Font* font,
+                            const char* text, int x, int y, Uint32 color);
 
-    // Bouton SAUVEGARDER
-    Uint32 color_sauvegarder = editor->bouton_sauvegarder_survole ? 0xFF40C060 : 0xFF30A050;
-    boxColor(editor->renderer,
-             editor->bouton_sauvegarder.x, editor->bouton_sauvegarder.y,
-             editor->bouton_sauvegarder.x + editor->bouton_sauvegarder.w,
-             editor->bouton_sauvegarder.y + editor->bouton_sauvegarder.h,
-             color_sauvegarder);
+    // Dessiner chaque bouton
+    for (int i = 0; i < editor->nb_boutons; i++) {
+        EditorButton* btn = &editor->boutons[i];
 
-    // Textes des boutons
-    if (editor->font_ui) {
-        extern void render_text(SDL_Renderer* renderer, TTF_Font* font,
-                                const char* text, int x, int y, Uint32 color);
+        // Choisir la couleur selon le survol
+        Uint32 couleur = btn->survole ? btn->couleur_survol : btn->couleur_normale;
 
-        render_text(editor->renderer, editor->font_ui, "Recharger",
-                    editor->bouton_recharger.x + 25, editor->bouton_recharger.y + 8, 0xFFFFFFFF);
+        // Dessiner le rectangle du bouton
+        boxColor(editor->renderer,
+                 btn->rect.x, btn->rect.y,
+                 btn->rect.x + btn->rect.w,
+                 btn->rect.y + btn->rect.h,
+                 couleur);
 
-        render_text(editor->renderer, editor->font_ui, "Sauvegarder",
-                    editor->bouton_sauvegarder.x + 20, editor->bouton_sauvegarder.y + 8, 0xFFFFFFFF);
+        // Centrer le texte
+        int texte_w, texte_h;
+        TTF_SizeUTF8(editor->font_ui, btn->label, &texte_w, &texte_h);
+        int centre_x = btn->rect.x + (btn->rect.w - texte_w) / 2;
+        int centre_y = btn->rect.y + (btn->rect.h - texte_h) / 2;
+
+        render_text(editor->renderer, editor->font_ui, btn->label,
+                    centre_x, centre_y, 0xFFFFFFFF);
     }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  RENDU MENU CONTEXTUEL
+// ════════════════════════════════════════════════════════════════════════════
+void dessiner_menu_contextuel(JsonEditor* editor) {
+    ContextMenu* menu = &editor->context_menu;
+
+    if (!menu->visible) return;
+
+    // SAUVEGARDER le mode de blend actuel
+    SDL_BlendMode oldBlendMode;
+    SDL_GetRenderDrawBlendMode(editor->renderer, &oldBlendMode);
+
+    // ACTIVER le blending pour la transparence
+    SDL_SetRenderDrawBlendMode(editor->renderer, SDL_BLENDMODE_BLEND);
+
+    // Fond du menu (opaque)
+    SDL_SetRenderDrawColor(editor->renderer,
+                           menu->bg_color.r, menu->bg_color.g, menu->bg_color.b, menu->bg_color.a);
+    SDL_Rect background = {menu->x, menu->y, menu->width, menu->height};
+    SDL_RenderFillRect(editor->renderer, &background);
+
+    // Bordure
+    SDL_SetRenderDrawColor(editor->renderer,
+                           menu->border_color.r, menu->border_color.g, menu->border_color.b, menu->border_color.a);
+    SDL_RenderDrawRect(editor->renderer, &background);
+
+    // Items avec surbrillance au survol (semi-transparente)
+    int mouse_x, mouse_y;
+    SDL_GetMouseState(&mouse_x, &mouse_y);
+
+    for (int i = 0; i < menu->item_count; i++) {
+        ContextMenuItem* item = &menu->items[i];
+
+        // Position absolue de l'item
+        SDL_Rect absolute_rect = {
+            menu->x + item->rect.x,
+            menu->y + item->rect.y,
+            item->rect.w,
+            item->rect.h
+        };
+
+        if (item->label == NULL) {
+            // ═════════════════════════════════════════════════════════════
+            // DESSIN DU SÉPARATEUR
+            // ═════════════════════════════════════════════════════════════
+            SDL_SetRenderDrawColor(editor->renderer,
+                                   menu->border_color.r, menu->border_color.g, menu->border_color.b, 100);
+            int line_y = absolute_rect.y + (absolute_rect.h / 2);
+            SDL_RenderDrawLine(editor->renderer,
+                               absolute_rect.x + 5, line_y,
+                               absolute_rect.x + absolute_rect.w - 5, line_y);
+        } else {
+            // ═════════════════════════════════════════════════════════════
+            // DESSIN DE L'ITEM NORMAL
+            // ═════════════════════════════════════════════════════════════
+
+            // Surbrillance si la souris est sur l'item
+            if (mouse_x >= absolute_rect.x && mouse_x <= absolute_rect.x + absolute_rect.w &&
+                mouse_y >= absolute_rect.y && mouse_y <= absolute_rect.y + absolute_rect.h &&
+                item->enabled) {
+                SDL_SetRenderDrawColor(editor->renderer,
+                                       menu->hover_color.r, menu->hover_color.g, menu->hover_color.b, menu->hover_color.a);
+                SDL_RenderFillRect(editor->renderer, &absolute_rect);
+                }
+
+                // Texte
+                SDL_Color text_color = item->enabled ? menu->text_enabled_color : menu->text_disabled_color;
+
+            if (editor->font_ui) {
+                SDL_Surface* surface = TTF_RenderUTF8_Blended(editor->font_ui, item->label, text_color);
+                if (surface) {
+                    SDL_Texture* texture = SDL_CreateTextureFromSurface(editor->renderer, surface);
+
+                    // Centrer le texte verticalement et l'aligner à gauche avec marge
+                    SDL_Rect text_rect = {
+                        absolute_rect.x + 10,
+                        absolute_rect.y + (absolute_rect.h - surface->h) / 2,
+                        surface->w,
+                        surface->h
+                    };
+
+                    SDL_RenderCopy(editor->renderer, texture, NULL, &text_rect);
+                    SDL_FreeSurface(surface);
+                    SDL_DestroyTexture(texture);
+                }
+            }
+        }
+    }
+
+    // RESTAURER l'ancien mode de blend
+    SDL_SetRenderDrawBlendMode(editor->renderer, oldBlendMode);
 }

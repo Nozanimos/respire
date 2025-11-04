@@ -6,6 +6,159 @@
 #include <stdio.h>
 #include "../widget_base.h"
 
+// ════════════════════════════════════════════════════════════════════════════
+//  CALLBACKS DES BOUTONS
+// ════════════════════════════════════════════════════════════════════════════
+// Ces fonctions sont appelées quand on clique sur les boutons
+
+static void callback_recharger(JsonEditor* editor) {
+    if (charger_fichier_json(editor)) {
+        debug_printf("🔄 JSON rechargé via bouton\n");
+    } else {
+        debug_printf("❌ Erreur rechargement\n");
+    }
+}
+
+static void callback_sauvegarder(JsonEditor* editor) {
+    if (sauvegarder_fichier_json(editor)) {
+        debug_printf("💾 JSON sauvegardé via bouton\n");
+    } else {
+        debug_printf("❌ Erreur sauvegarde\n");
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  GESTION DES BOUTONS
+// ════════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────────────
+// CRÉATION D'UN BOUTON
+// ─────────────────────────────────────────────────────────────────────────
+EditorButton creer_bouton(const char* label, int largeur, int hauteur,
+                          Uint32 couleur_normale, Uint32 couleur_survol,
+                          BoutonCallback callback) {
+    EditorButton btn;
+    snprintf(btn.label, sizeof(btn.label), "%s", label);
+
+    // Position sera calculée par ajouter_bouton()
+    btn.rect = (SDL_Rect){0, 0, largeur, hauteur};
+
+    btn.couleur_normale = couleur_normale;
+    btn.couleur_survol = couleur_survol;
+    btn.survole = false;
+    btn.callback = callback;
+
+    return btn;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// AJOUT D'UN BOUTON À L'ÉDITEUR
+// ─────────────────────────────────────────────────────────────────────────
+void ajouter_bouton(JsonEditor* editor, EditorButton bouton) {
+    if (!editor) return;
+
+    // Allouer ou agrandir le tableau si nécessaire
+    if (editor->nb_boutons >= editor->capacite_boutons) {
+        int nouvelle_capacite = editor->capacite_boutons == 0 ? 4 : editor->capacite_boutons * 2;
+        EditorButton* nouveau = realloc(editor->boutons, nouvelle_capacite * sizeof(EditorButton));
+        if (!nouveau) {
+            debug_printf("❌ Erreur allocation boutons\n");
+            return;
+        }
+        editor->boutons = nouveau;
+        editor->capacite_boutons = nouvelle_capacite;
+    }
+
+    // Ajouter le bouton
+    editor->boutons[editor->nb_boutons] = bouton;
+    editor->nb_boutons++;
+
+    debug_printf("➕ Bouton ajouté : %s (total: %d)\n", bouton.label, editor->nb_boutons);
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// RECALCUL DES POSITIONS DE TOUS LES BOUTONS
+// ─────────────────────────────────────────────────────────────────────────
+void recalculer_tous_boutons(JsonEditor* editor) {
+    if (!editor || !editor->window) return;
+
+    // Récupérer la hauteur actuelle
+    SDL_GetWindowSize(editor->window, NULL, &editor->hauteur_fenetre);
+
+    // Position de départ : 20px de la gauche, 50px du bas
+    int x_courant = 20;
+    int y_boutons = editor->hauteur_fenetre - 50;
+    int espacement = 10;  // Espace entre les boutons
+
+    // Positionner chaque bouton côte à côte
+    for (int i = 0; i < editor->nb_boutons; i++) {
+        editor->boutons[i].rect.x = x_courant;
+        editor->boutons[i].rect.y = y_boutons;
+
+        // Prochain bouton commence après celui-ci + espacement
+        x_courant += editor->boutons[i].rect.w + espacement;
+    }
+
+    debug_printf("📐 %d boutons repositionnés (y=%d)\n", editor->nb_boutons, y_boutons);
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// GESTION DES CLICS SUR LES BOUTONS
+// ─────────────────────────────────────────────────────────────────────────
+bool gerer_clic_boutons(JsonEditor* editor, int x, int y) {
+    if (!editor) return false;
+
+    // Tester chaque bouton
+    for (int i = 0; i < editor->nb_boutons; i++) {
+        SDL_Rect* rect = &editor->boutons[i].rect;
+
+        if (x >= rect->x && x <= rect->x + rect->w &&
+            y >= rect->y && y <= rect->y + rect->h) {
+
+            // Bouton cliqué ! Appeler son callback
+            if (editor->boutons[i].callback) {
+                editor->boutons[i].callback(editor);
+            }
+
+            debug_printf("🖱️ Clic bouton : %s\n", editor->boutons[i].label);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// GESTION DU SURVOL DES BOUTONS
+// ─────────────────────────────────────────────────────────────────────────
+void gerer_survol_boutons(JsonEditor* editor, int x, int y) {
+    if (!editor) return;
+
+    // Tester chaque bouton
+    for (int i = 0; i < editor->nb_boutons; i++) {
+        SDL_Rect* rect = &editor->boutons[i].rect;
+
+        bool survole = (x >= rect->x && x <= rect->x + rect->w &&
+                        y >= rect->y && y <= rect->y + rect->h);
+
+        editor->boutons[i].survole = survole;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// DESTRUCTION DES BOUTONS
+// ─────────────────────────────────────────────────────────────────────────
+void detruire_boutons(JsonEditor* editor) {
+    if (!editor) return;
+
+    if (editor->boutons) {
+        free(editor->boutons);
+        editor->boutons = NULL;
+    }
+
+    editor->nb_boutons = 0;
+    editor->capacite_boutons = 0;
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DE L'ÉDITEUR
@@ -22,6 +175,8 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     snprintf(editor->filepath, sizeof(editor->filepath), "%s", filepath);
     editor->est_ouvert = true;
     editor->json_valide = true;
+    // Initialiser le menu contextuel
+    initialiser_menu_contextuel(editor);
 
     // ─────────────────────────────────────────────────────────────────────────
     // CRÉATION DE LA FENÊTRE
@@ -68,10 +223,33 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // POSITION DES BOUTONS (en bas de la fenêtre)
+    // INITIALISATION DU SYSTÈME DE BOUTONS
     // ─────────────────────────────────────────────────────────────────────────
-    editor->bouton_recharger = (SDL_Rect){20, EDITOR_HEIGHT - 50, 150, 35};
-    editor->bouton_sauvegarder = (SDL_Rect){190, EDITOR_HEIGHT - 50, 150, 35};
+    editor->boutons = NULL;
+    editor->nb_boutons = 0;
+    editor->capacite_boutons = 0;
+
+    // Créer et ajouter les boutons
+    EditorButton btn_recharger = creer_bouton(
+        "Recharger",                    // Label
+        130, 30,                        // Largeur, Hauteur
+        0xFF2060E0,                     // Couleur normale (bleu)
+        0xFF4080FF,                     // Couleur survol (bleu clair)
+        callback_recharger              // Fonction à appeler
+    );
+    ajouter_bouton(editor, btn_recharger);
+
+    EditorButton btn_sauvegarder = creer_bouton(
+        "Sauvegarder",                  // Label
+        130, 30,                        // Largeur, Hauteur
+        0xFF30A050,                     // Couleur normale (vert)
+        0xFF40C060,                     // Couleur survol (vert clair)
+        callback_sauvegarder            // Fonction à appeler
+    );
+    ajouter_bouton(editor, btn_sauvegarder);
+
+    // Calculer les positions initiales
+    recalculer_tous_boutons(editor);
 
     // ─────────────────────────────────────────────────────────────────────────
     // INITIALISATION DU SYSTÈME UNDO
@@ -107,6 +285,302 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  CALCUL DU NOMBRE DE LIGNES VISIBLES
+// ════════════════════════════════════════════════════════════════════════════
+int obtenir_nb_lignes_visibles(JsonEditor* editor) {
+    if (!editor || !editor->window) return 0;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // RÉCUPÉRATION DE LA HAUTEUR ACTUELLE
+    // ─────────────────────────────────────────────────────────────────────────
+    // On récupère la hauteur et on la stocke dans la structure
+    // pour éviter de rappeler SDL_GetWindowSize plusieurs fois
+    SDL_GetWindowSize(editor->window, NULL, &editor->hauteur_fenetre);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DES LIGNES VISIBLES
+    // ─────────────────────────────────────────────────────────────────────────
+    // Zone de texte = hauteur totale - header (40px) - footer avec boutons (60px)
+    // Donc hauteur_fenetre - 100 pixels
+    int zone_texte = editor->hauteur_fenetre - 100;
+    int nb_lignes = zone_texte / LINE_HEIGHT;
+
+    return nb_lignes;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// MENU CONTEXTUEL
+// ─────────────────────────────────────────────────────────────────────────
+// Actions du menu contextuel
+void action_copier_contextuel(JsonEditor* editor) {
+    copier_selection(editor);
+    debug_printf("📋 [Menu] Copier\n");
+}
+
+void action_couper_contextuel(JsonEditor* editor) {
+    couper_selection(editor);
+    debug_printf("✂️ [Menu] Couper\n");
+}
+
+void action_coller_contextuel(JsonEditor* editor) {
+    coller_texte(editor);
+    debug_printf("📝 [Menu] Coller\n");
+}
+
+void action_tout_selectionner_contextuel(JsonEditor* editor) {
+    selectionner_ligne_courante(editor); // TODO: implémenter "Tout sélectionner"
+    debug_printf("🔲 [Menu] Tout sélectionner\n");
+}
+
+void action_dupliquer_contextuel(JsonEditor* editor) {
+    // Utiliser ta fonction existante de duplication
+    // (à adapter selon ton implémentation)
+    dupliquer_ligne_courante(editor);
+    debug_printf("📄 [Menu] Dupliquer\n");
+}
+
+// Initialisation avec boucle pour éviter la répétition
+void initialiser_menu_contextuel(JsonEditor* editor) {
+    ContextMenu* menu = &editor->context_menu;
+
+    // Configuration des couleurs (thème sombre)
+    menu->bg_color = (SDL_Color){30, 30, 35, 255};
+    menu->border_color = (SDL_Color){100, 100, 110, 255};
+    menu->text_enabled_color = (SDL_Color){255, 255, 255, 255};
+    menu->text_disabled_color = (SDL_Color){128, 128, 128, 255};
+    menu->hover_color = (SDL_Color){181, 181, 181, 50};
+
+    // Définition des items avec groupes et séparateurs
+    struct {
+        char* label;
+        void (*action)(JsonEditor*);
+        bool default_enabled;
+        bool is_separator;  // true pour les séparateurs
+    } items_config[] = {
+        // Groupe 1: Copier/Couper/Coller
+        {"Copier", action_copier_contextuel, false, false},
+        {"Couper", action_couper_contextuel, false, false},
+        {"Coller", action_coller_contextuel, true, false},
+
+        // Séparateur 1
+        {NULL, NULL, false, true},
+
+        // Groupe 2: Tout sélectionner
+        {"Tout sélectionner", action_tout_selectionner_contextuel, true, false},
+
+        // Séparateur 2
+        {NULL, NULL, false, true},
+
+        // Groupe 3: Dupliquer
+        {"Dupliquer", action_dupliquer_contextuel, true, false}
+    };
+
+    menu->item_count = sizeof(items_config) / sizeof(items_config[0]);
+
+    // Initialisation des items avec boucle
+    for (int i = 0; i < menu->item_count; i++) {
+        if (items_config[i].is_separator) {
+            // Item séparateur
+            menu->items[i] = (ContextMenuItem){
+                NULL,  // Pas de label
+                (SDL_Rect){0, 0, 0, 0},
+                false,
+                NULL   // Pas d'action
+            };
+        } else {
+            // Item normal
+            menu->items[i] = (ContextMenuItem){
+                items_config[i].label,
+                (SDL_Rect){0, 0, 0, 0},
+                items_config[i].default_enabled,
+                items_config[i].action
+            };
+        }
+    }
+
+    menu->visible = false;
+    debug_printf("📋 Menu contextuel initialisé avec %d items (dont séparateurs)\n", menu->item_count);
+}
+
+// Calcule les dimensions du menu basées sur le texte
+static void calculer_dimensions_menu(JsonEditor* editor) {
+    ContextMenu* menu = &editor->context_menu;
+
+    int max_width = 0;
+    const int padding = 20; // Marge intérieure
+    const int line_height = 25; // Hauteur par ligne normale
+    const int separator_height = 10; // Hauteur des séparateurs
+
+    // Calculer la largeur maximale basée sur le texte le plus long
+    for (int i = 0; i < menu->item_count; i++) {
+        // Ignorer les séparateurs pour le calcul de largeur
+        if (menu->items[i].label != NULL) {
+            int text_width = 0;
+            if (editor->font_ui) {
+                TTF_SizeUTF8(editor->font_ui, menu->items[i].label, &text_width, NULL);
+            } else {
+                // Fallback si pas de police
+                text_width = strlen(menu->items[i].label) * 8;
+            }
+
+            if (text_width > max_width) {
+                max_width = text_width;
+            }
+        }
+    }
+
+    menu->width = max_width + padding * 2;
+
+    // Calculer la hauteur totale en comptant les séparateurs
+    menu->height = 0;
+    for (int i = 0; i < menu->item_count; i++) {
+        if (menu->items[i].label == NULL) {
+            // Séparateur
+            menu->height += separator_height;
+        } else {
+            // Item normal
+            menu->height += line_height;
+        }
+    }
+
+    // Mettre à jour les rectangles des items
+    int current_y = 0;
+    for (int i = 0; i < menu->item_count; i++) {
+        if (menu->items[i].label == NULL) {
+            // Séparateur
+            menu->items[i].rect = (SDL_Rect){
+                0, // x sera calculé à l'affichage
+                current_y, // y position cumulative
+                menu->width,
+                separator_height
+            };
+            current_y += separator_height;
+        } else {
+            // Item normal
+            menu->items[i].rect = (SDL_Rect){
+                0, // x sera calculé à l'affichage
+                current_y, // y position cumulative
+                menu->width,
+                line_height
+            };
+            current_y += line_height;
+        }
+    }
+}
+
+void afficher_menu_contextuel(JsonEditor* editor, int x, int y) {
+    ContextMenu* menu = &editor->context_menu;
+
+    // Calculer les dimensions basées sur le contenu
+    calculer_dimensions_menu(editor);
+
+    // Mettre à jour la disponibilité des items
+    mettre_a_jour_menu_contextuel(editor);
+
+    // Positionner le menu (s'assurer qu'il reste dans la fenêtre)
+    int window_width, window_height;
+    SDL_GetWindowSize(editor->window, &window_width, &window_height);
+
+    if (x + menu->width > window_width) {
+        x = window_width - menu->width;
+    }
+    if (y + menu->height > window_height) {
+        y = window_height - menu->height;
+    }
+
+    menu->x = x;
+    menu->y = y;
+    menu->visible = true;
+
+    // Les rectangles des items sont déjà correctement calculés dans calculer_dimensions_menu()
+    // avec des coordonnées relatives (x=0, y=position_cumulative)
+    // Pas besoin de les recalculer ici
+
+    debug_printf("📋 Menu contextuel affiché en (%d, %d), taille: %dx%d\n",
+                 x, y, menu->width, menu->height);
+}
+
+void cacher_menu_contextuel(JsonEditor* editor) {
+    editor->context_menu.visible = false;
+}
+
+bool gerer_clic_menu_contextuel(JsonEditor* editor, int x, int y) {
+    ContextMenu* menu = &editor->context_menu;
+
+    if (!menu->visible) return false;
+
+    // Vérifier si le clic est dans le menu
+    if (x >= menu->x && x <= menu->x + menu->width &&
+        y >= menu->y && y <= menu->y + menu->height) {
+
+        // Trouver l'item cliqué
+        for (int i = 0; i < menu->item_count; i++) {
+            ContextMenuItem* item = &menu->items[i];
+            SDL_Rect absolute_rect = {
+                menu->x + item->rect.x,
+                menu->y + item->rect.y,
+                item->rect.w,
+                item->rect.h
+            };
+
+            if (x >= absolute_rect.x && x <= absolute_rect.x + absolute_rect.w &&
+                y >= absolute_rect.y && y <= absolute_rect.y + absolute_rect.h) {
+
+                // Ignorer les séparateurs et items désactivés
+                if (item->label != NULL && item->enabled && item->action != NULL) {
+                    // Exécuter l'action et cacher le menu
+                    item->action(editor);
+                    cacher_menu_contextuel(editor);
+                    return true;
+                }
+                break; // On a trouvé l'item, même si c'est un séparateur
+                }
+        }
+        }
+
+        return false;
+}
+
+// Gestion du survol pour la surbrillance
+void gerer_survol_menu_contextuel(JsonEditor* editor) {
+    ContextMenu* menu = &editor->context_menu;
+
+    if (!menu->visible) return;
+
+    // Les coordonnées des items sont déjà correctement calculées dans calculer_dimensions_menu()
+    // Elles sont relatives au menu (x=0, y=position_cumulative)
+    // Pas besoin de les recalculer ici
+}
+
+void mettre_a_jour_menu_contextuel(JsonEditor* editor) {
+    ContextMenu* menu = &editor->context_menu;
+
+    for (int i = 0; i < menu->item_count; i++) {
+        ContextMenuItem* item = &menu->items[i];
+
+        // Ignorer les séparateurs
+        if (item->label == NULL) continue;
+
+        // Identifier l'item par son label et mettre à jour son état
+        if (strcmp(item->label, "Copier") == 0) {
+            item->enabled = editor->selection_active;
+        }
+        else if (strcmp(item->label, "Couper") == 0) {
+            item->enabled = editor->selection_active;
+        }
+        else if (strcmp(item->label, "Coller") == 0) {
+            item->enabled = (editor->clipboard[0] != '\0');
+        }
+        else if (strcmp(item->label, "Tout sélectionner") == 0) {
+            item->enabled = (strlen(editor->buffer) > 0);
+        }
+        else if (strcmp(item->label, "Dupliquer") == 0) {
+            item->enabled = true; // Toujours disponible
+        }
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  DESTRUCTION
 // ════════════════════════════════════════════════════════════════════════════
 void detruire_json_editor(JsonEditor* editor) {
@@ -115,6 +589,7 @@ void detruire_json_editor(JsonEditor* editor) {
     if (editor->renderer) SDL_DestroyRenderer(editor->renderer);
     if (editor->window) SDL_DestroyWindow(editor->window);
 
+    detruire_boutons(editor);
     free(editor);
     debug_printf("🗑️ Éditeur JSON détruit\n");
 }

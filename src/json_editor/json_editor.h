@@ -18,6 +18,50 @@ static inline int min_int(int a, int b) { return a < b ? a : b; }
 static inline int max_int(int a, int b) { return a > b ? a : b; }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  FORWARD DECLARATION
+// ════════════════════════════════════════════════════════════════════════════
+// Déclaration anticipée pour éviter les dépendances circulaires
+typedef struct JsonEditor_s JsonEditor;
+
+// ════════════════════════════════════════════════════════════════════════════
+//  STRUCTURE POUR LE MENU CONTEXTUEL
+// ════════════════════════════════════════════════════════════════════════════
+typedef struct {
+    char* label;
+    SDL_Rect rect;
+    bool enabled;
+    void (*action)(JsonEditor*);
+} ContextMenuItem;
+
+typedef struct {
+    ContextMenuItem items[10];          // Items du menu
+    int item_count;                     // Nombre d'items
+    bool visible;                      // true si le menu est affiché
+    int x, y;                         // Position d'affichage
+    int width, height;                // Dimensions calculées automatiquement
+    SDL_Color bg_color;               // Couleur de fond
+    SDL_Color border_color;           // Couleur de la bordure
+    SDL_Color text_enabled_color;     // Couleur du texte activé
+    SDL_Color text_disabled_color;    // Couleur du texte désactivé
+    SDL_Color hover_color;            // Couleur de survol
+} ContextMenu;
+
+// ════════════════════════════════════════════════════════════════════════════
+//  STRUCTURE POUR UN BOUTON GÉNÉRIQUE
+// ════════════════════════════════════════════════════════════════════════════
+// Fonction callback : sera appelée quand on clique sur le bouton
+typedef void (*BoutonCallback)(JsonEditor*);
+
+typedef struct {
+    char label[64];                 // Texte du bouton
+    SDL_Rect rect;                  // Position et taille
+    Uint32 couleur_normale;         // Couleur de base
+    Uint32 couleur_survol;          // Couleur au survol
+    bool survole;                   // true si la souris est dessus
+    BoutonCallback callback;        // Fonction à appeler au clic
+} EditorButton;
+
+// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE POUR L'HISTORIQUE UNDO/REDO
 // ════════════════════════════════════════════════════════════════════════════
 typedef struct UndoNode {
@@ -29,10 +73,16 @@ typedef struct UndoNode {
     struct UndoNode* next;          // État suivant (pour redo)
 } UndoNode;
 
+
 // ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DE L'ÉDITEUR JSON
 // ════════════════════════════════════════════════════════════════════════════
-typedef struct {
+struct JsonEditor_s {
+    // ─────────────────────────────────────────────────────────────────────────
+    // MENU CONTEXTUEL (CLIC DROIT)
+    // ─────────────────────────────────────────────────────────────────────────
+    ContextMenu context_menu;          // Menu contextuel
+
     // ─────────────────────────────────────────────────────────────────────────
     // CONTEXTE SDL
     // ─────────────────────────────────────────────────────────────────────────
@@ -40,6 +90,7 @@ typedef struct {
     SDL_Renderer* renderer;
     TTF_Font* font_mono;        // Police monospace pour le code
     TTF_Font* font_ui;          // Police pour les boutons
+
 
     // ─────────────────────────────────────────────────────────────────────────
     // CONTENU DU FICHIER
@@ -57,6 +108,7 @@ typedef struct {
     int scroll_offset;          // Décalage vertical (pour scroller)
     int scroll_offset_x;        // Décalage Horizontal
     int nb_lignes;              // Nombre total de lignes
+    int hauteur_fenetre;        // Hauteur actuelle de la fenêtre (mise à jour dynamiquement)
 
     // ─────────────────────────────────────────────────────────────────────────
     // SÉLECTION DE TEXTE
@@ -66,12 +118,11 @@ typedef struct {
     bool selection_active;      // true si une sélection est en cours
 
     // ─────────────────────────────────────────────────────────────────────────
-    // BOUTONS
+    // SYSTÈME DE BOUTONS DYNAMIQUE
     // ─────────────────────────────────────────────────────────────────────────
-    SDL_Rect bouton_recharger;
-    SDL_Rect bouton_sauvegarder;
-    bool bouton_recharger_survole;
-    bool bouton_sauvegarder_survole;
+    EditorButton* boutons;          // Tableau dynamique de boutons
+    int nb_boutons;                 // Nombre de boutons
+    int capacite_boutons;           // Capacité du tableau
 
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAT
@@ -91,7 +142,8 @@ typedef struct {
     Uint32 last_modification_time;      // Timestamp de dernière modification
     float auto_save_delay;              // Délai avant auto-save (0.3 secondes)
 
-} JsonEditor;
+};
+typedef struct JsonEditor_s JsonEditor;
 
 // ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES DES FONCTIONS
@@ -109,6 +161,42 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y);
 
 // Libère toutes les ressources de l'éditeur
 void detruire_json_editor(JsonEditor* editor);
+
+// ─────────────────────────────────────────────────────────────────────────
+// SYSTÈME DE BOUTONS
+// ─────────────────────────────────────────────────────────────────────────
+
+// Crée un nouveau bouton avec ses paramètres
+// PARAMÈTRES :
+//   - label : texte affiché sur le bouton
+//   - largeur, hauteur : dimensions du bouton
+//   - couleur_normale : couleur de base (format RGBA : 0xRRGGBBAA)
+//   - couleur_survol : couleur au survol de la souris
+//   - callback : fonction appelée au clic (ex: callback_recharger)
+// RETOUR : le bouton créé (position sera calculée par ajouter_bouton)
+EditorButton creer_bouton(const char* label, int largeur, int hauteur,
+                          Uint32 couleur_normale, Uint32 couleur_survol,
+                          BoutonCallback callback);
+
+// Ajoute un bouton à l'éditeur et calcule sa position automatiquement
+// Les boutons sont placés côte à côte avec un espacement de 10px
+void ajouter_bouton(JsonEditor* editor, EditorButton bouton);
+
+// Recalcule les positions de tous les boutons (appelé au redimensionnement)
+void recalculer_tous_boutons(JsonEditor* editor);
+
+// Gère les clics sur tous les boutons
+// RETOUR : true si un bouton a été cliqué
+bool gerer_clic_boutons(JsonEditor* editor, int x, int y);
+
+// Gère le survol de tous les boutons
+void gerer_survol_boutons(JsonEditor* editor, int x, int y);
+
+// Rend tous les boutons de l'éditeur
+void rendre_tous_boutons(JsonEditor* editor);
+
+// Libère la mémoire des boutons
+void detruire_boutons(JsonEditor* editor);
 
 // ─────────────────────────────────────────────────────────────────────────
 // FICHIER
@@ -173,6 +261,39 @@ void selectionner_ligne_courante(JsonEditor* editor);
 void dupliquer_ligne_courante(JsonEditor* editor);
 
 // ─────────────────────────────────────────────────────────────────────────
+// MENU CONTEXTUEL
+// ─────────────────────────────────────────────────────────────────────────
+
+// Initialise le menu contextuel
+void initialiser_menu_contextuel(JsonEditor* editor);
+
+// Affiche le menu contextuel à la position (x,y)
+void afficher_menu_contextuel(JsonEditor* editor, int x, int y);
+
+// Cache le menu contextuel
+void cacher_menu_contextuel(JsonEditor* editor);
+
+// Gère le clic dans le menu contextuel
+// RETOUR : true si un item a été cliqué
+bool gerer_clic_menu_contextuel(JsonEditor* editor, int x, int y);
+
+// Gestion du survol pour la surbrillance
+void gerer_survol_menu_contextuel(JsonEditor* editor);
+
+// Met à jour la disponibilité des items du menu
+void mettre_a_jour_menu_contextuel(JsonEditor* editor);
+
+// Dessine le menu contextuel
+void dessiner_menu_contextuel(JsonEditor* editor);
+
+// Actions du menu contextuel (déjà implémentées, on les réutilise)
+void action_copier_contextuel(JsonEditor* editor);
+void action_couper_contextuel(JsonEditor* editor);
+void action_coller_contextuel(JsonEditor* editor);
+void action_tout_selectionner_contextuel(JsonEditor* editor);
+void action_dupliquer_contextuel(JsonEditor* editor);
+
+// ─────────────────────────────────────────────────────────────────────────
 // RENDU
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -223,6 +344,12 @@ bool trouver_nombre_au_curseur(JsonEditor* editor, int* debut, int* fin);
 
 // Modifie un nombre au curseur (delta = +1 ou -1)
 void modifier_nombre_au_curseur(JsonEditor* editor, int delta);
+
+// Recalcule la position des boutons après un redimensionnement de fenêtre
+void recalculer_positions_boutons(JsonEditor* editor);
+
+// Calcule le nombre de lignes visibles selon la taille actuelle de la fenêtre
+int obtenir_nb_lignes_visibles(JsonEditor* editor);
 
 // ─────────────────────────────────────────────────────────────────────────
 // UTILITAIRES UTF-8
