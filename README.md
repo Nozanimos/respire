@@ -5,7 +5,7 @@
 
 
 ![Compilation](https://img.shields.io/badge/Compilation-100%25-success)
-![Développement](https://img.shields.io/badge/Développement-45%25-orange)
+![Développement](https://img.shields.io/badge/Développement-50%25-orange)
 ![Documentation](https://img.shields.io/badge/Documentation-10%25-blue)
 ![Tests](https://img.shields.io/badge/Tests-100%25-brightgreen)
 

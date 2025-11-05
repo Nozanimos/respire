@@ -35,21 +35,21 @@ Mon tout premier programme en langage C + SDL2
 ✅ - Réviser en priorité les callbacks pour une meilleure fluidité du système
 ✅ - Validation JSON en temps réel : icône ✅/❌ pour savoir si le JSON est valide
 ✅ - Preview en direct : voir les widgets se mettre à jour dans le panneau en live (HOT RELOAD!)
-
-                        JSON EDITOR :
-                        ✅ - Boutons recharger / sauvagarder : doivent suivre la base de la fenêtre si étirement vers le bas + rendre visible le code
-                        ✅ - Insertion menu contextuel avec les options courantes (couper, copier, coller,etc...) et barres d'espacement
-                        ✅ - Insertion Dupliquer au menu contextuel
-                        ✅ - Sélectionner tout (Ctrl+A) + menu contextuel
-                        ✅ - Format/Prettify (Ctrl+Shift+F) + menu contextuel : réindenter proprement le JSON automatiquement
-NOUS SOMMES ICI ->      🔄 - Template/Snippet : bouton pour insérer un template de widget vide
-                        □ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c (anticipation fin de projet)
-
-        □ - Autre (à venir)
-
+✅ - Boutons recharger / sauvagarder : doivent suivre la base de la fenêtre si étirement vers le bas + rendre visible le code
+✅ - Insertion menu contextuel avec les options courantes (couper, copier, coller,etc...) et barres d'espacement
+✅ - Insertion Dupliquer au menu contextuel
+✅ - Sélectionner tout (Ctrl+A) + menu contextuel
+✅ - Format/Prettify (Ctrl+Shift+F) + menu contextuel : réindenter proprement le JSON automatiquement
+✅ - Template/Snippet : bouton pour insérer un template de widget vide
+✅ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c (anticipation fin de projet)
 
 🎯 PHASE 3 : CYCLE RESPIRATOIRE
-□ - Timer pour inspiration/expiration
+NOUS SOMMES ICI ->      🔄 - Timer pour inspiration/expiration
+
+
+
+
+
 □ - Compteur de cycles
 □ - États respiration (inspire/expire/rétention)
 □ - Affichage compteur
