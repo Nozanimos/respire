@@ -9,13 +9,10 @@ debug.txt
 template_widget.txt
 arbre.txt
 node_modules/
-package.json
-package-lock.json
 help/
 clean/
 all/
 .claude/
 **/kdev4
 *.kdev4
-
 *.html
