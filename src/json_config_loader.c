@@ -545,3 +545,144 @@ bool charger_widgets_depuis_json(const char* filename,
 
     return (compteur_success > 0);
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  GÉNÉRATION DES TEMPLATES
+// ════════════════════════════════════════════════════════════════════════════
+
+// Fonction helper : Remplace toutes les valeurs numériques par 0 et les strings par "a_modifier"
+// (sauf le champ "type")
+static void nettoyer_template_recursif(cJSON* item) {
+    if (!item) return;
+
+    cJSON* child = item->child;
+    while (child) {
+        // Si c'est un nombre, on le met à 0
+        if (cJSON_IsNumber(child)) {
+            cJSON_SetNumberValue(child, 0);
+        }
+        // Si c'est une string ET que ce n'est pas le champ "type"
+        else if (cJSON_IsString(child) && strcmp(child->string, "type") != 0) {
+            cJSON_SetValuestring(child, "a_modifier");
+        }
+        // Si c'est un objet ou un array, on descend récursivement
+        else if (cJSON_IsObject(child) || cJSON_IsArray(child)) {
+            nettoyer_template_recursif(child);
+        }
+
+        child = child->next;
+    }
+}
+
+bool generer_templates_json(const char* config_file, const char* output_file) {
+    debug_printf("🔧 Génération des templates depuis %s...\n", config_file);
+
+    // ─────────────────────────────────────────────────────────────────────
+    // 1. CHARGER LE FICHIER widgets_config.json
+    // ─────────────────────────────────────────────────────────────────────
+    FILE* file = fopen(config_file, "r");
+    if (!file) {
+        debug_printf("❌ Impossible d'ouvrir %s\n", config_file);
+        return false;
+    }
+
+    // Lire tout le contenu du fichier
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char* json_string = malloc(file_size + 1);
+    if (!json_string) {
+        fclose(file);
+        debug_printf("❌ Erreur allocation mémoire\n");
+        return false;
+    }
+
+    fread(json_string, 1, file_size, file);
+    json_string[file_size] = '\0';
+    fclose(file);
+
+    // Parser le JSON
+    cJSON* root = cJSON_Parse(json_string);
+    free(json_string);
+
+    if (!root) {
+        debug_printf("❌ JSON invalide dans %s\n", config_file);
+        return false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // 2. EXTRAIRE LES TEMPLATES (sections "_template")
+    // ─────────────────────────────────────────────────────────────────────
+    cJSON* widgets_array = cJSON_GetObjectItem(root, "widgets");
+    if (!cJSON_IsArray(widgets_array)) {
+        debug_printf("❌ Pas de tableau 'widgets' trouvé\n");
+        cJSON_Delete(root);
+        return false;
+    }
+
+    // Créer le tableau qui contiendra les templates
+    cJSON* templates_array = cJSON_CreateArray();
+
+    // Parcourir tous les widgets pour trouver les sections "_template"
+    cJSON* widget = NULL;
+    cJSON_ArrayForEach(widget, widgets_array) {
+        cJSON* template_obj = cJSON_GetObjectItem(widget, "_template");
+
+        if (template_obj) {
+            // Dupliquer le template
+            cJSON* template_copy = cJSON_Duplicate(template_obj, 1);
+
+            // Nettoyer les valeurs (0 pour les nombres, "a_modifier" pour les strings)
+            nettoyer_template_recursif(template_copy);
+
+            // Ajouter au tableau de templates
+            cJSON_AddItemToArray(templates_array, template_copy);
+
+            // Log pour debug
+            cJSON* type_field = cJSON_GetObjectItem(template_copy, "type");
+            if (type_field && cJSON_IsString(type_field)) {
+                debug_printf("  ✓ Template '%s' extrait\n", type_field->valuestring);
+            }
+        }
+    }
+
+    cJSON_Delete(root);
+
+    // ─────────────────────────────────────────────────────────────────────
+    // 3. CRÉER LE FICHIER templates.json
+    // ─────────────────────────────────────────────────────────────────────
+    cJSON* output_root = cJSON_CreateObject();
+    cJSON_AddStringToObject(output_root, "_commentaire",
+                            "Fichier généré automatiquement - Templates de widgets");
+    cJSON_AddStringToObject(output_root, "_note",
+                            "Utilisez ces templates dans l'éditeur JSON. "
+                            "Les valeurs 'a_modifier' doivent être personnalisées.");
+    cJSON_AddItemToObject(output_root, "templates", templates_array);
+
+    // Convertir en string avec indentation
+    char* json_output = cJSON_Print(output_root);
+    if (!json_output) {
+        debug_printf("❌ Erreur lors de la conversion JSON\n");
+        cJSON_Delete(output_root);
+        return false;
+    }
+
+    // Écrire dans le fichier
+    FILE* output = fopen(output_file, "w");
+    if (!output) {
+        debug_printf("❌ Impossible de créer %s\n", output_file);
+        free(json_output);
+        cJSON_Delete(output_root);
+        return false;
+    }
+
+    fprintf(output, "%s", json_output);
+    fclose(output);
+
+    free(json_output);
+    cJSON_Delete(output_root);
+
+    debug_printf("✅ Templates générés avec succès dans %s\n", output_file);
+    return true;
+}

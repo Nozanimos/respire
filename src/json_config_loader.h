@@ -69,4 +69,19 @@ bool parser_widget_preview(cJSON* json_obj, LoaderContext* ctx, WidgetList* list
 // Parse un objet JSON représentant un bouton
 bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list);
 
+// ─────────────────────────────────────────────────────────────────────────
+// GÉNÉRATION DES TEMPLATES
+// ─────────────────────────────────────────────────────────────────────────
+// Génère automatiquement le fichier templates.json depuis widgets_config.json
+// Ce fichier contient des templates vierges pour chaque type de widget
+//
+// PARAMÈTRES :
+//   - config_file : Chemin vers widgets_config.json
+//   - output_file : Chemin vers templates.json à créer
+//
+// RETOUR :
+//   - true si succès
+//   - false si erreur
+bool generer_templates_json(const char* config_file, const char* output_file);
+
 #endif

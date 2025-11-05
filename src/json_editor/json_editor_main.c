@@ -175,8 +175,6 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     snprintf(editor->filepath, sizeof(editor->filepath), "%s", filepath);
     editor->est_ouvert = true;
     editor->json_valide = true;
-    // Initialiser le menu contextuel
-    initialiser_menu_contextuel(editor);
 
     // ─────────────────────────────────────────────────────────────────────────
     // CRÉATION DE LA FENÊTRE
@@ -221,6 +219,11 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
         free(editor);
         return NULL;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // INITIALISATION DU MENU CONTEXTUEL (APRÈS les polices!)
+    // ─────────────────────────────────────────────────────────────────────────
+    initialiser_menu_contextuel(editor);
 
     // ─────────────────────────────────────────────────────────────────────────
     // INITIALISATION DU SYSTÈME DE BOUTONS
@@ -361,24 +364,31 @@ void initialiser_menu_contextuel(JsonEditor* editor) {
         void (*action)(JsonEditor*);
         bool default_enabled;
         bool is_separator;  // true pour les séparateurs
+        bool has_submenu;   // true pour les items avec sous-menu
     } items_config[] = {
         // Groupe 1: Copier/Couper/Coller
-        {"Copier", action_copier_contextuel, false, false},
-        {"Couper", action_couper_contextuel, false, false},
-        {"Coller", action_coller_contextuel, true, false},
+        {"Copier", action_copier_contextuel, false, false, false},
+        {"Couper", action_couper_contextuel, false, false, false},
+        {"Coller", action_coller_contextuel, true, false, false},
 
         // Séparateur 1
-        {NULL, NULL, false, true},
+        {NULL, NULL, false, true, false},
 
         // Groupe 2: Tout sélectionner
-        {"Tout sélectionner", action_tout_selectionner_contextuel, true, false},
+        {"Tout sélectionner", action_tout_selectionner_contextuel, true, false, false},
 
         // Séparateur 2
-        {NULL, NULL, false, true},
+        {NULL, NULL, false, true, false},
 
         // Groupe 3: Dupliquer
-        {"Dupliquer", action_dupliquer_contextuel, true, false},
-        {"Réindenter", action_reindenter_contextuel, true, false}
+        {"Dupliquer", action_dupliquer_contextuel, true, false, false},
+        {"Réindenter", action_reindenter_contextuel, true, false, false},
+
+        // Séparateur 3
+        {NULL, NULL, false, true, false},
+
+        // Groupe 4: Templates (avec sous-menu)
+        {"Templates", NULL, true, false, true}
     };
 
     menu->item_count = sizeof(items_config) / sizeof(items_config[0]);
@@ -388,24 +398,39 @@ void initialiser_menu_contextuel(JsonEditor* editor) {
         if (items_config[i].is_separator) {
             // Item séparateur
             menu->items[i] = (ContextMenuItem){
-                NULL,  // Pas de label
-                (SDL_Rect){0, 0, 0, 0},
-                false,
-                NULL   // Pas d'action
+                .label = NULL,  // Pas de label
+                .rect = (SDL_Rect){0, 0, 0, 0},
+                .enabled = false,
+                .action = NULL,   // Pas d'action
+                .sous_menu = NULL,
+                .template_data = NULL
+            };
+        } else if (items_config[i].has_submenu) {
+            // Item avec sous-menu (Templates)
+            menu->items[i] = (ContextMenuItem){
+                .label = items_config[i].label,
+                .rect = (SDL_Rect){0, 0, 0, 0},
+                .enabled = items_config[i].default_enabled,
+                .action = NULL,   // Pas d'action directe, c'est un sous-menu
+                .sous_menu = creer_sous_menu_templates(editor),  // Créer le sous-menu
+                .template_data = NULL
             };
         } else {
             // Item normal
             menu->items[i] = (ContextMenuItem){
-                items_config[i].label,
-                (SDL_Rect){0, 0, 0, 0},
-                items_config[i].default_enabled,
-                items_config[i].action
+                .label = items_config[i].label,
+                .rect = (SDL_Rect){0, 0, 0, 0},
+                .enabled = items_config[i].default_enabled,
+                .action = items_config[i].action,
+                .sous_menu = NULL,
+                .template_data = NULL
             };
         }
     }
 
     menu->visible = false;
-    debug_printf("📋 Menu contextuel initialisé avec %d items (dont séparateurs)\n", menu->item_count);
+    menu->hovered_item = -1;
+    debug_printf("📋 Menu contextuel initialisé avec %d items (dont séparateurs et sous-menus)\n", menu->item_count);
 }
 
 // Calcule les dimensions du menu basées sur le texte
@@ -474,6 +499,50 @@ static void calculer_dimensions_menu(JsonEditor* editor) {
     }
 }
 
+// Calcule les dimensions d'un sous-menu (similaire à calculer_dimensions_menu)
+// Cette fonction est nécessaire pour positionner correctement les sous-menus
+static void calculer_dimensions_sous_menu(JsonEditor* editor, ContextMenu* sous_menu) {
+    if (!sous_menu) return;
+
+    int max_width = 0;
+    const int padding = 20; // Marge intérieure
+    const int line_height = 25; // Hauteur par ligne normale
+
+    // Calculer la largeur maximale basée sur le texte le plus long
+    for (int i = 0; i < sous_menu->item_count; i++) {
+        if (sous_menu->items[i].label != NULL) {
+            int text_width = 0;
+            if (editor->font_ui) {
+                TTF_SizeUTF8(editor->font_ui, sous_menu->items[i].label, &text_width, NULL);
+            } else {
+                // Fallback si pas de police
+                text_width = strlen(sous_menu->items[i].label) * 8;
+            }
+
+            if (text_width > max_width) {
+                max_width = text_width;
+            }
+        }
+    }
+
+    sous_menu->width = max_width + padding * 2;
+
+    // Calculer la hauteur totale
+    sous_menu->height = sous_menu->item_count * line_height;
+
+    // Mettre à jour les rectangles des items
+    int current_y = 0;
+    for (int i = 0; i < sous_menu->item_count; i++) {
+        sous_menu->items[i].rect = (SDL_Rect){
+            0, // x sera calculé à l'affichage
+            current_y, // y position cumulative
+            sous_menu->width,
+            line_height
+        };
+        current_y += line_height;
+    }
+}
+
 void afficher_menu_contextuel(JsonEditor* editor, int x, int y) {
     ContextMenu* menu = &editor->context_menu;
 
@@ -508,6 +577,13 @@ void afficher_menu_contextuel(JsonEditor* editor, int x, int y) {
 
 void cacher_menu_contextuel(JsonEditor* editor) {
     editor->context_menu.visible = false;
+
+    // Cacher tous les sous-menus
+    for (int i = 0; i < editor->context_menu.item_count; i++) {
+        if (editor->context_menu.items[i].sous_menu) {
+            editor->context_menu.items[i].sous_menu->visible = false;
+        }
+    }
 }
 
 bool gerer_clic_menu_contextuel(JsonEditor* editor, int x, int y) {
@@ -515,7 +591,48 @@ bool gerer_clic_menu_contextuel(JsonEditor* editor, int x, int y) {
 
     if (!menu->visible) return false;
 
-    // Vérifier si le clic est dans le menu
+    // ─────────────────────────────────────────────────────────────────────────
+    // VÉRIFIER D'ABORD LES CLICS DANS LES SOUS-MENUS
+    // ─────────────────────────────────────────────────────────────────────────
+    for (int i = 0; i < menu->item_count; i++) {
+        ContextMenu* sous_menu = menu->items[i].sous_menu;
+
+        if (!sous_menu || !sous_menu->visible) continue;
+
+        // Vérifier si le clic est dans le sous-menu
+        if (x >= sous_menu->x && x <= sous_menu->x + sous_menu->width &&
+            y >= sous_menu->y && y <= sous_menu->y + sous_menu->height) {
+
+            // Trouver l'item cliqué dans le sous-menu
+            for (int j = 0; j < sous_menu->item_count; j++) {
+                ContextMenuItem* sub_item = &sous_menu->items[j];
+
+                SDL_Rect absolute_rect = {
+                    sous_menu->x + sub_item->rect.x,
+                    sous_menu->y + sub_item->rect.y,
+                    sub_item->rect.w,
+                    sub_item->rect.h
+                };
+
+                if (x >= absolute_rect.x && x <= absolute_rect.x + absolute_rect.w &&
+                    y >= absolute_rect.y && y <= absolute_rect.y + absolute_rect.h) {
+
+                    // Item cliqué trouvé
+                    if (sub_item->enabled && sub_item->action != NULL) {
+                        // Exécuter l'action
+                        sub_item->action(editor);
+                        return true;
+                    }
+                    break;
+                    }
+            }
+            }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // VÉRIFIER LES CLICS DANS LE MENU PRINCIPAL
+    // ─────────────────────────────────────────────────────────────────────────
+    // Vérifier si le clic est dans le menu principal
     if (x >= menu->x && x <= menu->x + menu->width &&
         y >= menu->y && y <= menu->y + menu->height) {
 
@@ -533,7 +650,8 @@ bool gerer_clic_menu_contextuel(JsonEditor* editor, int x, int y) {
                 y >= absolute_rect.y && y <= absolute_rect.y + absolute_rect.h) {
 
                 // Ignorer les séparateurs et items désactivés
-                if (item->label != NULL && item->enabled && item->action != NULL) {
+                // Les items avec sous-menu ne doivent pas être cliqués (juste survolés)
+                if (item->label != NULL && item->enabled && item->action != NULL && !item->sous_menu) {
                     // Exécuter l'action et cacher le menu
                     item->action(editor);
                     cacher_menu_contextuel(editor);
@@ -553,9 +671,110 @@ void gerer_survol_menu_contextuel(JsonEditor* editor) {
 
     if (!menu->visible) return;
 
-    // Les coordonnées des items sont déjà correctement calculées dans calculer_dimensions_menu()
-    // Elles sont relatives au menu (x=0, y=position_cumulative)
-    // Pas besoin de les recalculer ici
+    // ─────────────────────────────────────────────────────────────────────────
+    // GESTION DU SURVOL POUR LE MENU PRINCIPAL
+    // ─────────────────────────────────────────────────────────────────────────
+    int mouse_x, mouse_y;
+    SDL_GetMouseState(&mouse_x, &mouse_y);
+
+    // Réinitialiser le hover
+    menu->hovered_item = -1;
+
+    // Vérifier si la souris est sur un item du menu principal
+    for (int i = 0; i < menu->item_count; i++) {
+        ContextMenuItem* item = &menu->items[i];
+
+        // Ignorer les séparateurs
+        if (item->label == NULL) continue;
+
+        SDL_Rect absolute_rect = {
+            menu->x + item->rect.x,
+            menu->y + item->rect.y,
+            item->rect.w,
+            item->rect.h
+        };
+
+        // Vérifier si la souris est sur cet item
+        if (mouse_x >= absolute_rect.x && mouse_x <= absolute_rect.x + absolute_rect.w &&
+            mouse_y >= absolute_rect.y && mouse_y <= absolute_rect.y + absolute_rect.h) {
+
+            menu->hovered_item = i;
+
+        // Si l'item a un sous-menu, l'afficher
+        if (item->sous_menu) {
+            ContextMenu* sous_menu = item->sous_menu;
+
+            // Calculer les dimensions du sous-menu
+            calculer_dimensions_sous_menu(editor, sous_menu);
+
+            // Positionner le sous-menu à droite de l'item
+            int window_width, window_height;
+            SDL_GetWindowSize(editor->window, &window_width, &window_height);
+
+            // Position par défaut : à droite du menu principal
+            sous_menu->x = menu->x + menu->width;
+            sous_menu->y = absolute_rect.y;
+
+            // Vérifier qu'il ne dépasse pas de la fenêtre
+            if (sous_menu->x + sous_menu->width > window_width) {
+                // Afficher à gauche du menu principal si pas de place à droite
+                sous_menu->x = menu->x - sous_menu->width;
+            }
+
+            if (sous_menu->y + sous_menu->height > window_height) {
+                sous_menu->y = window_height - sous_menu->height;
+            }
+
+            sous_menu->visible = true;
+        }
+
+        break;
+            }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GESTION DU SURVOL POUR LES SOUS-MENUS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Parcourir tous les items pour trouver ceux avec sous-menu
+    for (int i = 0; i < menu->item_count; i++) {
+        ContextMenu* sous_menu = menu->items[i].sous_menu;
+
+        if (!sous_menu || !sous_menu->visible) continue;
+
+        // Réinitialiser le hover du sous-menu
+        sous_menu->hovered_item = -1;
+
+        // Vérifier si la souris est sur le sous-menu
+        if (mouse_x >= sous_menu->x && mouse_x <= sous_menu->x + sous_menu->width &&
+            mouse_y >= sous_menu->y && mouse_y <= sous_menu->y + sous_menu->height) {
+
+            // Trouver quel item du sous-menu est survolé
+            for (int j = 0; j < sous_menu->item_count; j++) {
+                ContextMenuItem* sub_item = &sous_menu->items[j];
+
+                SDL_Rect absolute_rect = {
+                    sous_menu->x + sub_item->rect.x,
+                    sous_menu->y + sub_item->rect.y,
+                    sub_item->rect.w,
+                    sub_item->rect.h
+                };
+
+                if (mouse_x >= absolute_rect.x && mouse_x <= absolute_rect.x + absolute_rect.w &&
+                    mouse_y >= absolute_rect.y && mouse_y <= absolute_rect.y + absolute_rect.h) {
+
+                    sous_menu->hovered_item = j;
+                break;
+                    }
+            }
+            } else {
+                // La souris n'est plus sur le sous-menu ni sur l'item parent
+                // Vérifier si on est toujours sur l'item parent qui ouvre le sous-menu
+                if (menu->hovered_item != i) {
+                    sous_menu->visible = false;
+                }
+            }
+    }
 }
 
 void mettre_a_jour_menu_contextuel(JsonEditor* editor) {
@@ -591,6 +810,15 @@ void mettre_a_jour_menu_contextuel(JsonEditor* editor) {
 // ════════════════════════════════════════════════════════════════════════════
 void detruire_json_editor(JsonEditor* editor) {
     if (!editor) return;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // LIBÉRER LES SOUS-MENUS
+    // ─────────────────────────────────────────────────────────────────────────
+    for (int i = 0; i < editor->context_menu.item_count; i++) {
+        if (editor->context_menu.items[i].sous_menu) {
+            detruire_sous_menu(editor->context_menu.items[i].sous_menu);
+        }
+    }
 
     if (editor->renderer) SDL_DestroyRenderer(editor->renderer);
     if (editor->window) SDL_DestroyWindow(editor->window);

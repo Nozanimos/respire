@@ -24,27 +24,36 @@ static inline int max_int(int a, int b) { return a > b ? a : b; }
 typedef struct JsonEditor_s JsonEditor;
 
 // ════════════════════════════════════════════════════════════════════════════
-//  STRUCTURE POUR LE MENU CONTEXTUEL
+//  STRUCTURE POUR LE MENU CONTEXTUEL ET SOUS-MENUS
 // ════════════════════════════════════════════════════════════════════════════
+
+// Forward declaration pour permettre les références croisées
+typedef struct ContextMenu_s ContextMenu;
+
+// Structure d'un item de menu
 typedef struct {
-    char* label;
-    SDL_Rect rect;
-    bool enabled;
-    void (*action)(JsonEditor*);
+    char* label;                         // Texte affiché
+    SDL_Rect rect;                       // Rectangle de l'item
+    bool enabled;                        // true si cliquable
+    void (*action)(JsonEditor*);         // Action à exécuter (NULL si sous-menu)
+    ContextMenu* sous_menu;              // Pointeur vers sous-menu (NULL si action)
+    char* template_data;                 // Données du template JSON (pour insertion)
 } ContextMenuItem;
 
-typedef struct {
-    ContextMenuItem items[10];          // Items du menu
-    int item_count;                     // Nombre d'items
-    bool visible;                      // true si le menu est affiché
-    int x, y;                         // Position d'affichage
-    int width, height;                // Dimensions calculées automatiquement
-    SDL_Color bg_color;               // Couleur de fond
-    SDL_Color border_color;           // Couleur de la bordure
-    SDL_Color text_enabled_color;     // Couleur du texte activé
-    SDL_Color text_disabled_color;    // Couleur du texte désactivé
-    SDL_Color hover_color;            // Couleur de survol
-} ContextMenu;
+// Structure du menu contextuel (peut être principal ou sous-menu)
+struct ContextMenu_s {
+    ContextMenuItem items[20];           // Items du menu (augmenté à 20 pour templates)
+    int item_count;                      // Nombre d'items
+    bool visible;                        // true si le menu est affiché
+    int x, y;                            // Position d'affichage
+    int width, height;                   // Dimensions calculées automatiquement
+    SDL_Color bg_color;                  // Couleur de fond
+    SDL_Color border_color;              // Couleur de la bordure
+    SDL_Color text_enabled_color;        // Couleur du texte activé
+    SDL_Color text_disabled_color;       // Couleur du texte désactivé
+    SDL_Color hover_color;               // Couleur de survol
+    int hovered_item;                    // Index de l'item survolé (-1 si aucun)
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE POUR UN BOUTON GÉNÉRIQUE
@@ -296,6 +305,7 @@ void action_coller_contextuel(JsonEditor* editor);
 void action_tout_selectionner_contextuel(JsonEditor* editor);
 void action_dupliquer_contextuel(JsonEditor* editor);
 void action_reindenter_contextuel(JsonEditor* editor);
+void action_inserer_template_contextuel(JsonEditor* editor);
 
 // ─────────────────────────────────────────────────────────────────────────
 // FORMATAGE
@@ -372,5 +382,16 @@ int utf8_advance(const char* str, int n_chars);
 
 // Copie n caractères UTF-8 (pas n octets!) dans dest
 void utf8_strncpy(char* dest, const char* src, int n_chars, int max_bytes);
+
+// ─────────────────────────────────────────────────────────────────────────
+// GESTION DES TEMPLATES
+// ─────────────────────────────────────────────────────────────────────────
+
+// Charge les templates depuis templates.json et crée le sous-menu
+// RETOUR : pointeur vers le sous-menu créé (NULL si erreur)
+ContextMenu* creer_sous_menu_templates(JsonEditor* editor);
+
+// Libère la mémoire d'un sous-menu et de ses templates
+void detruire_sous_menu(ContextMenu* menu);
 
 #endif

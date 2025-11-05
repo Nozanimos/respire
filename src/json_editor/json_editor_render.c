@@ -271,7 +271,7 @@ void rendre_tous_boutons(JsonEditor* editor) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  RENDU MENU CONTEXTUEL
+//  RENDU DU MENU CONTEXTUEL
 // ════════════════════════════════════════════════════════════════════════════
 void dessiner_menu_contextuel(JsonEditor* editor) {
     ContextMenu* menu = &editor->context_menu;
@@ -344,6 +344,102 @@ void dessiner_menu_contextuel(JsonEditor* editor) {
                     SDL_Texture* texture = SDL_CreateTextureFromSurface(editor->renderer, surface);
 
                     // Centrer le texte verticalement et l'aligner à gauche avec marge
+                    SDL_Rect text_rect = {
+                        absolute_rect.x + 10,
+                        absolute_rect.y + (absolute_rect.h - surface->h) / 2,
+                        surface->w,
+                        surface->h
+                    };
+
+                    SDL_RenderCopy(editor->renderer, texture, NULL, &text_rect);
+                    SDL_FreeSurface(surface);
+                    SDL_DestroyTexture(texture);
+
+                    // ─────────────────────────────────────────────────────────
+                    // DESSINER LA FLÈCHE POUR LES ITEMS AVEC SOUS-MENU
+                    // ─────────────────────────────────────────────────────────
+                    if (item->sous_menu) {
+                        // Positionner la flèche à droite avec marge de 3px
+                        int arrow_size = 6;  // Taille du triangle
+                        int arrow_x = absolute_rect.x + absolute_rect.w - arrow_size - 3;
+                        int arrow_y = absolute_rect.y + (absolute_rect.h / 2);
+
+                        // Convertir SDL_Color en Uint32 RGBA pour filledPolygonColor
+                        Uint32 arrow_color = (text_color.r << 24) |
+                        (text_color.g << 16) |
+                        (text_color.b << 8) |
+                        text_color.a;
+
+                        // Dessiner un triangle pointant vers la droite
+                        Sint16 triangle_x[3] = {
+                            arrow_x - arrow_size,     // Point gauche haut
+                            arrow_x - arrow_size,     // Point gauche bas
+                            arrow_x                   // Pointe droite
+                        };
+                        Sint16 triangle_y[3] = {
+                            arrow_y - arrow_size/2,   // Point gauche haut
+                            arrow_y + arrow_size/2,   // Point gauche bas
+                            arrow_y                   // Pointe droite (milieu)
+                        };
+
+                        filledPolygonColor(editor->renderer,
+                                           triangle_x, triangle_y, 3,
+                                           arrow_color);
+                    }
+                }
+            }
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // DESSIN DES SOUS-MENUS
+    // ═════════════════════════════════════════════════════════════════════════
+    for (int i = 0; i < menu->item_count; i++) {
+        ContextMenu* sous_menu = menu->items[i].sous_menu;
+
+        if (!sous_menu || !sous_menu->visible) continue;
+
+        // Fond du sous-menu
+        SDL_SetRenderDrawColor(editor->renderer,
+                               sous_menu->bg_color.r, sous_menu->bg_color.g,
+                               sous_menu->bg_color.b, sous_menu->bg_color.a);
+        SDL_Rect sous_menu_bg = {sous_menu->x, sous_menu->y, sous_menu->width, sous_menu->height};
+        SDL_RenderFillRect(editor->renderer, &sous_menu_bg);
+
+        // Bordure du sous-menu
+        SDL_SetRenderDrawColor(editor->renderer,
+                               sous_menu->border_color.r, sous_menu->border_color.g,
+                               sous_menu->border_color.b, sous_menu->border_color.a);
+        SDL_RenderDrawRect(editor->renderer, &sous_menu_bg);
+
+        // Items du sous-menu
+        for (int j = 0; j < sous_menu->item_count; j++) {
+            ContextMenuItem* sub_item = &sous_menu->items[j];
+
+            SDL_Rect absolute_rect = {
+                sous_menu->x + sub_item->rect.x,
+                sous_menu->y + sub_item->rect.y,
+                sub_item->rect.w,
+                sub_item->rect.h
+            };
+
+            // Surbrillance si survolé
+            if (j == sous_menu->hovered_item) {
+                SDL_SetRenderDrawColor(editor->renderer,
+                                       sous_menu->hover_color.r, sous_menu->hover_color.g,
+                                       sous_menu->hover_color.b, sous_menu->hover_color.a);
+                SDL_RenderFillRect(editor->renderer, &absolute_rect);
+            }
+
+            // Texte
+            if (editor->font_ui && sub_item->label) {
+                SDL_Color text_color = sub_item->enabled ?
+                sous_menu->text_enabled_color : sous_menu->text_disabled_color;
+
+                SDL_Surface* surface = TTF_RenderUTF8_Blended(editor->font_ui, sub_item->label, text_color);
+                if (surface) {
+                    SDL_Texture* texture = SDL_CreateTextureFromSurface(editor->renderer, surface);
+
                     SDL_Rect text_rect = {
                         absolute_rect.x + 10,
                         absolute_rect.y + (absolute_rect.h - surface->h) / 2,

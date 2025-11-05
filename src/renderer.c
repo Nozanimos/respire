@@ -2,6 +2,7 @@
 #include "renderer.h"
 #include "hexagone_list.h"
 #include "widget_base.h"
+#include "json_config_loader.h"
 #include "debug.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
@@ -192,6 +193,20 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     // en définissant une largeur minimale basée sur le plus grand widget
     if (app->settings_panel) {
         update_window_minimum_size(app->settings_panel, app->window);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 6c. GÉNÉRATION AUTOMATIQUE DES TEMPLATES JSON
+    // ════════════════════════════════════════════════════════════════════════
+    // Générer templates.json si absent ou obsolète
+    // Ce fichier contient des templates vierges pour chaque type de widget
+    // utilisables dans l'éditeur JSON
+    const char* widgets_config_path = "../config/widgets_config.json";
+    const char* templates_output_path = "../src/json_editor/templates.json";
+
+    // Toujours régénérer au démarrage pour garantir la synchronisation
+    if (!generer_templates_json(widgets_config_path, templates_output_path)) {
+        debug_printf("⚠️ Impossible de générer templates.json (non bloquant)\n");
     }
 
     // ─────────────────────────────────────────────────────────────────────────

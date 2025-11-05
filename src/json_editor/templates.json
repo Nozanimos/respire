@@ -1,0 +1,74 @@
+{
+	"_commentaire":	"Fichier généré automatiquement - Templates de widgets",
+	"_note":	"Utilisez ces templates dans l'éditeur JSON. Les valeurs 'a_modifier' doivent être personnalisées.",
+	"templates":	[{
+			"type":	"titre",
+			"texte":	"a_modifier",
+			"x":	0,
+			"y":	0,
+			"taille_texte":	0,
+			"souligne":	true
+		}, {
+			"type":	"preview",
+			"id":	"a_modifier",
+			"x":	0,
+			"y":	0,
+			"frame_size":	0,
+			"size_ratio":	0,
+			"breath_duration":	0
+		}, {
+			"type":	"increment",
+			"id":	"a_modifier",
+			"nom_affichage":	"a_modifier",
+			"x":	0,
+			"y":	0,
+			"valeur_min":	0,
+			"valeur_max":	0,
+			"valeur_depart":	0,
+			"increment":	0,
+			"taille_fleche":	0,
+			"taille_texte":	0,
+			"callback":	"a_modifier"
+		}, {
+			"type":	"toggle",
+			"id":	"a_modifier",
+			"nom_affichage":	"a_modifier",
+			"x":	0,
+			"y":	0,
+			"etat_depart":	false,
+			"largeur_toggle":	0,
+			"hauteur_toggle":	0,
+			"taille_curseur":	0,
+			"taille_texte":	0,
+			"callback":	"a_modifier"
+		}, {
+			"type":	"separateur",
+			"x":	0,
+			"y":	0,
+			"largeur":	0,
+			"hauteur":	0,
+			"couleur":	{
+				"r":	0,
+				"g":	0,
+				"b":	0,
+				"a":	0
+			}
+		}, {
+			"type":	"button",
+			"id":	"a_modifier",
+			"texte":	"a_modifier",
+			"x":	0,
+			"y":	0,
+			"largeur":	0,
+			"hauteur":	0,
+			"taille_texte":	0,
+			"couleur":	{
+				"r":	0,
+				"g":	0,
+				"b":	0,
+				"a":	0
+			},
+			"y_anchor":	"a_modifier",
+			"callback":	"a_modifier"
+		}]
+}
