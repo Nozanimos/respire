@@ -150,4 +150,8 @@ void check_json_hot_reload(SettingsPanel* panel, float delta_time, int screen_wi
 int get_minimum_window_width(SettingsPanel* panel);
 void update_window_minimum_size(SettingsPanel* panel, SDL_Window* window);
 
+// Fonction pour la version finale (hardcodée, sans JSON)
+// À décommenter quand on basculera vers la version sans JSON Editor
+// void init_widgets_hardcoded(SettingsPanel* panel);
+
 #endif

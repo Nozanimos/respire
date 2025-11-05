@@ -604,6 +604,52 @@ void free_settings_panel(SettingsPanel* panel) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  INITIALISATION DES WIDGETS EN DUR (VERSION FINALE SANS JSON)
+// ════════════════════════════════════════════════════════════════════════════
+// ⚠️  FONCTION POUR LA VERSION FINALE DU PROJET
+// ⚠️  Cette fonction sera utilisée quand on débranchera le JSON Editor
+//
+// INSTRUCTIONS POUR BASCULER VERS LA VERSION HARDCODÉE :
+// -------------------------------------------------------
+// 1. Générer le fichier src/generated_widgets.c via le JSON Editor
+//    (Menu contextuel → "Générer Code C")
+//
+// 2. Copier la fonction init_widgets_from_json() depuis generated_widgets.c
+//    et la coller dans ce fichier (settings_panel.c)
+//
+// 3. Dans init_settings_panel() (ligne ~161) et reload_widgets_from_json() (ligne ~621),
+//    remplacer l'appel à charger_widgets_depuis_json() par :
+//    init_widgets_from_json(panel->widget_list, panel->font);
+//
+// 4. Supprimer ou commenter tout le code lié au JSON Editor :
+//    - json_config_loader.c / .h
+//    - json_editor/ (tout le dossier)
+//    - Les includes et appels liés au JSON
+//
+// 5. Mettre à jour le Makefile pour ne plus compiler ces fichiers
+//
+// AVANTAGES DE LA VERSION HARDCODÉE :
+// - Application plus légère (pas de dépendance cJSON)
+// - Chargement instantané (pas de parsing JSON)
+// - Moins de code à maintenir en production
+// - Parfait pour le build final en fullscreen
+//
+/*
+ init_widgets_hardcoded(SettingsPanel* panel) {
+ if (!panel || !panel->widget_list) {
+     debug_printf("❌ Panel invalide pour init_widgets_hardcoded\n");
+     return;
+     }
+
+     // Appeler la fonction générée depuis generated_widgets.c
+     // (à copier/coller ici depuis le fichier généré)
+     init_widgets_from_json(panel->widget_list, panel->font);
+
+     debug_printf("✅ Widgets initialisés en mode HARDCODÉ (sans JSON)\n");
+     }
+     */
+
+// ════════════════════════════════════════════════════════════════════════════
 //  HOT RELOAD DES WIDGETS DEPUIS LE JSON
 // ════════════════════════════════════════════════════════════════════════════
 void reload_widgets_from_json(SettingsPanel* panel, int screen_width, int screen_height) {

@@ -326,12 +326,26 @@ void dessiner_menu_contextuel(JsonEditor* editor) {
             // DESSIN DE L'ITEM NORMAL
             // ═════════════════════════════════════════════════════════════
 
+            // Vérifier si c'est l'item "Générer Code C" pour lui appliquer un fond rouge sombre
+            bool is_generer_code_c = (strcmp(item->label, "Générer Code C") == 0);
+
+            // Fond rouge sombre pour "Générer Code C"
+            if (is_generer_code_c) {
+                SDL_SetRenderDrawColor(editor->renderer, 80, 30, 30, 255);  // Rouge sombre
+                SDL_RenderFillRect(editor->renderer, &absolute_rect);
+            }
+
             // Surbrillance si la souris est sur l'item
             if (mouse_x >= absolute_rect.x && mouse_x <= absolute_rect.x + absolute_rect.w &&
                 mouse_y >= absolute_rect.y && mouse_y <= absolute_rect.y + absolute_rect.h &&
                 item->enabled) {
-                SDL_SetRenderDrawColor(editor->renderer,
-                                       menu->hover_color.r, menu->hover_color.g, menu->hover_color.b, menu->hover_color.a);
+                // Surbrillance différente pour "Générer Code C"
+                if (is_generer_code_c) {
+                    SDL_SetRenderDrawColor(editor->renderer, 120, 50, 50, 255);  // Rouge plus clair au survol
+                } else {
+                    SDL_SetRenderDrawColor(editor->renderer,
+                                           menu->hover_color.r, menu->hover_color.g, menu->hover_color.b, menu->hover_color.a);
+                }
                 SDL_RenderFillRect(editor->renderer, &absolute_rect);
                 }
 

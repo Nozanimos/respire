@@ -306,11 +306,22 @@ void action_tout_selectionner_contextuel(JsonEditor* editor);
 void action_dupliquer_contextuel(JsonEditor* editor);
 void action_reindenter_contextuel(JsonEditor* editor);
 void action_inserer_template_contextuel(JsonEditor* editor);
+void action_generer_code_c_contextuel(JsonEditor* editor);
 
 // ─────────────────────────────────────────────────────────────────────────
 // FORMATAGE
 // ─────────────────────────────────────────────────────────────────────────
 void reindenter_json(JsonEditor* editor);
+
+// ─────────────────────────────────────────────────────────────────────────
+// GÉNÉRATION DE CODE C
+// ─────────────────────────────────────────────────────────────────────────
+
+// Génère un fichier C contenant tous les appels add_*_widget()
+// à partir de la configuration JSON actuelle.
+// Le fichier généré sera : src/generated_widgets.c
+// RETOUR : true si succès, false si erreur
+bool generer_code_c_depuis_json(JsonEditor* editor);
 
 // ─────────────────────────────────────────────────────────────────────────
 // RENDU

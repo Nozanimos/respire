@@ -347,6 +347,15 @@ void action_reindenter_contextuel(JsonEditor* editor){
     debug_printf("📄 [Menu] réindenter\n");
 }
 
+void action_generer_code_c_contextuel(JsonEditor* editor) {
+    // Appeler la fonction de génération de code C
+    if (generer_code_c_depuis_json(editor)) {
+        debug_printf("✨ [Menu] Code C généré avec succès\n");
+    } else {
+        debug_printf("❌ [Menu] Erreur lors de la génération du code C\n");
+    }
+}
+
 // Initialisation avec boucle pour éviter la répétition
 void initialiser_menu_contextuel(JsonEditor* editor) {
     ContextMenu* menu = &editor->context_menu;
@@ -380,7 +389,7 @@ void initialiser_menu_contextuel(JsonEditor* editor) {
         // Séparateur 2
         {NULL, NULL, false, true, false},
 
-        // Groupe 3: Dupliquer
+        // Groupe 3: Dupliquer et Formatage
         {"Dupliquer", action_dupliquer_contextuel, true, false, false},
         {"Réindenter", action_reindenter_contextuel, true, false, false},
 
@@ -388,7 +397,13 @@ void initialiser_menu_contextuel(JsonEditor* editor) {
         {NULL, NULL, false, true, false},
 
         // Groupe 4: Templates (avec sous-menu)
-        {"Templates", NULL, true, false, true}
+        {"Templates", NULL, true, false, true},
+
+        // Séparateur 4
+        {NULL, NULL, false, true, false},
+
+        // Groupe 5: Génération de code (EN DERNIER, sur fond rouge sombre)
+        {"Générer Code C", action_generer_code_c_contextuel, true, false, false}
     };
 
     menu->item_count = sizeof(items_config) / sizeof(items_config[0]);
