@@ -328,7 +328,7 @@ void action_coller_contextuel(JsonEditor* editor) {
 }
 
 void action_tout_selectionner_contextuel(JsonEditor* editor) {
-    selectionner_ligne_courante(editor); // TODO: implémenter "Tout sélectionner"
+    selectionner_tout(editor);
     debug_printf("🔲 [Menu] Tout sélectionner\n");
 }
 
@@ -337,6 +337,11 @@ void action_dupliquer_contextuel(JsonEditor* editor) {
     // (à adapter selon ton implémentation)
     dupliquer_ligne_courante(editor);
     debug_printf("📄 [Menu] Dupliquer\n");
+}
+
+void action_reindenter_contextuel(JsonEditor* editor){
+    reindenter_json(editor);
+    debug_printf("📄 [Menu] réindenter\n");
 }
 
 // Initialisation avec boucle pour éviter la répétition
@@ -372,7 +377,8 @@ void initialiser_menu_contextuel(JsonEditor* editor) {
         {NULL, NULL, false, true},
 
         // Groupe 3: Dupliquer
-        {"Dupliquer", action_dupliquer_contextuel, true, false}
+        {"Dupliquer", action_dupliquer_contextuel, true, false},
+        {"Réindenter", action_reindenter_contextuel, true, false}
     };
 
     menu->item_count = sizeof(items_config) / sizeof(items_config[0]);

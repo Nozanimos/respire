@@ -698,6 +698,21 @@ void selectionner_ligne_courante(JsonEditor* editor) {
     debug_printf("📝 LIGNE sélectionnée: pos %d à %d\n", debut, fin);
 }
 
+// Sélectionne tout
+void selectionner_tout(JsonEditor* editor) {
+    if (!editor) return;
+
+    int buffer_len = strlen(editor->buffer);
+
+    // Définir la sélection sur l'intégralité du buffer
+    editor->selection_start = 0;
+    editor->selection_end = buffer_len;
+    editor->selection_active = true;
+    editor->curseur_position = buffer_len; // Déplacer le curseur à la fin
+
+    debug_printf("📝 TOUT sélectionné: 0 à %d (longueur totale)\n", buffer_len);
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 //  DUPLICATION DE LIGNE
 // ════════════════════════════════════════════════════════════════════════════

@@ -7,7 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
-#define JSON_BUFFER_SIZE 8192    // Taille max du JSON (8 Ko)
+#define JSON_BUFFER_SIZE 16384   // Taille max du JSON (16 Ko)
 #define EDITOR_WIDTH 600         // Largeur de la fenêtre
 #define EDITOR_HEIGHT 800        // Hauteur de la fenêtre
 #define LINE_HEIGHT 20           // Hauteur d'une ligne de texte
@@ -257,6 +257,9 @@ void selectionner_mot_au_curseur(JsonEditor* editor);
 // Sélectionne toute la ligne courante (triple-clic)
 void selectionner_ligne_courante(JsonEditor* editor);
 
+// Sélectionne tout
+void selectionner_tout(JsonEditor* editor);
+
 // Duplique la ligne courante (Ctrl+D)
 void dupliquer_ligne_courante(JsonEditor* editor);
 
@@ -292,6 +295,12 @@ void action_couper_contextuel(JsonEditor* editor);
 void action_coller_contextuel(JsonEditor* editor);
 void action_tout_selectionner_contextuel(JsonEditor* editor);
 void action_dupliquer_contextuel(JsonEditor* editor);
+void action_reindenter_contextuel(JsonEditor* editor);
+
+// ─────────────────────────────────────────────────────────────────────────
+// FORMATAGE
+// ─────────────────────────────────────────────────────────────────────────
+void reindenter_json(JsonEditor* editor);
 
 // ─────────────────────────────────────────────────────────────────────────
 // RENDU

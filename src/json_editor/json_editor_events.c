@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "json_editor.h"
 #include "../debug.h"
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_mouse.h>
 
 
@@ -110,7 +111,7 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                 }
 
                 // ─────────────────────────────────────────────────────────────────
-                // Ctrl+Shift+Z → REDO (pour plus tard)
+                // Ctrl+Shift+Z → REDO
                 // ─────────────────────────────────────────────────────────────────
                 if ((mod & KMOD_CTRL) && (mod & KMOD_SHIFT) && event->key.keysym.sym == SDLK_z) {
                     faire_redo(editor);
@@ -118,7 +119,7 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                 }
 
                 // ─────────────────────────────────────────────────────────────────
-                // Ctrl+Y → REDO alternatif (certains éditeurs utilisent ça)
+                // Ctrl+Y → REDO alternatif
                 // ─────────────────────────────────────────────────────────────────
                 if ((mod & KMOD_CTRL) && event->key.keysym.sym == SDLK_y) {
                     faire_redo(editor);
@@ -157,6 +158,22 @@ bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
                 if ((mod & KMOD_CTRL) && event->key.keysym.sym == SDLK_v) {
                     coller_texte(editor);
                     auto_scroll_curseur(editor);
+                    return true;
+                }
+
+                // ─────────────────────────────────────────────────────────────────
+                // Ctrl+A → SELECTIONNER TOUT
+                // ─────────────────────────────────────────────────────────────────
+                if ((mod & KMOD_CTRL) && event->key.keysym.sym == SDLK_a) {
+                    selectionner_tout(editor);
+                    return true;
+                }
+
+                // ─────────────────────────────────────────────────────────────────
+                // Ctrl+Shift+F -> RÉINDENTER PROPREMENT LE JSON
+                // ─────────────────────────────────────────────────────────────────
+                if ((mod & KMOD_CTRL) && (mod & KMOD_SHIFT) && event->key.keysym.sym == SDLK_f) {
+                    reindenter_json(editor);
                     return true;
                 }
 
