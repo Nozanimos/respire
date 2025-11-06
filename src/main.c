@@ -7,7 +7,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "geometry.h"
-#include "hexagone_list.h"
+#include "preview_list.h"
 #include "renderer.h"
 #include "config.h"
 #include "debug.h"
