@@ -5,7 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include "geometry.h"
-#include "preview_list.h"
+#include "precompute_list.h"
 #include "animation.h"
 #include "config.h"
 #include "debug.h"

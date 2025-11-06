@@ -10,7 +10,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include "config.h"
-#include "preview_list.h"
+#include "precompute_list.h"
 #include "widget.h"
 #include "toggle_widget.h"
 #include "widget_list.h"

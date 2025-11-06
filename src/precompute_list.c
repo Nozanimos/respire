@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
-#include "preview_list.h"
+#include "precompute_list.h"
 #include "config.h"
 #include "debug.h"
 

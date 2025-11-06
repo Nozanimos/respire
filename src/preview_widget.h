@@ -4,7 +4,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-#include "preview_list.h"
+#include "precompute_list.h"
 
 // ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DU WIDGET PREVIEW

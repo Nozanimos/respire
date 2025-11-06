@@ -5,7 +5,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "preview_list.h"
+#include "precompute_list.h"
 #include "geometry.h"
 #include "config.h"
 #include "settings_panel.h"

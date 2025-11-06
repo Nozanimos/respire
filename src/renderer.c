@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "renderer.h"
-#include "preview_list.h"
+#include "precompute_list.h"
 #include "widget_base.h"
 #include "json_config_loader.h"
 #include "debug.h"
