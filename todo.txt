@@ -2,6 +2,11 @@ PROJET BREATHING APP - TODO LIST
 ================================
 Mon tout premier programme en langage C + SDL2
 
+LEGENDE :
+✅ = fait
+🔄 = en cours
+□ = à faire
+
 🎯 PHASE 1 : CORE ANIMATION (En cours)
 ✅ - Structure de base SDL2
 ✅ - Hexagones avec liste doublement chaînée
@@ -44,9 +49,14 @@ Mon tout premier programme en langage C + SDL2
 ✅ - Bouton "Générer code C" : convertir le JSON en code C copiable pour settings_panel.c (anticipation fin de projet)
 
 🎯 PHASE 3 : CYCLE RESPIRATOIRE
-NOUS SOMMES ICI ->      🔄 - Timer pour inspiration/expiration
 
-
+  TIMER HEXAGONE (NOTE IMPORTANTE : Consulter arbre.txt pour le détail de la structure du projet)
+                        ✅ - Renommer et transformer fichiers hexagone_list -> precompute_list
+                        ✅ - Créer timer (c,h)
+NOUS SOMMES ICI ->      🔄 - retoucher le fichier de configuration et remplacer par une fonction qui parcoure tous les widget
+                            de la liste des widget (widget_list), puis stocker les paramètres utilisés par l'applicationdans
+                            le fichier de configuration
+                        □ - rendre l'animation en utilisant le système de préchargement via les doubles listes chaînées
 
 
 
