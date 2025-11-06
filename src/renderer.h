@@ -10,6 +10,7 @@
 #include "config.h"
 #include "settings_panel.h"
 #include "./json_editor/json_editor.h"
+#include "timer.h"
 
 // Structure qui contient TOUT l'état de l'application graphique
 typedef struct {
@@ -36,6 +37,8 @@ typedef struct {
     HexagoneList* hexagones;
     SettingsPanel* settings_panel;
     JsonEditor* json_editor;
+    TimerState* session_timer;      // Timer avant démarrage session
+    bool timer_phase;               // true = phase timer, false = phase animation
     AppConfig config;
     bool is_running;
 

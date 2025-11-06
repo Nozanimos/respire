@@ -109,7 +109,7 @@ bool add_increment_widget(WidgetList* list,
 
     // Attacher le callback au widget concret aussi
     if (callback) {
-        set_config_value_changed_callback(node->widget.increment_widget, callback);     // ✅ NOUVEAU : Appeler le callback pour synchroniser la valeur initiale
+        set_config_value_changed_callback(node->widget.increment_widget, callback);     // Appeler le callback pour synchroniser la valeur initiale
         callback(start_val);
     }
 

@@ -58,7 +58,7 @@ typedef struct WidgetNode {
 // ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DE LA LISTE DE WIDGETS
 // ════════════════════════════════════════════════════════════════════════════
-typedef struct {
+typedef struct WidgetList {
     WidgetNode* first;
     WidgetNode* last;
     int count;

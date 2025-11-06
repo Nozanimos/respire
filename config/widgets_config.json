@@ -96,7 +96,7 @@
  {
       "type": "increment",
       "id": "start_duration",
-      "nom_affichage": "Temps avant session (s)",
+      "nom_affichage": "pause avant session (s)",
       "x": 165,
       "y": 143,
       "valeur_min": 10,

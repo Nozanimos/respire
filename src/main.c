@@ -12,6 +12,7 @@
 #include "config.h"
 #include "debug.h"
 #include "widget_base.h"
+#include "timer.h"
 
 
 
@@ -28,7 +29,7 @@ void init_debug_mode(int argc, char **argv) {
                 // Marqueur d'encodage reconnu par les éditeurs (vim, VS Code, emacs, etc.)
                 fprintf(debug_file, "# -*- coding: utf-8 -*-\n");
 
-                // ✅ CORRECTION : Une seule redirection
+                // Une seule redirection
                 freopen("debug.txt", "a", stdout);  // Mode 'a' pour ne pas écraser le BOM
                 // stderr reste séparé pour les vraies erreurs
 
@@ -94,6 +95,24 @@ int main(int argc, char **argv) {
     debug_printf("✅ Hexagones créés et assignés à app.hexagones\n");
     debug_printf("📊 Nombre d'hexagones: %d\n", hex_list->count);
 
+    // === CRÉATION DU TIMER ===
+    // Récupérer la durée depuis la config (chargée depuis respiration.conf)
+    int timer_duration = config.start_duration;
+
+    // Calculer la taille de police adaptée à l'hexagone
+    int smallest_hex_radius = (int)(container_size * size_ratio * 0.5f);  // Rayon du plus petit hexagone
+    int timer_font_size = smallest_hex_radius / 2;  // Police = moitié du rayon
+
+    app.session_timer = breathing_timer_create(timer_duration, "../fonts/arial/ARIALBD.TTF", timer_font_size);
+    if (!app.session_timer) {
+        fprintf(stderr, "⚠️  Échec création timer - démarrage direct de l'animation\n");
+        app.timer_phase = false;
+    } else {
+        app.timer_phase = true;
+        timer_start(app.session_timer);
+        debug_printf("✅ Timer créé: %d secondes\n", timer_duration);
+    }
+
     /*------------------------------------------------------------*/
 
     const int FRAME_DELAY = 1000 / TARGET_FPS;
@@ -121,11 +140,23 @@ int main(int argc, char **argv) {
             }
         }
 
-        // Mise à jour animations hexagones
-        HexagoneNode* node = hex_list->first;
-        while (node) {
-            apply_precomputed_frame(node);
-            node = node->next;
+        // === GESTION TIMER / ANIMATION ===
+        if (app.timer_phase) {
+            // Phase timer : on met à jour le timer
+            bool timer_running = timer_update(app.session_timer);
+
+            if (!timer_running) {
+                // Timer terminé → basculer en phase animation
+                app.timer_phase = false;
+                debug_printf("🎬 Timer terminé - démarrage animation principale\n");
+            }
+        } else {
+            // Phase animation : on met à jour les hexagones
+            HexagoneNode* node = hex_list->first;
+            while (node) {
+                apply_precomputed_frame(node);
+                node = node->next;
+            }
         }
 
         // Mise à jour animation panneau
@@ -152,6 +183,12 @@ int main(int argc, char **argv) {
 
     // === NETTOYAGE ===
     debug_printf("Nettoyage...\n");
+
+    // Libérer le timer
+    if (app.session_timer) {
+        timer_destroy(app.session_timer);
+        app.session_timer = NULL;
+    }
 
     // Libérer les polices AVANT TTF_Quit
     cleanup_font_manager();

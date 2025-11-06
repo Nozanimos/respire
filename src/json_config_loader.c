@@ -22,6 +22,7 @@
 // Déclarations externes des callbacks (définis dans settings_panel.c)
 extern void duration_value_changed(int value);
 extern void cycles_value_changed(int value);
+extern void start_value_changed(int value);
 extern void alternate_cycles_changed(bool value);
 extern void apply_button_clicked(void);
 extern void cancel_button_clicked(void);
@@ -35,6 +36,9 @@ static void (*obtenir_callback_int(const char* nom))(int) {
     }
     if (strcmp(nom, "cycles_value_changed") == 0) {
         return cycles_value_changed;
+    }
+    if (strcmp(nom, "start_value_changed") == 0) {
+        return start_value_changed;
     }
 
     debug_printf("⚠️ Callback INT inconnu: '%s'\n", nom);

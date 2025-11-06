@@ -6,6 +6,7 @@
 #include "debug.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <math.h>
 
 
 
@@ -507,6 +508,28 @@ void render_app(AppState* app) {
         while (node) {
             make_hexagone(app->renderer, node->data);
             node = node->next;
+        }
+    }
+
+    // 2.5. Dessine le timer SI on est en phase timer
+    if (app->timer_phase && app->session_timer && app->hexagones) {
+        // Récupérer le premier hexagone (le plus grand) pour centrer le timer
+        HexagoneNode* first_node = app->hexagones->first;
+        if (first_node && first_node->data) {
+            // Le rayon de l'hexagone est approximativement la distance du centre au sommet
+            // On peut l'estimer via la taille actuelle de l'hexagone
+            int hex_center_x = first_node->data->center_x;
+            int hex_center_y = first_node->data->center_y;
+
+            // Calculer le rayon approximatif (distance centre->sommet)
+            // En utilisant les coordonnées relatives du premier point
+            int dx = first_node->data->vx[0];
+            int dy = first_node->data->vy[0];
+            int hex_radius = (int)sqrt(dx*dx + dy*dy);
+
+            // Rendre le timer centré sur l'hexagone
+            timer_render(app->session_timer, app->renderer,
+                         hex_center_x, hex_center_y, hex_radius);
         }
     }
 

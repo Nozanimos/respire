@@ -69,6 +69,19 @@ void cycles_value_changed(int new_value) {
     debug_printf("✅ Cycles changés: %d (sauvegardé)\n", new_value);
 }
 
+void start_value_changed(int new_value) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement
+    current_main_config_for_callbacks->start_duration = new_value;
+    current_panel_for_callbacks->temp_config.start_duration = new_value;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Durée de démarrage changée: %d secondes (sauvegardé)\n", new_value);
+}
+
 void alternate_cycles_changed(bool new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
@@ -362,6 +375,8 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                                      panel->temp_config.breath_duration);
                 set_widget_int_value(panel->widget_list, "breath_cycles",
                                      panel->temp_config.breath_cycles);
+                set_widget_int_value(panel->widget_list, "start_duration",
+                                     panel->temp_config.start_duration);
                 set_widget_bool_value(panel->widget_list, "alternate_cycles",
                                       panel->temp_config.alternate_cycles);
 
