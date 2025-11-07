@@ -51,6 +51,7 @@ void add_hexagone(HexagoneList* list, Hexagon* hex, Animation* anim) {
     new_node->precomputed_vy = NULL;
     new_node->total_cycles = 0;
     new_node->current_cycle = 0;
+    new_node->is_frozen = false;  // 🆕 Animation active par défaut
 
     new_node->next = NULL;
     new_node->prev = list->last;
@@ -130,13 +131,19 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
             // Allocation contiguë pour les transformations
             node->precomputed_vx = malloc(total_frames * NB_SIDE * sizeof(Sint16));
             node->precomputed_vy = malloc(total_frames * NB_SIDE * sizeof(Sint16));
+
+            // 🆕 Allocation pour les scales (utilisés par le compteur de respirations)
+            node->precomputed_scales = malloc(total_frames * sizeof(double));
+
             node->total_cycles = total_frames;
             node->current_cycle = 0;
+            node->current_scale = 1.0;  // 🆕 Initialiser le scale actuel
 
-            if (!node->precomputed_vx || !node->precomputed_vy) {
+            if (!node->precomputed_vx || !node->precomputed_vy || !node->precomputed_scales) {
                 fprintf(stderr, "Erreur d'allocation pour hexagone %d\n", node->data->element_id);
                 free(node->precomputed_vx);
                 free(node->precomputed_vy);
+                free(node->precomputed_scales);  // 🆕 Libérer aussi les scales
                 continue;
             }
 
@@ -155,6 +162,9 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
                 SinusoidalResult result;
 
                 sinusoidal_movement(time_in_seconds, &config, &result);
+
+                // 🆕 Stocker le scale précalculé pour cette frame (utilisé par le compteur)
+                node->precomputed_scales[frame] = result.scale;
 
                 double angle_rad = result.rotation * M_PI / 180.0;
 
@@ -196,7 +206,10 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
 void apply_precomputed_frame(HexagoneNode* node) {
     if (!node || !node->precomputed_vx || !node->precomputed_vy) return;
 
-    // ✅ MODIFICATION : Appliquer les points transformés AU CENTRE ACTUEL
+    // 🆕 Si l'animation est figée, ne rien faire
+    if (node->is_frozen) return;
+
+    // Appliquer les points transformés AU CENTRE ACTUEL
     for (int i = 0; i < NB_SIDE; i++) {
         int index = node->current_cycle * NB_SIDE + i;
 
@@ -205,7 +218,11 @@ void apply_precomputed_frame(HexagoneNode* node) {
         node->data->vy[i] = node->precomputed_vy[index];  // Points transformés relatifs
     }
 
-    /* : Le centre (center_x, center_y) reste inchangé pendant l'animation L'échelle (current_scale) reste à 1.0 car le scale est déjà dans les points précalculés */
+    // 🆕 Mettre à jour le scale actuel (utilisé par le compteur pour l'effet fish-eye)
+    node->current_scale = node->precomputed_scales[node->current_cycle];
+
+    /* NOTE : Le centre (center_x, center_y) reste inchangé pendant l'animation
+     *  L'échelle (current_scale) est maintenant mise à jour et accessible au compteur */
 
     node->current_cycle++;
     if (node->current_cycle >= node->total_cycles) {
@@ -237,8 +254,6 @@ int calculate_alignment_cycles(void) {
 /*------------------------------ Nettoyage ----------------------------------------*/
 
 
-/*------------------------------ Nettoyage ----------------------------------------*/
-
 void free_hexagone_list(HexagoneList* list) {
     if (!list) return;
 
@@ -246,9 +261,10 @@ void free_hexagone_list(HexagoneList* list) {
     while (current) {
         HexagoneNode* next = current->next;
 
-        // Libération SIMPLIFIÉE - seulement 2 free() au lieu de N+2
+        // Libération SIMPLIFIÉE - maintenant 3 free() pour inclure les scales
         free(current->precomputed_vx);
         free(current->precomputed_vy);
+        free(current->precomputed_scales);  // 🆕 Libérer les scales précalculés
 
         if (current->animation) {
             free_animation(current->animation);

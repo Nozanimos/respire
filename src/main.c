@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "widget_base.h"
 #include "timer.h"
+#include "counter.h"
 
 
 
@@ -111,6 +112,39 @@ int main(int argc, char **argv) {
         app.timer_phase = true;
         timer_start(app.session_timer);
         debug_printf("✅ Timer créé: %d secondes\n", timer_duration);
+
+        // 🆕 FIGER L'ANIMATION PENDANT LE TIMER
+        HexagoneNode* node = hex_list->first;
+        while (node) {
+            node->is_frozen = true;  // Figer tous les hexagones
+            node = node->next;
+        }
+        debug_printf("❄️  Animation figée pendant le timer\n");
+    }
+
+    // === CRÉATION DU COMPTEUR DE RESPIRATIONS ===
+    // 🆕 Le compteur utilise SDL_TTF avec génération dynamique pour une qualité optimale
+    int counter_font_size = (int)(smallest_hex_radius * 0.7f);
+
+    // Récupérer la configuration sinusoïdale du premier hexagone pour le compteur
+    SinusoidalConfig sin_config = {
+        .angle_per_cycle = hex_list->first->animation->angle_per_cycle,
+        .scale_min = hex_list->first->animation->scale_min,
+        .scale_max = hex_list->first->animation->scale_max,
+        .clockwise = hex_list->first->animation->clockwise,
+        .breath_duration = config.breath_duration
+    };
+
+    app.breath_counter = counter_create(config.Nb_respiration, config.breath_duration,
+                                        &sin_config, "../fonts/arial/ARIALBD.TTF", counter_font_size);
+    if (!app.breath_counter) {
+        fprintf(stderr, "⚠️  Échec création compteur - respiration sans comptage\n");
+        app.counter_phase = false;
+    } else {
+        // Le compteur ne démarre PAS immédiatement, il attend la fin du timer
+        app.counter_phase = false;  // Sera activé après le timer
+        debug_printf("✅ Compteur créé: 0/%d respirations (%.1fs/cycle)\n",
+                     config.Nb_respiration, config.breath_duration);
     }
 
     /*------------------------------------------------------------*/
@@ -140,22 +174,57 @@ int main(int argc, char **argv) {
             }
         }
 
-        // === GESTION TIMER / ANIMATION ===
+        // === GESTION TIMER ===
         if (app.timer_phase) {
-            // Phase timer : on met à jour le timer
+            // Phase 1 : TIMER - Countdown avant démarrage
             bool timer_running = timer_update(app.session_timer);
 
             if (!timer_running) {
-                // Timer terminé → basculer en phase animation
+                // Timer terminé → démarrer l'animation et le compteur
                 app.timer_phase = false;
-                debug_printf("🎬 Timer terminé - démarrage animation principale\n");
+
+                // 🆕 DÉGELER L'ANIMATION
+                HexagoneNode* node = hex_list->first;
+                while (node) {
+                    node->is_frozen = false;  // Dégeler tous les hexagones
+                    node = node->next;
+                }
+
+                // 🆕 DÉMARRER LE COMPTEUR
+                if (app.breath_counter) {
+                    counter_start(app.breath_counter);
+                    app.counter_phase = true;
+                }
+
+                debug_printf("🎬 Timer terminé - animation et compteur démarrés\n");
             }
-        } else {
-            // Phase animation : on met à jour les hexagones
-            HexagoneNode* node = hex_list->first;
-            while (node) {
-                apply_precomputed_frame(node);
-                node = node->next;
+        }
+
+        // === ANIMATION (toujours active, sauf si figée) ===
+        HexagoneNode* node = hex_list->first;
+        while (node) {
+            apply_precomputed_frame(node);  // Ne fait rien si is_frozen = true
+            node = node->next;
+        }
+
+        // === MISE À JOUR COMPTEUR (actif après le timer) ===
+        if (app.counter_phase && app.breath_counter) {
+            bool counter_running = counter_update(app.breath_counter);
+
+            if (!counter_running) {
+                // Compteur terminé → figer l'animation
+                app.counter_phase = false;
+
+                // 🆕 FIGER L'ANIMATION quand les respirations sont terminées
+                HexagoneNode* node = hex_list->first;
+                while (node) {
+                    node->is_frozen = true;
+                    node = node->next;
+                }
+
+                debug_printf("✅ Session terminée: %d/%d respirations - animation figée\n",
+                             app.breath_counter->current_breath,
+                             app.breath_counter->total_breaths);
             }
         }
 
@@ -164,7 +233,7 @@ int main(int argc, char **argv) {
             update_settings_panel(app.settings_panel, (float)FRAME_DELAY / 1000.0f);
         }
 
-        // RENDU COMPLET (utiliser render_app au lieu de render_hexagones)
+        // RENDU COMPLET
         render_app(&app);
 
         // Régulation FPS
@@ -179,7 +248,7 @@ int main(int argc, char **argv) {
             frame_count = 0;
             last_fps_time = SDL_GetTicks();
         }
-    }
+    }  // <-- FIN DU WHILE (done) - ACCOLADE IMPORTANTE !
 
     // === NETTOYAGE ===
     debug_printf("Nettoyage...\n");
@@ -188,6 +257,12 @@ int main(int argc, char **argv) {
     if (app.session_timer) {
         timer_destroy(app.session_timer);
         app.session_timer = NULL;
+    }
+
+    // Libérer le compteur
+    if (app.breath_counter) {
+        counter_destroy(app.breath_counter);
+        app.breath_counter = NULL;
     }
 
     // Libérer les polices AVANT TTF_Quit
@@ -202,4 +277,4 @@ int main(int argc, char **argv) {
 
     debug_printf("Application terminée\n");
     return EXIT_SUCCESS;
-}
+}  // <-- FIN DU main()

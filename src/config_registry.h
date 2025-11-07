@@ -54,6 +54,7 @@ static const ConfigParamEntry CONFIG_PARAM_TABLE[] = {
     { "breath_duration",  "breath_duration", CONFIG_TYPE_FLOAT, offsetof(AppConfig, breath_duration), {.float_val = 3.0f} },
     { "start_duration",   "start_duration",  CONFIG_TYPE_INT,  offsetof(AppConfig, start_duration),   {.int_val = 10} },
     { "alternate_cycles", "alternate_cycles",CONFIG_TYPE_BOOL, offsetof(AppConfig, alternate_cycles), {.bool_val = false} },
+    { "Nb_respiration",   "Nb_respiration",  CONFIG_TYPE_INT,  offsetof(AppConfig, Nb_respiration),   {.int_val = 20} },
 };
 
 static const int CONFIG_PARAMS_COUNT = sizeof(CONFIG_PARAM_TABLE) / sizeof(ConfigParamEntry);

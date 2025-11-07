@@ -37,6 +37,7 @@ typedef struct {
     int breath_cycles;          // Nombre de cycles (1-16)
     float breath_duration;      // Durée d'un cycle en secondes (1.0-10.0)
     bool alternate_cycles;      // Alterner sens rotation entre cycles
+    int Nb_respiration;         // Nombre de respirations (10-60)
 
     // Timer de démarrage
     int start_duration;         // Secondes avant démarrage (3-60)

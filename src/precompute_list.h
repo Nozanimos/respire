@@ -33,11 +33,19 @@ typedef struct HexagoneNode {
     Hexagon* data;
     Animation* animation;
 
+    // Coordonnées précalculées pour chaque frame
     Sint16* precomputed_vx;
     Sint16* precomputed_vy;
 
+    // 🆕 Scales précalculés pour chaque frame (utilisé par le compteur)
+    double* precomputed_scales;  // Tableau des scales pour effet fish-eye
+    double current_scale;         // Scale actuel (mis à jour par apply_precomputed_frame)
+
     int total_cycles;
     int current_cycle;
+
+    // 🆕 Flag pour figer l'animation
+    bool is_frozen;               // Si true, apply_precomputed_frame ne fait rien
 
     struct HexagoneNode* prev;
     struct HexagoneNode* next;

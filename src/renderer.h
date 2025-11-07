@@ -11,6 +11,7 @@
 #include "settings_panel.h"
 #include "./json_editor/json_editor.h"
 #include "timer.h"
+#include "counter.h"
 
 // Structure qui contient TOUT l'état de l'application graphique
 typedef struct {
@@ -38,6 +39,9 @@ typedef struct {
     SettingsPanel* settings_panel;
     JsonEditor* json_editor;
     TimerState* session_timer;      // Timer avant démarrage session
+    // 🆕 Compteur de respirations (démarre après le timer)
+    CounterState* breath_counter;
+    bool counter_phase;
     bool timer_phase;               // true = phase timer, false = phase animation
     AppConfig config;
     bool is_running;

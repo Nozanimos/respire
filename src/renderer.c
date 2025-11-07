@@ -188,6 +188,15 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     );
 
     // ════════════════════════════════════════════════════════════════════════
+    // 6a. SYNCHRONISER CONFIG → WIDGETS
+    // ════════════════════════════════════════════════════════════════════════
+    // Les widgets sont créés avec les valeurs du JSON (valeur_depart)
+    // Mais on doit les mettre à jour avec les valeurs de respiration.conf
+    if (app->settings_panel && app->settings_panel->widget_list) {
+        sync_config_to_widgets(&app->config, app->settings_panel->widget_list);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // 6b. DÉFINIR LA LARGEUR MINIMALE DE FENÊTRE
     // ════════════════════════════════════════════════════════════════════════
     // Empêcher que les widgets ne sortent de la fenêtre par la droite
@@ -520,18 +529,36 @@ void render_app(AppState* app) {
             // On peut l'estimer via la taille actuelle de l'hexagone
             int hex_center_x = first_node->data->center_x;
             int hex_center_y = first_node->data->center_y;
-
             // Calculer le rayon approximatif (distance centre->sommet)
             // En utilisant les coordonnées relatives du premier point
             int dx = first_node->data->vx[0];
             int dy = first_node->data->vy[0];
             int hex_radius = (int)sqrt(dx*dx + dy*dy);
-
             // Rendre le timer centré sur l'hexagone
             timer_render(app->session_timer, app->renderer,
                          hex_center_x, hex_center_y, hex_radius);
         }
     }
+
+    // 🆕 Dessine le compteur SI on est en phase compteur (après le timer)
+    if (app->counter_phase && app->breath_counter && app->hexagones && app->hexagones->first) {
+        HexagoneNode* first_node = app->hexagones->first;
+        if (first_node && first_node->data) {
+            // Récupérer les mêmes infos que pour le timer
+            int hex_center_x = first_node->data->center_x;
+            int hex_center_y = first_node->data->center_y;
+            int dx = first_node->data->vx[0];
+            int dy = first_node->data->vy[0];
+            int hex_radius = (int)sqrt(dx*dx + dy*dy);
+
+            // Utiliser le scale du premier hexagone pour l'effet fish-eye
+            double current_scale = first_node->current_scale;
+
+            counter_render(app->breath_counter, app->renderer,
+                           hex_center_x, hex_center_y, hex_radius, current_scale);
+        }
+    }
+
 
     // 3. Dessine le panneau settings (par dessus)
     if (app->settings_panel) {

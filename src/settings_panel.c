@@ -69,6 +69,19 @@ void cycles_value_changed(int new_value) {
     debug_printf("✅ Cycles changés: %d (sauvegardé)\n", new_value);
 }
 
+void nb_breath(int new_value) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement
+    current_main_config_for_callbacks->Nb_respiration = new_value;
+    current_panel_for_callbacks->temp_config.Nb_respiration = new_value;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Nombre de respirations changé: %d (sauvegardé)\n", new_value);
+}
+
 void start_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
