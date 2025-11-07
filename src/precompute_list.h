@@ -26,6 +26,18 @@ typedef struct {
     double scale;
 } SinusoidalResult;
 
+// ════════════════════════════════════════════════════════════════════════
+// STRUCTURE POUR LE PRÉCOMPUTING DU COMPTEUR DE RESPIRATIONS
+// ════════════════════════════════════════════════════════════════════════
+// Stocke les données précalculées pour chaque frame du compteur :
+// - Flag indiquant si on est au scale_min (inspire)
+// - Le scale pour l'effet fish-eye (synchronisé avec l'hexagone)
+typedef struct {
+    bool is_at_scale_min;  // 🚩 true si cette frame est au scale_min (inspire)
+    bool is_at_scale_max;  // 🚩 true si cette frame est au scale_max (expire)
+    double text_scale;     // Scale du texte (suit le scale de l'hexagone)
+} CounterFrame;
+
 // Pointeur de fonction type
 typedef void (*SinusoidalMovementFunc)(double frame_time, const SinusoidalConfig* config, SinusoidalResult* result);
 
@@ -39,6 +51,8 @@ typedef struct HexagoneNode {
 
     // 🆕 Scales précalculés pour chaque frame (utilisé par le compteur)
     double* precomputed_scales;  // Tableau des scales pour effet fish-eye
+    // 🆕 Frames précalculées pour le compteur de respirations
+    CounterFrame* precomputed_counter_frames;  // Tableau synchronisé avec les frames de l'hexagone
     double current_scale;         // Scale actuel (mis à jour par apply_precomputed_frame)
 
     int total_cycles;
@@ -73,6 +87,10 @@ void apply_precomputed_frame(HexagoneNode* node);
 int calculate_alignment_cycles(void);
 void debug_print_list_order(HexagoneList* list);
 void print_rotation_frame_requirements(HexagoneList* list, int fps, float breath_duration);
+
+// 🆕 PRÉCOMPUTING DU COMPTEUR DE RESPIRATIONS (génère les flags scale_min)
+void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
+                               float breath_duration, int max_breaths);
 
 /*------------------------- Fonctions utiles ----------------------------------*/
 int gcd(int a, int b);

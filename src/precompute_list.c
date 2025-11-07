@@ -134,18 +134,22 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
 
             // 🆕 Allocation pour les scales (utilisés par le compteur de respirations)
             node->precomputed_scales = malloc(total_frames * sizeof(double));
+            // 🆕 Allocation pour les frames du compteur (synchronisées avec l'hexagone)
+            node->precomputed_counter_frames = malloc(total_frames * sizeof(CounterFrame));
 
             node->total_cycles = total_frames;
             node->current_cycle = 0;
             node->current_scale = 1.0;  // 🆕 Initialiser le scale actuel
 
-            if (!node->precomputed_vx || !node->precomputed_vy || !node->precomputed_scales) {
+            if (!node->precomputed_vx || !node->precomputed_vy ||
+                !node->precomputed_scales || !node->precomputed_counter_frames) {
                 fprintf(stderr, "Erreur d'allocation pour hexagone %d\n", node->data->element_id);
-                free(node->precomputed_vx);
-                free(node->precomputed_vy);
-                free(node->precomputed_scales);  // 🆕 Libérer aussi les scales
-                continue;
-            }
+            free(node->precomputed_vx);
+            free(node->precomputed_vy);
+            free(node->precomputed_scales);
+            free(node->precomputed_counter_frames);  // 🆕 Libérer aussi les frames du compteur
+            continue;
+                }
 
             // UTILISATION DE LA STRUCTURE GÉNÉRIQUE
             SinusoidalConfig config = {
@@ -187,7 +191,8 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
                     node->precomputed_vx[index] = (Sint16)rotated_dx;
                     node->precomputed_vy[index] = (Sint16)rotated_dy;
                 }
-            }
+            } // Fin de la boucle for (int frame...)
+
 
             // ✅ RESTAURER le centre original (au cas où)
             node->data->center_x = original_center_x;
@@ -265,6 +270,8 @@ void free_hexagone_list(HexagoneList* list) {
         free(current->precomputed_vx);
         free(current->precomputed_vy);
         free(current->precomputed_scales);  // 🆕 Libérer les scales précalculés
+        // 🆕 Libérer les frames du compteur précomputé
+        free(current->precomputed_counter_frames);
 
         if (current->animation) {
             free_animation(current->animation);
@@ -361,7 +368,66 @@ double gcd_fractional(double a, double b) {
     }
     return a;
 }
-/*----------------------------------------------------------------------------------*/
+
+/*──────────────────────────────────────────────────────────────────────────────
+  PRÉCOMPUTING DES FRAMES DU COMPTEUR DE RESPIRATIONS
+──────────────────────────────────────────────────────────────────────────────*/
+// Cette fonction calcule pour chaque frame :
+// 1. Le flag is_at_scale_min (true si on est à l'inspire)
+// 2. Le scale du texte (synchronisé avec le scale de l'hexagone)
+//
+// Le compteur lui-même (incrémentation) se fait en temps réel dans counter_render
+// en détectant les TRANSITIONS du flag (false → true)
+//
+// Paramètres :
+// - node : Le nœud hexagone contenant les données précomputées
+// - total_frames : Nombre total de frames précalculées
+// - fps : Images par seconde
+// - breath_duration : Durée d'un cycle complet (inspire + expire)
+// - max_breaths : Nombre maximum de respirations (non utilisé ici, juste pour info)
+void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
+                               float breath_duration, int max_breaths) {
+    if (!node || !node->precomputed_counter_frames || !node->precomputed_scales) {
+        return;
+    }
+
+    // Parcourir toutes les frames précalculées
+    for (int frame = 0; frame < total_frames; frame++) {
+        double current_scale = node->precomputed_scales[frame];
+
+        // Calculer la progression dans le cycle
+        double time_in_seconds = (double)frame / fps;
+        double cycles_completed = time_in_seconds / breath_duration;
+        double progress_in_cycle = fmod(cycles_completed, 1.0);
+
+        // 🚩 DÉTECTER les deux positions clés du cycle de respiration :
+        //
+        // Timeline du cycle :
+        // progress = 0.0-0.05  → scale_max (expire, position poumons_vides, position de départ)
+        // progress = 0.45-0.55 → scale_min (inspire, poumons pleins)
+        // progress = 0.95-1.0  → scale_max (inspire - position poumons pleins)
+        //
+        // Ces flags serviront pour :
+        // - Incrémenter le compteur (à chaque passage au scale_min)
+        // - Figer l'animation en position de repos (scale_max après la dernière respiration)
+        // - Synchroniser l'audio plus tard (sons inspire/expire)
+
+        bool is_at_min = (progress_in_cycle >= 0.45 && progress_in_cycle <= 0.55);
+        bool is_at_max = (progress_in_cycle <= 0.05 || progress_in_cycle >= 0.95);
+
+        // Enregistrer les drapeaux et le scale pour cette frame
+        node->precomputed_counter_frames[frame].is_at_scale_min = is_at_min;
+        node->precomputed_counter_frames[frame].is_at_scale_max = is_at_max;
+        node->precomputed_counter_frames[frame].text_scale = current_scale;
+    }
+
+    debug_printf("✅ Compteur précompute : %d frames, flags scale_min générés\n",
+                 total_frames);
+
+    // Note : max_breaths est conservé pour info mais non utilisé dans le précomputing
+    // Le compteur s'arrêtera quand current_breath atteindra max_breaths (logique dans counter_render)
+    (void)max_breaths;  // Supprimer le warning de paramètre inutilisé
+}
 
 
 /*----------------------------------------------------------------------------------*/

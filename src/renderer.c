@@ -511,11 +511,20 @@ void render_app(AppState* app) {
     // 1. Efface l'écran avec le fond
     SDL_RenderCopy(app->renderer, app->background, NULL, NULL);
 
-    // 2. Dessine tous les hexagones
+    // 2. Dessine tous les hexagones (sauf si la session de comptage est terminée)
     if (app->hexagones) {
         HexagoneNode* node = app->hexagones->first;
         while (node) {
-            make_hexagone(app->renderer, node->data);
+            // 🎯 Ne dessiner l'hexagone que si :
+            // - On est en phase timer (avant le compteur)
+            // - OU le compteur est actif (is_active = true)
+            // Dès que le compteur se désactive, l'hexagone disparaît aussi
+            bool should_render = app->timer_phase ||
+            (app->breath_counter && app->breath_counter->is_active);
+
+            if (should_render) {
+                make_hexagone(app->renderer, node->data);
+            }
             node = node->next;
         }
     }
@@ -544,18 +553,16 @@ void render_app(AppState* app) {
     if (app->counter_phase && app->breath_counter && app->hexagones && app->hexagones->first) {
         HexagoneNode* first_node = app->hexagones->first;
         if (first_node && first_node->data) {
-            // Récupérer les mêmes infos que pour le timer
+            // Récupérer les infos de position de l'hexagone
             int hex_center_x = first_node->data->center_x;
             int hex_center_y = first_node->data->center_y;
             int dx = first_node->data->vx[0];
             int dy = first_node->data->vy[0];
             int hex_radius = (int)sqrt(dx*dx + dy*dy);
 
-            // Utiliser le scale du premier hexagone pour l'effet fish-eye
-            double current_scale = first_node->current_scale;
-
+            // 🆕 Passer le nœud hexagone directement (contient les données précomputées)
             counter_render(app->breath_counter, app->renderer,
-                           hex_center_x, hex_center_y, hex_radius, current_scale);
+                           hex_center_x, hex_center_y, hex_radius, first_node);
         }
     }
 
@@ -597,11 +604,19 @@ void render_hexagones(AppState* app, HexagoneList* hex_list) {
     // 1. Dessine le fond
     SDL_RenderCopy(app->renderer, app->background, NULL, NULL);
 
-    // 2. Dessine tous les hexagones
-    HexagoneNode* node = hex_list->first;
-    while (node) {
-        make_hexagone(app->renderer, node->data);
-        node = node->next;
+    // 2. Dessine tous les hexagones (sauf si la session de comptage est terminée)
+    if (app->hexagones) {
+        HexagoneNode* node = app->hexagones->first;
+        while (node) {
+            // 🎯 Ne dessiner l'hexagone que si :
+            // - On est en phase timer (avant le compteur)
+            // - OU on est en phase compteur (compteur actif)
+            // Si le compteur est terminé (counter_phase = false après avoir été true), ne plus afficher
+            if (app->timer_phase || app->counter_phase) {
+                make_hexagone(app->renderer, node->data);
+            }
+            node = node->next;
+        }
     }
 
     // 3. Met à jour l'affichage

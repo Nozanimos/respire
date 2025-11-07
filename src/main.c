@@ -91,10 +91,25 @@ int main(int argc, char **argv) {
 
     // === PRÉ-CALCULS ===
     precompute_all_cycles(hex_list, TARGET_FPS, config.breath_duration);
+    // 🆕 PRÉCOMPUTER LES FRAMES DU COMPTEUR pour tous les hexagones
+    // On utilise le nombre de respirations depuis la config
+    HexagoneNode* node = hex_list->first;
+    while (node) {
+        precompute_counter_frames(
+            node,
+            node->total_cycles,           // Nombre total de frames précalculées
+            TARGET_FPS,                   // Images par seconde
+            config.breath_duration,       // Durée d'un cycle complet
+            config.Nb_respiration         // Nombre max de respirations à compter
+        );
+        node = node->next;
+    }
+    debug_printf("✅ Compteur précomputé pour %d hexagones\n", hex_list->count);
     print_rotation_frame_requirements(hex_list, TARGET_FPS, config.breath_duration);
 
     debug_printf("✅ Hexagones créés et assignés à app.hexagones\n");
     debug_printf("📊 Nombre d'hexagones: %d\n", hex_list->count);
+
 
     // === CRÉATION DU TIMER ===
     // Récupérer la durée depuis la config (chargée depuis respiration.conf)
@@ -124,27 +139,24 @@ int main(int argc, char **argv) {
 
     // === CRÉATION DU COMPTEUR DE RESPIRATIONS ===
     // 🆕 Le compteur utilise SDL_TTF avec génération dynamique pour une qualité optimale
+    // La taille de police est calculée dynamiquement selon la taille du plus petit hexagone
     int counter_font_size = (int)(smallest_hex_radius * 0.7f);
 
-    // Récupérer la configuration sinusoïdale du premier hexagone pour le compteur
-    SinusoidalConfig sin_config = {
-        .angle_per_cycle = hex_list->first->animation->angle_per_cycle,
-        .scale_min = hex_list->first->animation->scale_min,
-        .scale_max = hex_list->first->animation->scale_max,
-        .clockwise = hex_list->first->animation->clockwise,
-        .breath_duration = config.breath_duration
-    };
+    // 🆕 Compteur simplifié - les données d'animation viennent du précomputing
+    app.breath_counter = counter_create(
+        config.Nb_respiration,          // Nombre max de respirations
+        "../fonts/arial/ARIALBD.TTF",   // Police (Arial Bold)
+        counter_font_size               // Taille dynamique basée sur l'hexagone
+    );
 
-    app.breath_counter = counter_create(config.Nb_respiration, config.breath_duration,
-                                        &sin_config, "../fonts/arial/ARIALBD.TTF", counter_font_size);
     if (!app.breath_counter) {
         fprintf(stderr, "⚠️  Échec création compteur - respiration sans comptage\n");
         app.counter_phase = false;
     } else {
         // Le compteur ne démarre PAS immédiatement, il attend la fin du timer
         app.counter_phase = false;  // Sera activé après le timer
-        debug_printf("✅ Compteur créé: 0/%d respirations (%.1fs/cycle)\n",
-                     config.Nb_respiration, config.breath_duration);
+        debug_printf("✅ Compteur créé: 0/%d respirations (taille police: %d)\n",
+                     config.Nb_respiration, counter_font_size);
     }
 
     /*------------------------------------------------------------*/
@@ -183,20 +195,36 @@ int main(int argc, char **argv) {
                 // Timer terminé → démarrer l'animation et le compteur
                 app.timer_phase = false;
 
-                // 🆕 DÉGELER L'ANIMATION
+                // 🆕 POSITIONNER LA "TÊTE DE LECTURE" SUR SCALE_MIN (poumons vides)
+                // Chercher la première frame où is_at_scale_min = true
                 HexagoneNode* node = hex_list->first;
                 while (node) {
-                    node->is_frozen = false;  // Dégeler tous les hexagones
+                    // Chercher la première frame avec scale_min
+                    bool frame_found = false;
+                    for (int frame = 0; frame < node->total_cycles && !frame_found; frame++) {
+                        if (node->precomputed_counter_frames &&
+                            node->precomputed_counter_frames[frame].is_at_scale_min) {
+                            // Positionner la tête de lecture sur cette frame
+                            node->current_cycle = frame;
+                        frame_found = true;
+                        debug_printf("🎯 Hexagone %d positionné sur scale_min (frame %d)\n",
+                                     node->data->element_id, frame);
+                            }
+                    }
+
+                    // Dégeler l'animation
+                    node->is_frozen = false;
                     node = node->next;
                 }
 
-                // 🆕 DÉMARRER LE COMPTEUR
+                // 🆕 DÉMARRER LE COMPTEUR (activer simplement - données dans le précomputing)
                 if (app.breath_counter) {
-                    counter_start(app.breath_counter);
+                    app.breath_counter->is_active = true;
                     app.counter_phase = true;
+                    debug_printf("🫁 Compteur activé - lecture depuis précomputing (démarre sur scale_min)\n");
                 }
 
-                debug_printf("🎬 Timer terminé - animation et compteur démarrés\n");
+                debug_printf("🎬 Timer terminé - animation positionnée sur scale_min (poumons vides)\n");
             }
         }
 
@@ -207,24 +235,23 @@ int main(int argc, char **argv) {
             node = node->next;
         }
 
-        // === MISE À JOUR COMPTEUR (actif après le timer) ===
+        // === VÉRIFICATION FIN DU COMPTEUR (le compteur se désactive lui-même) ===
         if (app.counter_phase && app.breath_counter) {
-            bool counter_running = counter_update(app.breath_counter);
-
-            if (!counter_running) {
-                // Compteur terminé → figer l'animation
+            // Le compteur se désactive automatiquement quand il atteint le scale_max
+            // après avoir complété toutes les respirations
+            if (!app.breath_counter->is_active) {
+                // Compteur désactivé → figer l'animation à scale_max
                 app.counter_phase = false;
 
-                // 🆕 FIGER L'ANIMATION quand les respirations sont terminées
+                // 🆕 FIGER L'ANIMATION en position de repos (scale_max)
                 HexagoneNode* node = hex_list->first;
                 while (node) {
                     node->is_frozen = true;
                     node = node->next;
                 }
 
-                debug_printf("✅ Session terminée: %d/%d respirations - animation figée\n",
-                             app.breath_counter->current_breath,
-                             app.breath_counter->total_breaths);
+                debug_printf("✅ Session terminée: %d/%d respirations - animation et compteur désactivés\n",
+                             app.breath_counter->current_breath, app.breath_counter->total_breaths);
             }
         }
 

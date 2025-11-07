@@ -10,30 +10,25 @@
 // ════════════════════════════════════════════════════════════════════════
 // STRUCTURE COUNTER STATE
 // ════════════════════════════════════════════════════════════════════════
-// Gère le compteur de respirations qui s'affiche au centre de l'hexagone
+// Gère l'affichage du compteur de respirations au centre de l'hexagone
+// Les données (numéro de respiration, scale) viennent du précomputing
 typedef struct {
-    int current_breath;         // Cycle actuel (commence à 0, puis 1 au premier inspire)
-    int total_breaths;          // Total de cycles à atteindre (depuis config.breath_cycles)
+    int total_breaths;          // Total de cycles configuré (pour vérification)
     bool is_active;             // Compteur actif ou non
-    bool is_finished;           // Compteur terminé (atteint total_breaths)
+    // 🆕 État du compteur (persiste même quand le précomputing reboucle)
+    int current_breath;         // Numéro actuel (0 au départ, puis 1, 2, 3...)
+    bool was_at_min_last_frame; // État du flag à la frame précédente (pour détecter transitions)
 
-    // 🆕 Calcul en temps réel (pas de precomputing)
-    float breath_duration;      // Durée d'un cycle complet (inspire + expire) en secondes
-    Uint32 start_time;          // Timestamp de démarrage (SDL_GetTicks)
-    bool first_min_reached;     // true quand on a atteint le premier scale_min
-    bool was_at_min;            // true si on était au scale_min à la frame précédente (pour détecter les transitions)
-
-    // Configuration pour le calcul sinusoïdal
-    SinusoidalConfig sin_config;
+    // 🆕 Gestion de la fin de session (attendre le scale_max après la dernière respiration)
+    bool waiting_for_scale_min;  // Attend le scale_min final (poumons vides) après la dernière respiration
+    bool was_at_max_last_frame; // État du flag scale_max à la frame précédente
 
     // Couleur du texte (bleu-nuit cendré - même couleur que le timer)
     SDL_Color text_color;
 
     // Police TTF et taille de base
-    TTF_Font* font;
     const char* font_path;
     int base_font_size;
-
 } CounterState;
 
 // ════════════════════════════════════════════════════════════════════════
@@ -49,23 +44,7 @@ typedef struct {
  * @param base_font_size Taille de base de la police (sera scalée dynamiquement)
  * @return Pointeur vers le CounterState créé, NULL si erreur
  */
-CounterState* counter_create(int total_breaths, float breath_duration,
-                             const SinusoidalConfig* sin_config,
-                             const char* font_path, int base_font_size);
-
-/**
- * Démarrer le compteur (appelé quand le timer se termine)
- * @param counter Pointeur vers le compteur à démarrer
- */
-void counter_start(CounterState* counter);
-
-/**
- * Mettre à jour le compteur en fonction du temps écoulé
- * Calcule automatiquement le cycle de respiration actuel et le scale
- * @param counter Pointeur vers le compteur
- * @return true si le compteur est toujours actif, false s'il est terminé
- */
-bool counter_update(CounterState* counter);
+CounterState* counter_create(int total_breaths, const char* font_path, int base_font_size);
 
 /**
  * Dessiner le compteur centré sur l'hexagone avec effet fish-eye
@@ -78,13 +57,7 @@ bool counter_update(CounterState* counter);
  * @param current_scale Scale actuel de l'hexagone (pour l'effet fish-eye)
  */
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
-                    int center_x, int center_y, int hex_radius, double current_scale);
-
-/**
- * Réinitialiser le compteur à sa valeur initiale
- * @param counter Pointeur vers le compteur
- */
-void counter_reset(CounterState* counter);
+                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node);
 
 /**
  * Libérer la mémoire du compteur

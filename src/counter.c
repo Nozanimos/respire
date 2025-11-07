@@ -2,16 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 //#include <string.h>
-#include <math.h>
+//#include <math.h>
 #include "counter.h"
 #include "debug.h"
 
 // ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU COMPTEUR
 // ════════════════════════════════════════════════════════════════════════
-CounterState* counter_create(int total_breaths, float breath_duration,
-                             const SinusoidalConfig* sin_config,
-                             const char* font_path, int base_font_size) {
+CounterState* counter_create(int total_breaths, const char* font_path, int base_font_size) {
     // Allocation de la structure
     CounterState* counter = malloc(sizeof(CounterState));
     if (!counter) {
@@ -20,19 +18,14 @@ CounterState* counter_create(int total_breaths, float breath_duration,
     }
 
     // Initialisation des valeurs
-    counter->current_breath = 0;
     counter->total_breaths = total_breaths;
     counter->is_active = false;
-    counter->is_finished = false;
 
-    // Calcul en temps réel
-    counter->breath_duration = breath_duration;
-    counter->start_time = 0;
-    counter->first_min_reached = false;
-    counter->was_at_min = false;
-
-    // Copier la configuration sinusoïdale
-    counter->sin_config = *sin_config;
+    // 🆕 Initialiser l'état du compteur
+    counter->current_breath = 0;
+    counter->was_at_min_last_frame = false;
+    counter->waiting_for_scale_min = false;
+    counter->was_at_max_last_frame = false;
 
     // Couleur bleu-nuit cendré (même que le timer)
     counter->text_color.r = 70;
@@ -40,132 +33,94 @@ CounterState* counter_create(int total_breaths, float breath_duration,
     counter->text_color.b = 110;
     counter->text_color.a = 255;
 
-    // Sauvegarder le chemin de la police (on ouvrira/fermera à chaque frame)
+    // Sauvegarder le chemin de la police
     counter->font_path = font_path;
     counter->base_font_size = base_font_size;
-    counter->font = NULL;  // Sera ouvert/fermé à chaque rendu
 
-    debug_printf("✅ Compteur créé: %d respirations max, %.1fs/cycle, police %s taille %d\n",
-                 total_breaths, breath_duration, font_path, base_font_size);
+    debug_printf("✅ Compteur créé: %d respirations max, police %s taille %d\n",
+                 total_breaths, font_path, base_font_size);
 
     return counter;
 }
 
-// ════════════════════════════════════════════════════════════════════════
-// DÉMARRER LE COMPTEUR
-// ════════════════════════════════════════════════════════════════════════
-void counter_start(CounterState* counter) {
-    if (!counter) return;
 
-    counter->is_active = true;
-    counter->is_finished = false;
-    counter->current_breath = 0;        // Recommence à 0
-    counter->start_time = SDL_GetTicks(); // 🆕 Enregistrer le temps de démarrage
-    counter->first_min_reached = false; // 🆕 Attendre le premier scale_min
-    counter->was_at_min = false;        // 🆕 Réinitialiser la détection
-
-    debug_printf("🫁 Compteur démarré: 0/%d respirations (%.1fs/cycle)\n",
-                 counter->total_breaths, counter->breath_duration);
-}
 
 // ════════════════════════════════════════════════════════════════════════
-// MISE À JOUR DU COMPTEUR (calcul en temps réel)
+// RENDU DU COMPTEUR AVEC EFFET FISH-EYE (DONNÉES PRÉCOMPUTÉES)
 // ════════════════════════════════════════════════════════════════════════
-// Logique :
-// 1. Calcule le temps écoulé depuis le démarrage
-// 2. Calcule la progression dans le cycle actuel
-// 3. Détecte les PASSAGES au scale_min (transitions)
-// 4. Incrémente le compteur à chaque passage
-// 5. Arrête après avoir complété le nombre de respirations voulu
+// Le chiffre "respire" avec l'hexagone : sa taille vient du précomputing
+// Scale max (inspire) = texte agrandi (poumons pleins)
+// Scale min (expire) = texte réduit (poumons vides)
+//
+// Logique de fin de session :
+// 1. Compter normalement jusqu'à total_breaths (ex: 10)
+// 2. Incrémenter à chaque scale_max (inspire = poumons pleins)
+// 3. Après le 10ème scale_max, passer en mode "attente scale_min"
+// 4. Continuer à afficher le dernier chiffre jusqu'au prochain scale_min
+// 5. Au scale_min, signaler que la session est terminée (poumons vides)
 // ════════════════════════════════════════════════════════════════════════
-bool counter_update(CounterState* counter) {
-    if (!counter || !counter->is_active || counter->is_finished) {
-        return false;
+void counter_render(CounterState* counter, SDL_Renderer* renderer,
+                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node) {
+    if (!counter || !renderer || !hex_node) return;
+
+    // Supprimer le warning de paramètre inutilisé
+    (void)hex_radius;
+
+    // Ne rien afficher si le compteur n'est pas actif
+    if (!counter->is_active) return;
+
+    // 🎯 RÉCUPÉRER LES DONNÉES PRÉCOMPUTÉES depuis l'hexagone
+    if (!hex_node->precomputed_counter_frames) return;
+
+    // Vérifier que current_cycle est dans les limites
+    if (hex_node->current_cycle < 0 || hex_node->current_cycle >= hex_node->total_cycles) {
+        return;
     }
 
-    // Calculer le temps écoulé en secondes
-    Uint32 current_time = SDL_GetTicks();
-    double elapsed_seconds = (current_time - counter->start_time) / 1000.0;
+    CounterFrame* current_frame = &hex_node->precomputed_counter_frames[hex_node->current_cycle];
+    bool is_at_min_now = current_frame->is_at_scale_min;
+    bool is_at_max_now = current_frame->is_at_scale_max;
+    double text_scale = current_frame->text_scale;
 
-    // Calculer la progression dans le cycle actuel
-    // progress = 0.0 → scale_max (départ)
-    // progress = 0.5 → scale_min
-    // progress = 1.0 → scale_max (fin du cycle)
-    double cycles_completed = elapsed_seconds / counter->breath_duration;
-    double progress_in_cycle = fmod(cycles_completed, 1.0);
+    // 🚩 DÉTECTION DE TRANSITION VERS SCALE_MIN : flag passe de false → true
+    // C'est l'expire (poumons vides) - on incrémente le compteur ici
+    if (is_at_min_now && !counter->was_at_min_last_frame) {
+        // On arrive au scale_min (expire = poumons vides)
 
-    // 🆕 Détecter si on est actuellement au scale_min (zone autour de 0.5)
-    // On utilise une fenêtre de 0.45 à 0.55 pour être sûr de capturer le passage
-    bool at_min_now = (progress_in_cycle >= 0.45 && progress_in_cycle <= 0.55);
-
-    // 🆕 Détecter la TRANSITION vers le scale_min (on n'y était pas avant, mais maintenant oui)
-    if (at_min_now && !counter->was_at_min) {
-        // On vient d'arriver au scale_min !
-
-        if (!counter->first_min_reached) {
-            // Premier passage au scale_min → démarrer l'affichage
-            counter->first_min_reached = true;
-            counter->current_breath = 1;
-            debug_printf("🎯 Premier scale_min atteint - compteur affiché: 1/%d\n",
-                       counter->total_breaths);
-        } else {
-            // Passages suivants → incrémenter le compteur
+        // Si on n'est PAS en attente du dernier scale_min, incrémenter normalement
+        if (!counter->waiting_for_scale_min) {
             counter->current_breath++;
-            debug_printf("🫁 Respiration %d/%d (%.1fs écoulées)\n",
-                       counter->current_breath, counter->total_breaths, elapsed_seconds);
+            debug_printf("🫁 Respiration %d/%d détectée à scale_min (frame %d)\n",
+                         counter->current_breath, counter->total_breaths, hex_node->current_cycle);
 
-            // 🆕 Vérifier si on a DÉPASSÉ le nombre total de respirations
-            // On arrête APRÈS avoir complété toutes les respirations
-            if (counter->current_breath > counter->total_breaths) {
-                counter->is_finished = true;
-                counter->is_active = false;
-                debug_printf("✅ Compteur terminé: %d respirations complétées\n",
-                           counter->total_breaths);
-                return false;
+            // Vérifier si on a atteint le maximum
+            if (counter->current_breath >= counter->total_breaths) {
+                // On a fait toutes les respirations, maintenant attendre le PROCHAIN scale_min
+                counter->waiting_for_scale_min = true;
+                debug_printf("✅ %d respirations complétées - attente du prochain scale_min (fin du dernier expire)...\n",
+                             counter->total_breaths);
             }
+        } else {
+            // On était en attente du dernier scale_min, et on vient de l'atteindre
+            counter->is_active = false;  // Désactiver le compteur (il ne s'affichera plus)
+            debug_printf("🎯 Scale_min final atteint - session terminée proprement (poumons vides)\n");
+            // Note : main.c va détecter que is_active = false et figer l'animation
         }
     }
 
-    // Sauvegarder l'état actuel pour la prochaine frame
-    counter->was_at_min = at_min_now;
+    // Sauvegarder les états pour la prochaine frame
+    counter->was_at_min_last_frame = is_at_min_now;
+    counter->was_at_max_last_frame = is_at_max_now;
 
-    return true;  // Compteur toujours actif
-}
-
-// ════════════════════════════════════════════════════════════════════════
-// RENDU DU COMPTEUR AVEC EFFET FISH-EYE (SDL_TTF haute qualité)
-// ════════════════════════════════════════════════════════════════════════
-// Le chiffre "respire" avec l'hexagone : sa taille varie selon le scale
-// Scale max (expire) = texte agrandi (poumon qui se vide)
-// Scale min (inspire) = texte réduit (poumon qui se remplit)
-//
-// Génère une texture TTF à la taille exacte calculée pour chaque frame
-// → Qualité optimale sans pixelisation
-// ════════════════════════════════════════════════════════════════════════
-void counter_render(CounterState* counter, SDL_Renderer* renderer,
-                    int center_x, int center_y, int hex_radius, double current_scale) {
-    if (!counter || !renderer) return;
-
-    // Ne rien afficher si on n'a pas encore atteint le premier scale_min
-    if (!counter->first_min_reached) return;
-
-    // Ne rien afficher si le compteur n'a pas encore démarré
+    // Ne rien afficher si breath_number est 0 (pas encore démarré)
     if (counter->current_breath == 0) return;
 
     // Formater le texte (numéro du cycle actuel)
     char count_text[8];
     snprintf(count_text, sizeof(count_text), "%d", counter->current_breath);
 
-    // 🎨 EFFET FISH-EYE : Calculer le scale en temps réel avec sinusoidal_movement
-    Uint32 current_time = SDL_GetTicks();
-    double elapsed_seconds = (current_time - counter->start_time) / 1000.0;
-
-    // Utiliser la fonction générique pour calculer le scale actuel
-    SinusoidalResult result;
-    sinusoidal_movement(elapsed_seconds, &counter->sin_config, &result);
-
-    // Calculer la taille de police nécessaire (scale dynamique)
-    int font_size = (int)(counter->base_font_size * result.scale);
+    // 🎨 EFFET FISH-EYE : Calculer la taille de police avec le scale précomputé
+    int font_size = (int)(counter->base_font_size * text_scale);
     if (font_size < 12) font_size = 12;  // Minimum lisible
 
     // Ouvrir la police à la taille calculée
@@ -216,28 +171,11 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// RÉINITIALISER LE COMPTEUR
-// ════════════════════════════════════════════════════════════════════════
-void counter_reset(CounterState* counter) {
-    if (!counter) return;
-
-    counter->current_breath = 0;
-    counter->is_active = false;
-    counter->is_finished = false;
-    counter->start_time = 0;           // 🆕 Reset du temps de démarrage
-    counter->first_min_reached = false; // 🆕 Reset de la détection du premier scale_min
-    counter->was_at_min = false;       // 🆕 Reset de la détection de transition
-
-    debug_printf("🔄 Compteur réinitialisé\n");
-}
-
-// ════════════════════════════════════════════════════════════════════════
 // LIBÉRATION MÉMOIRE
 // ════════════════════════════════════════════════════════════════════════
 void counter_destroy(CounterState* counter) {
     if (!counter) return;
 
-    // Pas besoin de fermer counter->font car il est NULL (ouvert/fermé à chaque rendu)
     free(counter);
     debug_printf("🧹 Compteur détruit\n");
 }
