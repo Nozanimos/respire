@@ -53,10 +53,20 @@ LEGENDE :
   TIMER HEXAGONE (NOTE IMPORTANTE : Consulter arbre.txt pour le détail de la structure du projet)
                         ✅ - Renommer et transformer fichiers hexagone_list -> precompute_list
                         ✅ - Créer timer (c,h)
-NOUS SOMMES ICI ->      🔄 - retoucher le fichier de configuration et remplacer par une fonction qui parcoure tous les widget
+                        ✅ - rendre le timer dans SDL2, liaison callback et config (désormais automatisé via config_registry.h)
+                        ✅ - retoucher le fichier de configuration et remplacer par une fonction qui parcoure tous les widget
                             de la liste des widget (widget_list), puis stocker les paramètres utilisés par l'applicationdans
                             le fichier de configuration
-                        □ - rendre l'animation en utilisant le système de préchargement via les doubles listes chaînées
+                        ✅ - Implémenter gestion centralisée de configuration de sauvegarde liées aux widgets (création de config_registry.h)
+NOUS SOMMES ICI ->      🔄 - Implémenter le compteur (h,c) :
+                                □ - Après le timer démarre la session, le compteur démarre à 1 au premier inspire (attention l'hexagone démarre sur expire donc ne démarrer le compteur qu'à l'inspire suivant.).
+                                la police du compteur est la même que celle du timer (utilise SDL2_gfx TTF) (Utiliser les polices dynamiques déjà implémentées pour la taille)
+                                le compteur est placé au centre de l'hexagone animation et doit occuper les 2/3 de l'espace de l'hexagone le plus petit
+                                Son paramètre nombre de respirations a été créé, prendre exemple sur la mécanique du timer pour le relier à l'enregistrement des configurations, le nom du callback est aussi paramétré donc prendre exactement les mêmes références que celles présentes dans le json pour le rendu.
+                                l'animation est basée sur un precomputing des mouvements de l'hexagone, on ne fait pas calculer le CPU en temps réel mais on incruste le compteur directement dans le precomputing via les doubles listes chaînées. L'avantage est l'économie de ressources CPU. Utiliser les fonctions existantes dans precompute_list.
+
+                                □ - Voir si dans la fonction générique scale + rotation on ne peut faire que scale, ou que rotation et si c'est le cas il faudra aussi ajouter un effet fish-eye de manière à ce que le chiffre s'élargisse tel un poumon qui se remplit sur scale max, et un poumon qui se réduit sur scale min.
+                        □ - reste à suivre...
 
 
 
