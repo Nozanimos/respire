@@ -58,15 +58,25 @@ LEGENDE :
                             de la liste des widget (widget_list), puis stocker les paramètres utilisés par l'applicationdans
                             le fichier de configuration
                         ✅ - Implémenter gestion centralisée de configuration de sauvegarde liées aux widgets (création de config_registry.h)
-NOUS SOMMES ICI ->      🔄 - Implémenter le compteur (h,c) :
-                                □ - Après le timer démarre la session, le compteur démarre à 1 au premier inspire (attention l'hexagone démarre sur expire donc ne démarrer le compteur qu'à l'inspire suivant.).
-                                la police du compteur est la même que celle du timer (utilise SDL2_gfx TTF) (Utiliser les polices dynamiques déjà implémentées pour la taille)
-                                le compteur est placé au centre de l'hexagone animation et doit occuper les 2/3 de l'espace de l'hexagone le plus petit
-                                Son paramètre nombre de respirations a été créé, prendre exemple sur la mécanique du timer pour le relier à l'enregistrement des configurations, le nom du callback est aussi paramétré donc prendre exactement les mêmes références que celles présentes dans le json pour le rendu.
-                                l'animation est basée sur un precomputing des mouvements de l'hexagone, on ne fait pas calculer le CPU en temps réel mais on incruste le compteur directement dans le precomputing via les doubles listes chaînées. L'avantage est l'économie de ressources CPU. Utiliser les fonctions existantes dans precompute_list.
+                        ✅ - Implémenter le compteur (h,c) :
+                        ✅ - Après le timer démarre la session, le compteur démarre à 1 au premier inspire (attention l'hexagone démarre sur expire donc ne démarrer le compteur qu'à l'inspire suivant.).
+                        la police du compteur est la même que celle du timer (Utiliser les polices dynamiques déjà implémentées pour la taille et pour le scale (on augmente
+                        et réduit la hauteur de texte vu que SDL2_ttf ne gère pas le scale de texte))
+                        le compteur est placé au centre de l'hexagone animation et doit occuper les 2/3 de l'espace de l'hexagone le plus petit
+                        Son paramètre nombre de respirations a été créé, prendre exemple sur la mécanique du timer pour le relier à l'enregistrement des configurations, le nom du callback est aussi paramétré donc prendre exactement les mêmes références que celles présentes dans le json pour le rendu.
 
-                                □ - Voir si dans la fonction générique scale + rotation on ne peut faire que scale, ou que rotation et si c'est le cas il faudra aussi ajouter un effet fish-eye de manière à ce que le chiffre s'élargisse tel un poumon qui se remplit sur scale max, et un poumon qui se réduit sur scale min.
-                        □ - reste à suivre...
+NOUS SOMMES ICI ->      🔄 -l'animation est basée sur un precomputing des mouvements de l'hexagone, on ne fait pas calculer le CPU en temps réel
+                        mais on incruste le compteur directement dans le precomputing via les doubles listes chaînées. L'avantage est l'économie
+                        de ressources CPU. Utiliser les fonctions existantes dans precompute_list. Des flags ont été créés qui serviront de têtes de lescture
+                        pour chaque type d'animation.
+
+
+                        □ - SDL2 ne gère pas l'effet fish-eye telle une loupe qui grossit la taille des caractère dans toutes les directions, réfléchir
+                        à une autre bibliothèque à intégrer pour cet effet (je pense à opanGL).
+
+                        □ - Réviser la logique d'enregistrement des paramètres depuis le json à la création d'un widget -> widget_list -> settings_panel -> app_config
+
+                        □ - la suite après...
 
 
 
