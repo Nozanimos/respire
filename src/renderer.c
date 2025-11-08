@@ -464,6 +464,42 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             if (event->key.keysym.sym == SDLK_ESCAPE) {
                 app->is_running = false;
             }
+            // 🆕 ARRÊT DU CHRONOMÈTRE avec ESPACE
+            else if (event->key.keysym.sym == SDLK_SPACE && app->chrono_phase && app->session_stopwatch) {
+                // Arrêter le chronomètre
+                stopwatch_stop(app->session_stopwatch);
+
+                // Récupérer le temps écoulé
+                int elapsed_seconds = stopwatch_get_elapsed_seconds(app->session_stopwatch);
+                float elapsed_time = (float)elapsed_seconds;
+
+                // Stocker le temps dans le tableau (avec réallocation si nécessaire)
+                if (app->session_times && app->session_count < app->session_capacity) {
+                    app->session_times[app->session_count] = elapsed_time;
+                    app->session_count++;
+                    debug_printf("✅ Session %d terminée: %.0f secondes (stocké)\n",
+                                 app->session_count, elapsed_time);
+                } else if (app->session_times) {
+                    // Réallocation du tableau (doubler la capacité)
+                    int new_capacity = app->session_capacity * 2;
+                    float* new_array = realloc(app->session_times, new_capacity * sizeof(float));
+                    if (new_array) {
+                        app->session_times = new_array;
+                        app->session_capacity = new_capacity;
+                        app->session_times[app->session_count] = elapsed_time;
+                        app->session_count++;
+                        debug_printf("✅ Session %d terminée: %.0f secondes (tableau étendu à %d)\n",
+                                     app->session_count, elapsed_time, new_capacity);
+                    } else {
+                        debug_printf("⚠️ Échec réallocation tableau - temps non stocké\n");
+                    }
+                }
+
+                // Désactiver la phase chrono
+                app->chrono_phase = false;
+
+                debug_printf("⏹️  Chronomètre arrêté par ESPACE\n");
+            }
             break;
 
             // ═════════════════════════════════════════════════════════════════
@@ -476,9 +512,51 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             // ═════════════════════════════════════════════════════════════════
         case SDL_MOUSEMOTION:
         case SDL_MOUSEWHEEL:
-        case SDL_MOUSEBUTTONDOWN:
-            // Transmettre TOUS ces événements au panneau quand il existe
+            // Transmettre ces événements au panneau quand il existe
             if (app->settings_panel) {
+                handle_settings_panel_event(app->settings_panel, event, &app->config);
+            }
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            // 🆕 ARRÊT DU CHRONOMÈTRE avec CLIC GAUCHE (priorité sur le panneau)
+            if (event->button.button == SDL_BUTTON_LEFT && app->chrono_phase && app->session_stopwatch) {
+                // Arrêter le chronomètre
+                stopwatch_stop(app->session_stopwatch);
+
+                // Récupérer le temps écoulé
+                int elapsed_seconds = stopwatch_get_elapsed_seconds(app->session_stopwatch);
+                float elapsed_time = (float)elapsed_seconds;
+
+                // Stocker le temps dans le tableau (avec réallocation si nécessaire)
+                if (app->session_times && app->session_count < app->session_capacity) {
+                    app->session_times[app->session_count] = elapsed_time;
+                    app->session_count++;
+                    debug_printf("✅ Session %d terminée: %.0f secondes (stocké)\n",
+                                 app->session_count, elapsed_time);
+                } else if (app->session_times) {
+                    // Réallocation du tableau (doubler la capacité)
+                    int new_capacity = app->session_capacity * 2;
+                    float* new_array = realloc(app->session_times, new_capacity * sizeof(float));
+                    if (new_array) {
+                        app->session_times = new_array;
+                        app->session_capacity = new_capacity;
+                        app->session_times[app->session_count] = elapsed_time;
+                        app->session_count++;
+                        debug_printf("✅ Session %d terminée: %.0f secondes (tableau étendu à %d)\n",
+                                     app->session_count, elapsed_time, new_capacity);
+                    } else {
+                        debug_printf("⚠️ Échec réallocation tableau - temps non stocké\n");
+                    }
+                }
+
+                // Désactiver la phase chrono
+                app->chrono_phase = false;
+
+                debug_printf("⏹️  Chronomètre arrêté par CLIC GAUCHE\n");
+            }
+            // Sinon, transmettre l'événement au panneau
+            else if (app->settings_panel) {
                 handle_settings_panel_event(app->settings_panel, event, &app->config);
             }
             break;
@@ -518,9 +596,12 @@ void render_app(AppState* app) {
             // 🎯 Ne dessiner l'hexagone que si :
             // - On est en phase timer (avant le compteur)
             // - OU le compteur est actif (is_active = true)
-            // Dès que le compteur se désactive, l'hexagone disparaît aussi
+            // - OU on est en phase reappear (réapparition douce)
+            // - OU on est en phase chrono (chronomètre actif, hexagones figés)
             bool should_render = app->timer_phase ||
-            (app->breath_counter && app->breath_counter->is_active);
+            (app->breath_counter && app->breath_counter->is_active) ||
+            app->reappear_phase ||
+            app->chrono_phase;
 
             if (should_render) {
                 make_hexagone(app->renderer, node->data);
@@ -563,6 +644,23 @@ void render_app(AppState* app) {
             // 🆕 Passer le nœud hexagone directement (contient les données précomputées)
             counter_render(app->breath_counter, app->renderer,
                            hex_center_x, hex_center_y, hex_radius, first_node);
+        }
+    }
+
+    // 🆕 Dessine le chronomètre SI on est en phase chrono (après la réapparition)
+    if (app->chrono_phase && app->session_stopwatch && app->hexagones && app->hexagones->first) {
+        HexagoneNode* first_node = app->hexagones->first;
+        if (first_node && first_node->data) {
+            // Récupérer les infos de position de l'hexagone
+            int hex_center_x = first_node->data->center_x;
+            int hex_center_y = first_node->data->center_y;
+            int dx = first_node->data->vx[0];
+            int dy = first_node->data->vy[0];
+            int hex_radius = (int)sqrt(dx*dx + dy*dy);
+
+            // Rendre le chronomètre centré sur l'hexagone
+            stopwatch_render(app->session_stopwatch, app->renderer,
+                             hex_center_x, hex_center_y, hex_radius);
         }
     }
 

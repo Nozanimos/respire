@@ -60,8 +60,8 @@ void cycles_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
     // Appliquer immédiatement
-    current_main_config_for_callbacks->breath_cycles = new_value;
-    current_panel_for_callbacks->temp_config.breath_cycles = new_value;
+    current_main_config_for_callbacks->nb_session = new_value;
+    current_panel_for_callbacks->temp_config.nb_session = new_value;
 
     // Sauvegarder immédiatement
     save_config(current_main_config_for_callbacks);
@@ -386,8 +386,8 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 load_config(&panel->temp_config);
                 set_widget_int_value(panel->widget_list, "breath_duration",
                                      panel->temp_config.breath_duration);
-                set_widget_int_value(panel->widget_list, "breath_cycles",
-                                     panel->temp_config.breath_cycles);
+                set_widget_int_value(panel->widget_list, "nb_session",
+                                     panel->temp_config.nb_session);
                 set_widget_int_value(panel->widget_list, "start_duration",
                                      panel->temp_config.start_duration);
                 set_widget_bool_value(panel->widget_list, "alternate_cycles",

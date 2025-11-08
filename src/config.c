@@ -75,7 +75,7 @@ void load_config(AppConfig* config) {
         }
         fclose(file);
         debug_printf("✅ Config chargée: cycles=%d, durée=%.1fs, timer=%ds\n",
-                     config->breath_cycles, config->breath_duration, config->start_duration);
+                     config->nb_session, config->breath_duration, config->start_duration);
     } else {
         debug_printf("⚠️ Fichier config absent, valeurs par défaut\n");
     }

@@ -14,6 +14,7 @@
 #include "widget_base.h"
 #include "timer.h"
 #include "counter.h"
+#include "chronometre.h"
 
 
 
@@ -159,6 +160,35 @@ int main(int argc, char **argv) {
                      config.Nb_respiration, counter_font_size);
     }
 
+    // === INITIALISATION TABLEAU DES TEMPS DE SESSION ===
+    // Tableau dynamique qui va stocker les temps de chaque session
+    // Capacité initiale : 10 sessions, puis réallocation si besoin
+    app.session_times = malloc(10 * sizeof(float));
+    if (!app.session_times) {
+        fprintf(stderr, "⚠️ Échec allocation tableau sessions\n");
+        app.session_count = 0;
+        app.session_capacity = 0;
+    } else {
+        app.session_count = 0;      // Aucune session pour l'instant
+        app.session_capacity = 10;   // Capacité de 10 sessions
+        debug_printf("✅ Tableau sessions créé (capacité: %d)\n", app.session_capacity);
+    }
+
+    // === CRÉATION DU CHRONOMÈTRE ===
+    // Le chronomètre démarre après la session de respiration pour mesurer le temps de méditation
+    // Utilise la même police et taille que le timer
+    app.session_stopwatch = stopwatch_create("../fonts/arial/ARIALBD.TTF", timer_font_size);
+    if (!app.session_stopwatch) {
+        fprintf(stderr, "⚠️ Échec création chronomètre\n");
+        app.reappear_phase = false;
+        app.chrono_phase = false;
+    } else {
+        // Le chronomètre ne démarre PAS immédiatement
+        app.reappear_phase = false;
+        app.chrono_phase = false;
+        debug_printf("✅ Chronomètre créé (taille police: %d)\n", timer_font_size);
+    }
+
     /*------------------------------------------------------------*/
 
     const int FRAME_DELAY = 1000 / TARGET_FPS;
@@ -240,19 +270,100 @@ int main(int argc, char **argv) {
             // Le compteur se désactive automatiquement quand il atteint le scale_max
             // après avoir complété toutes les respirations
             if (!app.breath_counter->is_active) {
-                // Compteur désactivé → figer l'animation à scale_max
+                // Compteur désactivé → LANCER LA PHASE DE RÉAPPARITION
                 app.counter_phase = false;
+                app.reappear_phase = true;  // 🆕 Activer la phase de réapparition
 
-                // 🆕 FIGER L'ANIMATION en position de repos (scale_max)
+                debug_printf("✅ Session terminée: %d/%d respirations\n",
+                             app.breath_counter->current_breath, app.breath_counter->total_breaths);
+
+                // 🆕 POSITIONNER LA TÊTE DE LECTURE À scale_max/2
+                // On cherche la première frame où le scale est >= scale_max/2
+                // puis on laisse l'animation jouer jusqu'à scale_max
                 HexagoneNode* node = hex_list->first;
+                while (node) {
+                    if (node->precomputed_scales && node->total_cycles > 0) {
+                        // Calculer scale_max (le plus grand scale dans le précompute)
+                        double scale_max = 0.0;
+                        for (int i = 0; i < node->total_cycles; i++) {
+                            if (node->precomputed_scales[i] > scale_max) {
+                                scale_max = node->precomputed_scales[i];
+                            }
+                        }
+
+                        // Chercher la dernière séquence : scale_max/2 → scale_max
+                        // On part de la fin et on remonte
+                        double scale_mid = scale_max / 2.0;
+                        int start_frame = -1;
+
+                        // Trouver la dernière montée vers scale_max
+                        for (int i = node->total_cycles - 1; i >= 0; i--) {
+                            if (node->precomputed_scales[i] <= scale_mid) {
+                                start_frame = i;
+                                break;
+                            }
+                        }
+
+                        // Si trouvé, positionner la tête de lecture
+                        if (start_frame >= 0) {
+                            node->current_cycle = start_frame;
+                            debug_printf("🎯 Hexagone %d: tête de lecture → frame %d (scale %.2f → %.2f)\n",
+                                         node->data->element_id, start_frame,
+                                         node->precomputed_scales[start_frame], scale_max);
+                        }
+                    }
+
+                    // Dégeler l'animation pour la réapparition
+                    node->is_frozen = false;
+                    node = node->next;
+                }
+
+                debug_printf("🎬 Phase REAPPEAR activée - animation scale_max/2 → scale_max\n");
+            }
+        }
+
+        // === GESTION PHASE REAPPEAR (réapparition douce de l'hexagone) ===
+        // L'animation joue depuis scale_max/2 jusqu'à scale_max pour un alignement parfait
+        if (app.reappear_phase) {
+            // Vérifier si tous les hexagones ont atteint scale_max
+            bool all_at_scale_max = true;
+            HexagoneNode* node = hex_list->first;
+
+            while (node) {
+                if (node->precomputed_counter_frames && node->current_cycle < node->total_cycles) {
+                    // Vérifier si on est au scale_max (flag is_at_scale_max)
+                    if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_max) {
+                        all_at_scale_max = false;
+                        break;
+                    }
+                }
+                node = node->next;
+            }
+
+            // Si tous les hexagones sont à scale_max → passer en phase CHRONO
+            if (all_at_scale_max) {
+                app.reappear_phase = false;
+                app.chrono_phase = true;
+
+                // FIGER L'ANIMATION à scale_max
+                node = hex_list->first;
                 while (node) {
                     node->is_frozen = true;
                     node = node->next;
                 }
 
-                debug_printf("✅ Session terminée: %d/%d respirations - animation et compteur désactivés\n",
-                             app.breath_counter->current_breath, app.breath_counter->total_breaths);
+                // DÉMARRER LE CHRONOMÈTRE
+                if (app.session_stopwatch) {
+                    stopwatch_start(app.session_stopwatch);
+                    debug_printf("⏱️  Phase CHRONO activée - chronomètre démarré à 00:00\n");
+                }
             }
+        }
+
+        // === MISE À JOUR DU CHRONOMÈTRE ===
+        // Le chronomètre tourne pendant la phase CHRONO
+        if (app.chrono_phase && app.session_stopwatch) {
+            stopwatch_update(app.session_stopwatch);
         }
 
         // Mise à jour animation panneau
@@ -290,6 +401,18 @@ int main(int argc, char **argv) {
     if (app.breath_counter) {
         counter_destroy(app.breath_counter);
         app.breath_counter = NULL;
+    }
+
+    // Libérer le chronomètre
+    if (app.session_stopwatch) {
+        stopwatch_destroy(app.session_stopwatch);
+        app.session_stopwatch = NULL;
+    }
+
+    // Libérer le tableau des temps de session
+    if (app.session_times) {
+        free(app.session_times);
+        app.session_times = NULL;
     }
 
     // Libérer les polices AVANT TTF_Quit

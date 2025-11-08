@@ -29,8 +29,8 @@ typedef enum {
 //        Cette table sert UNIQUEMENT à faire le lien entre :
 //        - widget_id (du JSON) ↔ champ dans AppConfig ↔ clé dans respiration.conf
 typedef struct {
-    const char* widget_id;        // ID du widget (ex: "breath_cycles")
-    const char* file_key;         // Clé dans le fichier (ex: "breath_cycles")
+    const char* widget_id;        // ID du widget (ex: "nb_session")
+    const char* file_key;         // Clé dans le fichier (ex: "nb_session")
     ConfigParamType type;         // Type du paramètre
     size_t offset;                // Offset dans AppConfig (calculé avec offsetof)
 
@@ -50,7 +50,7 @@ typedef struct {
 
 static const ConfigParamEntry CONFIG_PARAM_TABLE[] = {
     // ID widget          Clé fichier        Type              Offset                               Défaut
-    { "breath_cycles",    "breath_cycles",   CONFIG_TYPE_INT,  offsetof(AppConfig, breath_cycles),    {.int_val = 1} },
+    { "nb_session",    "nb_session",   CONFIG_TYPE_INT,  offsetof(AppConfig, nb_session),    {.int_val = 1} },
     { "breath_duration",  "breath_duration", CONFIG_TYPE_FLOAT, offsetof(AppConfig, breath_duration), {.float_val = 3.0f} },
     { "start_duration",   "start_duration",  CONFIG_TYPE_INT,  offsetof(AppConfig, start_duration),   {.int_val = 10} },
     { "alternate_cycles", "alternate_cycles",CONFIG_TYPE_BOOL, offsetof(AppConfig, alternate_cycles), {.bool_val = false} },

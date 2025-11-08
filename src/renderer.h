@@ -12,6 +12,7 @@
 #include "./json_editor/json_editor.h"
 #include "timer.h"
 #include "counter.h"
+#include "chronometre.h"
 
 // Structure qui contient TOUT l'état de l'application graphique
 typedef struct {
@@ -39,10 +40,22 @@ typedef struct {
     SettingsPanel* settings_panel;
     JsonEditor* json_editor;
     TimerState* session_timer;      // Timer avant démarrage session
+
     // 🆕 Compteur de respirations (démarre après le timer)
     CounterState* breath_counter;
     bool counter_phase;
     bool timer_phase;               // true = phase timer, false = phase animation
+
+    // 🆕 Chronomètre (démarre après la session de respiration)
+    StopwatchState* session_stopwatch;  // Chronomètre pour mesurer le temps de méditation
+    bool reappear_phase;            // Phase de réapparition douce de l'hexagone (scale_max/2 → scale_max)
+    bool chrono_phase;              // Phase chronomètre actif (hexagones figés à scale_max)
+
+    // 🆕 Stockage des temps de session (pour statistiques futures)
+    float* session_times;           // Tableau dynamique des temps de chaque session (en secondes)
+    int session_count;              // Nombre de sessions effectuées
+    int session_capacity;           // Capacité actuelle du tableau (pour réallocation)
+
     AppConfig config;
     bool is_running;
 

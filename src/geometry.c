@@ -93,7 +93,7 @@ HexagoneList* create_all_hexagones(int center_x, int center_y, int container_siz
 
     for (int i = 0; i < NB_HX; i++) {
         Hexagon* hex = create_single_hexagon(center_x, center_y, container_size, size_ratio, i);
-        bool clockwise = (i % 2 == 0);
+        bool clockwise = (i % 2 != 0);
         double angle;
 
         // SWITCH identique Ã  celui de main.c original
