@@ -275,6 +275,64 @@ Triangle* create_down_arrow(int center_x, int center_y, int size, SDL_Color colo
     return create_triangle(center_x, center_y, size, false, color);
 }
 
+// Crée une flèche vers la gauche (triangle pointant à gauche)
+Triangle* create_left_arrow(int center_x, int center_y, int size, SDL_Color color) {
+    Triangle* tri = malloc(sizeof(Triangle));
+    if (!tri) {
+        debug_printf("❌ Erreur allocation triangle\n");
+        return NULL;
+    }
+
+    int base_half = size;
+    tri->center_x = center_x;
+    tri->center_y = center_y;
+    tri->color = color;
+
+    // Flèche vers la gauche - sommet à gauche
+    tri->vx[0] = center_x - size/2;    // Sommet gauche
+    tri->vy[0] = center_y;              // Au centre
+
+    tri->vx[1] = center_x + size/2;    // Base droite haut
+    tri->vy[1] = center_y - base_half; // En haut
+
+    tri->vx[2] = center_x + size/2;    // Base droite bas
+    tri->vy[2] = center_y + base_half; // En bas
+
+    debug_printf("◀ Flèche gauche créée - Centre: (%d,%d), Taille: %d\n",
+                 center_x, center_y, size);
+
+    return tri;
+}
+
+// Crée une flèche vers la droite (triangle pointant à droite)
+Triangle* create_right_arrow(int center_x, int center_y, int size, SDL_Color color) {
+    Triangle* tri = malloc(sizeof(Triangle));
+    if (!tri) {
+        debug_printf("❌ Erreur allocation triangle\n");
+        return NULL;
+    }
+
+    int base_half = size;
+    tri->center_x = center_x;
+    tri->center_y = center_y;
+    tri->color = color;
+
+    // Flèche vers la droite - sommet à droite
+    tri->vx[0] = center_x + size/2;    // Sommet droit
+    tri->vy[0] = center_y;              // Au centre
+
+    tri->vx[1] = center_x - size/2;    // Base gauche haut
+    tri->vy[1] = center_y - base_half; // En haut
+
+    tri->vx[2] = center_x - size/2;    // Base gauche bas
+    tri->vy[2] = center_y + base_half; // En bas
+
+    debug_printf("▶ Flèche droite créée - Centre: (%d,%d), Taille: %d\n",
+                 center_x, center_y, size);
+
+    return tri;
+}
+
 /*----------------------------------------------------*/
 
 // Libère un triangle

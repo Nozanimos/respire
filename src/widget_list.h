@@ -12,6 +12,7 @@
 #include "separator_widget.h"
 #include "preview_widget.h"
 #include "button_widget.h"
+#include "selector_widget.h"
 
 // ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE D'UN NŒUD DE LA LISTE DE WIDGETS
@@ -36,6 +37,7 @@ typedef struct WidgetNode {
         SeparatorWidget* separator_widget;// Pour WIDGET_TYPE_SEPARATOR
         PreviewWidget* preview_widget;    // Pour WIDGET_TYPE_PREVIEW
         ButtonWidget* button_widget;      // Pour WIDGET_TYPE_BUTTON
+        SelectorWidget* selector_widget;  // Pour WIDGET_TYPE_SELECTOR  ← AJOUTER ICI
         void* generic_widget;             // Pour les futurs types
     } widget;
 
@@ -135,6 +137,16 @@ bool add_button_widget(WidgetList* list,
                        SDL_Color bg_color,
                        ButtonYAnchor y_anchor,
                        void (*callback)(void));
+
+// Ajoute un widget SELECTOR (liste avec flèches)
+bool add_selector_widget(WidgetList* list,
+                         const char* id,
+                         const char* display_name,
+                         int x, int y,
+                         int default_index,
+                         int arrow_size,
+                         int text_size,
+                         TTF_Font* font);
 
 // ─────────────────────────────────────────────────────────────────────────
 // RENDU ET ÉVÉNEMENTS (FACTORISATION MAGIQUE ✨)

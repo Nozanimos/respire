@@ -42,6 +42,8 @@ typedef struct {
 Triangle* create_triangle(int center_x, int center_y, int height, bool points_up, SDL_Color color);
 Triangle* create_up_arrow(int center_x, int center_y, int size, SDL_Color color);
 Triangle* create_down_arrow(int center_x, int center_y, int size, SDL_Color color);
+Triangle* create_left_arrow(int center_x, int center_y, int size, SDL_Color color);
+Triangle* create_right_arrow(int center_x, int center_y, int size, SDL_Color color);
 void draw_triangle(SDL_Renderer *renderer, Triangle* tri);
 void draw_triangle_with_offset(SDL_Renderer *renderer, Triangle* tri, int offset_x, int offset_y);
 void free_triangle(Triangle* tri);

@@ -426,6 +426,123 @@ bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  PARSING D'UN WIDGET SELECTOR
+// ════════════════════════════════════════════════════════════════════════════
+bool parser_widget_selector(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
+    (void)ctx;  // Paramètre non utilisé
+
+    // Récupération des champs obligatoires
+    cJSON* id = cJSON_GetObjectItem(json_obj, "id");
+    cJSON* nom_affichage = cJSON_GetObjectItem(json_obj, "nom_affichage");
+    cJSON* x = cJSON_GetObjectItem(json_obj, "x");
+    cJSON* y = cJSON_GetObjectItem(json_obj, "y");
+    cJSON* index_depart = cJSON_GetObjectItem(json_obj, "index_depart");
+    cJSON* taille_texte = cJSON_GetObjectItem(json_obj, "taille_texte");
+    cJSON* options_array = cJSON_GetObjectItem(json_obj, "options");
+
+    // Validation des champs de base
+    if (!cJSON_IsString(id) || !cJSON_IsString(nom_affichage) ||
+        !cJSON_IsNumber(x) || !cJSON_IsNumber(y) ||
+        !cJSON_IsArray(options_array)) {
+        debug_printf("❌ Widget selector invalide : champs manquants\n");
+    return false;
+        }
+
+        // Valeurs par défaut
+        int default_index = cJSON_IsNumber(index_depart) ? index_depart->valueint : 0;
+        int arrow_size = 6;  // Taille fixe des flèches
+        int text_size = cJSON_IsNumber(taille_texte) ? taille_texte->valueint : 14;
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // CRÉATION DU WIDGET SELECTOR
+        // ─────────────────────────────────────────────────────────────────────────
+        bool success = add_selector_widget(
+            list,
+            id->valuestring,
+            nom_affichage->valuestring,
+            x->valueint,
+            y->valueint,
+            default_index,
+            arrow_size,
+            text_size,
+            ctx->font_normal  // ← Police pour le rendu du texte
+        );
+
+        if (!success) {
+            debug_printf("❌ Échec création SelectorWidget '%s'\n", id->valuestring);
+            return false;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // RÉCUPÉRATION DU WIDGET POUR AJOUTER LES OPTIONS
+        // ─────────────────────────────────────────────────────────────────────────
+        WidgetNode* node = find_widget_by_id(list, id->valuestring);
+        if (!node || !node->widget.selector_widget) {
+            debug_printf("❌ Widget selector '%s' introuvable après création\n", id->valuestring);
+            return false;
+        }
+
+        SelectorWidget* selector = node->widget.selector_widget;
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // PARSING DU TABLEAU D'OPTIONS
+        // ─────────────────────────────────────────────────────────────────────────
+        int num_options = cJSON_GetArraySize(options_array);
+        debug_printf("📋 Parsing de %d options pour selector '%s'\n", num_options, id->valuestring);
+
+        for (int i = 0; i < num_options; i++) {
+            cJSON* option = cJSON_GetArrayItem(options_array, i);
+            if (!cJSON_IsObject(option)) {
+                debug_printf("⚠️ Option %d invalide (pas un objet)\n", i);
+                continue;
+            }
+
+            // Récupérer texte et callback de l'option
+            cJSON* texte = cJSON_GetObjectItem(option, "texte");
+            cJSON* callback_name = cJSON_GetObjectItem(option, "callback");
+
+            if (!cJSON_IsString(texte) || !cJSON_IsString(callback_name)) {
+                debug_printf("⚠️ Option %d: 'texte' ou 'callback' manquant\n", i);
+                continue;
+            }
+
+            // Ajouter l'option au widget
+            bool added = add_selector_option(selector, texte->valuestring, callback_name->valuestring);
+            if (!added) {
+                debug_printf("⚠️ Impossible d'ajouter option '%s'\n", texte->valuestring);
+                continue;
+            }
+
+            // Récupérer le callback VOID associé
+            void (*callback_func)(void) = obtenir_callback_void(callback_name->valuestring);
+            if (callback_func) {
+                set_selector_option_callback(selector, i, callback_func);
+                debug_printf("✅ Option '%s' → callback '%s' défini\n",
+                             texte->valuestring, callback_name->valuestring);
+            } else {
+                debug_printf("⚠️ Callback '%s' introuvable pour option '%s'\n",
+                             callback_name->valuestring, texte->valuestring);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // APPELER LE CALLBACK DE L'OPTION PAR DÉFAUT
+        // ─────────────────────────────────────────────────────────────────────────
+        if (default_index >= 0 && default_index < selector->num_options) {
+            if (selector->options[default_index].callback) {
+                selector->options[default_index].callback();
+                debug_printf("✅ Callback de l'option par défaut appelé: %s\n",
+                             selector->options[default_index].callback_name);
+            }
+        }
+
+        debug_printf("✅ Widget selector '%s' chargé avec %d options\n",
+                     id->valuestring, selector->num_options);
+
+        return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  FONCTION PRINCIPALE : CHARGER TOUS LES WIDGETS
 // ════════════════════════════════════════════════════════════════════════════
 bool charger_widgets_depuis_json(const char* filename,
@@ -535,6 +652,9 @@ bool charger_widgets_depuis_json(const char* filename,
         }
         else if (strcmp(type_str, "button") == 0) {
             success = parser_widget_button(widget, context, widget_list);
+        }
+        else if (strcmp(type_str, "selector") == 0) {
+            success = parser_widget_selector(widget, context, widget_list);
         }
         else {
             debug_printf("⚠️ Type de widget inconnu: '%s'\n", type_str);

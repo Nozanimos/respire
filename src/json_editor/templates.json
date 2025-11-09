@@ -30,6 +30,24 @@
 			"taille_texte":	0,
 			"callback":	"a_modifier"
 		}, {
+			"type":	"selector",
+			"id":	"a_modifier",
+			"nom_affichage":	"a_modifier",
+			"x":	0,
+			"y":	0,
+			"options":	[{
+					"texte":	"a_modifier",
+					"callback":	"a_modifier"
+				}, {
+					"texte":	"a_modifier",
+					"callback":	"a_modifier"
+				}, {
+					"texte":	"a_modifier",
+					"callback":	"a_modifier"
+				}],
+			"index_depart":	0,
+			"taille_texte":	0
+		}, {
 			"type":	"toggle",
 			"id":	"a_modifier",
 			"nom_affichage":	"a_modifier",

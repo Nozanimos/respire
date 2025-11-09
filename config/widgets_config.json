@@ -133,6 +133,37 @@
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
+            "_description": "WIDGET SELECTOR - Liste déroulante avec flèches",
+            "_template": {
+                "type": "selector",
+                "id": "identifiant_unique",
+                "nom_affichage": "Label affiché",
+                "x": 165,
+                "y": 250,
+                "options": [
+                    {"texte": "Option 1", "callback": "callback_option_1"},
+                    {"texte": "Option 2", "callback": "callback_option_2"},
+                    {"texte": "Option 3", "callback": "callback_option_3"}
+                ],
+                "index_depart": 0,
+                "taille_texte": 14
+            },
+            "_fin_template": "═══════════════════════════════════════════════════════",
+            "type": "selector",
+            "id": "retention_type",
+            "nom_affichage": "Type de rétention",
+            "x": 165,
+            "y": 230,
+            "options": [
+                {"texte": "Poumons pleins", "callback": "retention_full"},
+                {"texte": "Poumons vides", "callback": "retention_empty"},
+                {"texte": "Alternée", "callback": "retention_alternate"}
+            ],
+            "index_depart": 0,
+            "taille_texte": 14
+        },
+        {
+            "_commentaire": "═══════════════════════════════════════════════════════",
             "_description": "WIDGET TOGGLE - Interrupteur ON/OFF",
             "_template": {
                 "type": "toggle",
@@ -149,16 +180,16 @@
             },
             "_fin_template": "═══════════════════════════════════════════════════════",
             "type": "toggle",
-            "id": "alternate_cycles",
-            "nom_affichage": "Cycles alternés",
+            "id": "a_modifier",
+            "nom_affichage": "Voix de Phil",
             "x": 40,
-            "y": 240,
+            "y": 335,
             "etat_depart": false,
-            "largeur_toggle": 30,
+            "largeur_toggle": 28,
             "hauteur_toggle": 14,
-            "taille_curseur": 15,
+            "taille_curseur": 14,
             "taille_texte": 14,
-            "callback": "alternate_cycles_changed"
+            "callback": "a modifier"
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",

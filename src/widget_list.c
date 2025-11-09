@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "widget_list.h"
+#include "selector_widget.h"
 #include "debug.h"
 #include <stdlib.h>
 #include <string.h>
@@ -299,7 +300,10 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
                 break;
 
             case WIDGET_TYPE_SELECTOR:
-                // TODO: À implémenter plus tard
+                if (node->widget.selector_widget) {
+                    render_selector_widget(renderer, node->widget.selector_widget,
+                                         offset_x, offset_y);
+                }
                 break;
 
             default:
@@ -352,12 +356,18 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
                 }
                 break;
 
+            case WIDGET_TYPE_SELECTOR:
+                if (node->widget.selector_widget) {
+                    handle_selector_widget_events(node->widget.selector_widget,
+                                                 event, offset_x, offset_y);
+                }
+                break;
+
             // Les autres widgets ne gèrent pas d'événements
             case WIDGET_TYPE_LABEL:
             case WIDGET_TYPE_SEPARATOR:
             case WIDGET_TYPE_PREVIEW:
             case WIDGET_TYPE_SLIDER:
-            case WIDGET_TYPE_SELECTOR:
                 break;
 
             default:
@@ -394,6 +404,13 @@ void update_widget_list_animations(WidgetList* list, float delta_time) {
                 // Le preview a une animation d'hexagones
                 if (node->widget.preview_widget) {
                     update_preview_widget(node->widget.preview_widget, delta_time);
+                }
+                break;
+
+            case WIDGET_TYPE_SELECTOR:
+                // Le selector a une animation de roulette
+                if (node->widget.selector_widget) {
+                    update_selector_animation(node->widget.selector_widget, delta_time);
                 }
                 break;
 
@@ -703,6 +720,90 @@ bool add_button_widget(WidgetList* list, const char* id, const char* display_nam
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  AJOUT D'UN WIDGET SELECTOR (liste avec flèches)
+// ════════════════════════════════════════════════════════════════════════════
+// Crée un widget selector et l'ajoute à la fin de la liste
+//
+// PARAMÈTRES :
+//   - list : La liste où ajouter le widget
+//   - id : Identifiant unique (ex: "retention_type")
+//   - display_name : Nom affiché (ex: "Type de rétention")
+//   - x, y : Position RELATIVE au conteneur parent
+//   - default_index : Index de l'option sélectionnée par défaut
+//   - arrow_size : Taille des flèches en pixels
+//   - text_size : Taille de la police
+//   - font : Police TTF pour le rendu du texte
+bool add_selector_widget(WidgetList* list, const char* id, const char* display_name,
+                         int x, int y, int default_index, int arrow_size, int text_size,
+                         TTF_Font* font) {
+    if (!list || !id || !display_name) {
+        debug_printf("❌ Paramètres invalides pour add_selector_widget\n");
+        return false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CRÉATION DU NŒUD
+    // ─────────────────────────────────────────────────────────────────────────
+    WidgetNode* node = malloc(sizeof(WidgetNode));
+    if (!node) {
+        debug_printf("❌ Erreur allocation nœud widget\n");
+        return false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CONFIGURATION DU NŒUD
+    // ─────────────────────────────────────────────────────────────────────────
+    node->type = WIDGET_TYPE_SELECTOR;
+    node->id = strdup(id);
+    node->display_name = strdup(display_name);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CRÉATION DU WIDGET CONCRET
+    // ─────────────────────────────────────────────────────────────────────────
+    node->widget.selector_widget = create_selector_widget(
+        display_name, x, y,
+        default_index,
+        arrow_size, text_size,
+        font
+    );
+
+    if (!node->widget.selector_widget) {
+        debug_printf("❌ Échec création SelectorWidget '%s'\n", id);
+        free((void*)node->id);
+        free((void*)node->display_name);
+        free(node);
+        return false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ASSIGNATION DES CALLBACKS (NULL pour le selector car chaque option a son callback)
+    // ─────────────────────────────────────────────────────────────────────────
+    node->on_int_value_changed = NULL;
+    node->on_bool_value_changed = NULL;
+    node->on_float_value_changed = NULL;
+    node->on_void_callback = NULL;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AJOUT À LA LISTE (en fin)
+    // ─────────────────────────────────────────────────────────────────────────
+    node->next = NULL;
+    node->prev = list->last;
+
+    if (list->last) {
+        list->last->next = node;
+    } else {
+        list->first = node;  // Premier élément
+    }
+    list->last = node;
+    list->count++;
+
+    debug_printf("✅ Widget SELECTOR '%s' (%s) ajouté à la liste (total: %d)\n",
+                 id, display_name, list->count);
+
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // Affiche le contenu de la liste pour debug
 void debug_print_widget_list(WidgetList* list) {
     if (is_widget_list_empty(list)) {
@@ -793,6 +894,11 @@ void free_widget_list(WidgetList* list) {
                     free_button_widget(current->widget.button_widget);
                 }
                 break;
+            case WIDGET_TYPE_SELECTOR:
+                if (current->widget.selector_widget) {
+                    free_selector_widget(current->widget.selector_widget);
+                }
+                break;
 
             default:
                 break;
@@ -823,14 +929,37 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
 
     const int MARGIN_LEFT = 20;     // Marge gauche
     const int MARGIN_RIGHT = 20;    // Marge droite
+    const int PANEL_WIDTH_BASE = 500;  // Largeur de base du panneau
+    float panel_ratio = (float)panel_width / (float)PANEL_WIDTH_BASE;
 
-    debug_printf("🔄 Layout widgets - panel_width: %d, screen_height: %d\n", panel_width, screen_height);
+    debug_printf("🔄 Layout widgets - panel_width: %d, screen_height: %d, ratio: %.2f\n",
+                 panel_width, screen_height, panel_ratio);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // PHASE 0 : RESCALER INDIVIDUELLEMENT CHAQUE WIDGET
+    // ═════════════════════════════════════════════════════════════════════════
+    WidgetNode* node = list->first;
+    while (node) {
+        switch (node->type) {
+            case WIDGET_TYPE_SELECTOR:
+                if (node->widget.selector_widget) {
+                    rescale_selector_widget(node->widget.selector_widget, panel_ratio);
+                }
+                break;
+
+            // Les autres widgets utilisent rescale_widget_base appelé dans leur propre fonction
+            // mais le selector a besoin d'un rescale complet pour recalculer le layout
+            default:
+                break;
+        }
+        node = node->next;
+    }
 
     // ═════════════════════════════════════════════════════════════════════════
     // PHASE 1 : CALCULER LA LARGEUR MAXIMALE DES WIDGETS (sans la barre)
     // ═════════════════════════════════════════════════════════════════════════
     int max_widget_width = 0;
-    WidgetNode* node = list->first;
+    node = list->first;
 
     while (node) {
         int widget_width = 0;
@@ -854,6 +983,10 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
         }
         else if (node->type == WIDGET_TYPE_LABEL && node->widget.label_widget) {
             LabelWidget* w = node->widget.label_widget;
+            widget_width = w->base.width;
+        }
+        else if (node->type == WIDGET_TYPE_SELECTOR && node->widget.selector_widget) {
+            SelectorWidget* w = node->widget.selector_widget;
             widget_width = w->base.width;
         }
         // Ignorer les séparateurs pour le calcul de largeur max
@@ -965,6 +1098,18 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
                 int new_x = (panel_width - widget_width) / 2;
                 w->base.x = new_x;
                 debug_printf("🔄 LABEL centré: %d → %d (collision)\n", widget_x, new_x);
+            }
+        }
+        else if (node->type == WIDGET_TYPE_SELECTOR && node->widget.selector_widget) {  // ← AJOUTER CE BLOC
+            SelectorWidget* w = node->widget.selector_widget;
+            widget_x = w->base.x;
+            widget_width = w->base.width;
+            has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
+
+            if (has_collision) {
+                int new_x = (panel_width - widget_width) / 2;
+                w->base.x = new_x;
+                debug_printf("🔄 SELECTOR centré: %d → %d (collision)\n", widget_x, new_x);
             }
         }
         else if (node->type == WIDGET_TYPE_SEPARATOR && node->widget.separator_widget) {
@@ -1081,6 +1226,9 @@ int calculate_min_panel_width(WidgetList* list) {
         }
         else if (node->type == WIDGET_TYPE_LABEL && node->widget.label_widget) {
             widget_width = node->widget.label_widget->base.width;
+        }
+        else if (node->type == WIDGET_TYPE_SELECTOR && node->widget.selector_widget) {
+            widget_width = node->widget.selector_widget->base.width;
         }
         // Ignorer les séparateurs
 
