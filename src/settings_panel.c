@@ -793,8 +793,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     int panel_width = panel->rect.w;
     int center_x = panel_width / 2;
 
-    // Calculer le panel_ratio pour rescaler les positions restaurées
-    float panel_ratio = (float)panel_width / (float)panel->base_panel_width;
+    // Utiliser le panel_ratio déjà calculé dans la structure
+    float panel_ratio = panel->panel_ratio;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES SCALÉES
