@@ -789,6 +789,66 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     if (!panel || !panel->widget_list) return;
 
     const int COLLISION_SPACING = 10;  // Espacement en cas de collision
+    const int PREVIEW_SPACING = 20;    // Espacement après le preview
+    int panel_width = panel->rect.w;
+    int center_x = panel_width / 2;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES
+    // ═══════════════════════════════════════════════════════════════════════════
+    WidgetNode* node = panel->widget_list->first;
+    while (node) {
+        switch (node->type) {
+            case WIDGET_TYPE_LABEL:
+                if (node->widget.label_widget) {
+                    LabelWidget* w = node->widget.label_widget;
+                    w->base.x = w->base.base_x;
+                    w->base.y = w->base.base_y;
+                }
+                break;
+            case WIDGET_TYPE_PREVIEW:
+                if (node->widget.preview_widget) {
+                    PreviewWidget* w = node->widget.preview_widget;
+                    w->base.x = w->base.base_x;
+                    w->base.y = w->base.base_y;
+                }
+                break;
+            case WIDGET_TYPE_INCREMENT:
+                if (node->widget.increment_widget) {
+                    ConfigWidget* w = node->widget.increment_widget;
+                    w->base.x = w->base.base_x;
+                    w->base.y = w->base.base_y;
+                }
+                break;
+            case WIDGET_TYPE_SELECTOR:
+                if (node->widget.selector_widget) {
+                    SelectorWidget* w = node->widget.selector_widget;
+                    w->base.x = w->base.base_x;
+                    w->base.y = w->base.base_y;
+                }
+                break;
+            case WIDGET_TYPE_TOGGLE:
+                if (node->widget.toggle_widget) {
+                    ToggleWidget* w = node->widget.toggle_widget;
+                    w->base.x = w->base.base_x;
+                    w->base.y = w->base.base_y;
+                }
+                break;
+            case WIDGET_TYPE_SEPARATOR:
+                if (node->widget.separator_widget) {
+                    SeparatorWidget* w = node->widget.separator_widget;
+                    w->base.x = w->base.base_x;
+                    w->base.y = w->base.base_y;
+                }
+                break;
+            case WIDGET_TYPE_BUTTON:
+                // Les boutons gardent leurs positions
+                break;
+            default:
+                break;
+        }
+        node = node->next;
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 1: CONSTRUIRE LA LISTE DES RECTANGLES DE COLLISION
@@ -796,7 +856,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     WidgetRect rects[50];  // Maximum 50 widgets
     int rect_count = 0;
 
-    WidgetNode* node = panel->widget_list->first;
+    node = panel->widget_list->first;
     while (node && rect_count < 50) {
         if (get_widget_rect(node, &rects[rect_count])) {
             rect_count++;
@@ -820,56 +880,76 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 3: SI COLLISION, RÉORGANISER EN EMPILANT VERTICALEMENT
+    // ÉTAPE 3: SI COLLISION, RÉORGANISER EN EMPILANT VERTICALEMENT CENTRÉ
     // ═══════════════════════════════════════════════════════════════════════════
     if (has_collision) {
         debug_printf("🔧 Réorganisation des widgets pour éviter les collisions\n");
 
         int current_y = 50;  // Marge du haut
+        int content_left_x = center_x - 150;  // Point de départ à gauche du centre (alignement à gauche)
 
         for (int i = 0; i < rect_count; i++) {
             WidgetRect* r = &rects[i];
 
-            // Modifier la position Y pour empiler verticalement
+            // Empiler verticalement et centrer avec alignement à gauche
             switch (r->type) {
                 case WIDGET_TYPE_LABEL:
                     if (r->node->widget.label_widget) {
-                        r->node->widget.label_widget->base.y = current_y;
+                        LabelWidget* w = r->node->widget.label_widget;
+                        // Centrer le titre
+                        w->base.x = center_x - (w->base.width / 2);
+                        w->base.y = current_y;
                         current_y += r->height + COLLISION_SPACING;
                     }
                     break;
 
                 case WIDGET_TYPE_PREVIEW:
                     if (r->node->widget.preview_widget) {
-                        r->node->widget.preview_widget->base.y = current_y;
-                        current_y += r->height + COLLISION_SPACING;
+                        PreviewWidget* w = r->node->widget.preview_widget;
+                        // Centrer le preview
+                        w->base.x = center_x - (w->base_frame_size / 2);
+                        w->base.y = current_y;
+                        current_y += r->height + PREVIEW_SPACING;  // Plus d'espace après le preview
                     }
                     break;
 
                 case WIDGET_TYPE_INCREMENT:
                     if (r->node->widget.increment_widget) {
-                        r->node->widget.increment_widget->base.y = current_y;
+                        ConfigWidget* w = r->node->widget.increment_widget;
+                        // Aligner à gauche depuis le centre
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
                         current_y += r->height + COLLISION_SPACING;
                     }
                     break;
 
                 case WIDGET_TYPE_SELECTOR:
                     if (r->node->widget.selector_widget) {
-                        r->node->widget.selector_widget->base.y = current_y;
+                        SelectorWidget* w = r->node->widget.selector_widget;
+                        // Aligner à gauche depuis le centre
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
                         current_y += r->height + COLLISION_SPACING;
                     }
                     break;
 
                 case WIDGET_TYPE_TOGGLE:
                     if (r->node->widget.toggle_widget) {
-                        r->node->widget.toggle_widget->base.y = current_y;
+                        ToggleWidget* w = r->node->widget.toggle_widget;
+                        // Aligner à gauche depuis le centre
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
                         current_y += r->height + COLLISION_SPACING;
                     }
                     break;
 
                 case WIDGET_TYPE_SEPARATOR:
                     if (r->node->widget.separator_widget) {
-                        r->node->widget.separator_widget->base.y = current_y;
+                        SeparatorWidget* w = r->node->widget.separator_widget;
+                        // Séparateurs pleine largeur
+                        w->base.x = 20;
+                        w->base.y = current_y;
+                        w->base.width = panel_width - 40;
                         current_y += r->height + COLLISION_SPACING;
                     }
                     break;
