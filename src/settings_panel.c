@@ -844,24 +844,36 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 2: DÉTECTER LES COLLISIONS
+    // ÉTAPE 2: DÉTERMINER SI ON DOIT RÉORGANISER
     // ═══════════════════════════════════════════════════════════════════════════
-    bool has_collision = false;
-    for (int i = 0; i < rect_count && !has_collision; i++) {
-        for (int j = i + 1; j < rect_count; j++) {
-            if (rects_collide(rects[i].x, rects[i].y, rects[i].width, rects[i].height,
-                            rects[j].x, rects[j].y, rects[j].width, rects[j].height)) {
-                debug_printf("⚠️ Collision détectée entre widgets\n");
-                has_collision = true;
-                break;
+    // Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
+    // Critère 2: Détection de collision (si collision, réorganiser)
+
+    bool needs_reorganization = false;
+
+    // Vérifier si le panneau est trop étroit
+    if (panel_width < panel->layout_threshold_width) {
+        debug_printf("📱 Panneau étroit (%dpx < %dpx) - empilement forcé\n",
+                     panel_width, panel->layout_threshold_width);
+        needs_reorganization = true;
+    } else {
+        // Panneau large: vérifier les collisions
+        for (int i = 0; i < rect_count && !needs_reorganization; i++) {
+            for (int j = i + 1; j < rect_count; j++) {
+                if (rects_collide(rects[i].x, rects[i].y, rects[i].width, rects[i].height,
+                                rects[j].x, rects[j].y, rects[j].width, rects[j].height)) {
+                    debug_printf("⚠️ Collision détectée entre widgets\n");
+                    needs_reorganization = true;
+                    break;
+                }
             }
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 3: SI COLLISION, RÉORGANISER EN EMPILANT VERTICALEMENT CENTRÉ
+    // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE
     // ═══════════════════════════════════════════════════════════════════════════
-    if (has_collision) {
+    if (needs_reorganization) {
         debug_printf("🔧 Réorganisation des widgets pour éviter les collisions\n");
 
         int current_y = 50;  // Marge du haut
