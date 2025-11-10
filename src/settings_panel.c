@@ -231,6 +231,9 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
 
     debug_print_widget_list(panel->widget_list);
 
+    // Synchroniser les widgets avec la config chargée (pour initialiser les valeurs)
+    sync_config_to_widgets(&panel->temp_config, panel->widget_list);
+
     // ════════════════════════════════════════════════════════════════════════
     // CHARGEMENT DU FOND ET DE L'ICÔNE
     // ════════════════════════════════════════════════════════════════════════
@@ -408,14 +411,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
                 // Recharger la config et mettre à jour les widgets
                 load_config(&panel->temp_config);
-                set_widget_int_value(panel->widget_list, "breath_duration",
-                                     panel->temp_config.breath_duration);
-                set_widget_int_value(panel->widget_list, "nb_session",
-                                     panel->temp_config.nb_session);
-                set_widget_int_value(panel->widget_list, "start_duration",
-                                     panel->temp_config.start_duration);
-                set_widget_bool_value(panel->widget_list, "alternate_cycles",
-                                      panel->temp_config.alternate_cycles);
+
+                // Synchroniser TOUS les widgets depuis la config (générique)
+                sync_config_to_widgets(&panel->temp_config, panel->widget_list);
 
                 // Mettre à jour la durée du preview widget via la widget_list
                 if (panel->widget_list) {

@@ -380,32 +380,44 @@ int main(int argc, char **argv) {
             stopwatch_update(app.session_stopwatch);
         }
 
-        // === GESTION PHASE INSPIRATION (après arrêt du chronomètre) ===
-        // Animation des hexagones de scale_min → scale_max (poumons vides → poumons pleins)
+        // === GESTION PHASE INSPIRATION/EXPIRATION (après arrêt du chronomètre) ===
+        // Animation selon le type de rétention configuré :
+        // - retention_type=0 : Poumons pleins (scale_min → scale_max)
+        // - retention_type=1 : Poumons vides (scale_max → scale_min)
         if (app.inspiration_phase) {
-            // Au premier appel, positionner la tête de lecture à scale_min
             static bool inspiration_initialized = false;
             if (!inspiration_initialized) {
                 HexagoneNode* node = hex_list->first;
+                bool is_empty_lungs = (app.config.retention_type == 1);  // 1 = poumons vides
 
                 while (node) {
                     if (node->precomputed_counter_frames && node->total_cycles > 0) {
-                        // Chercher la première frame où on est à scale_min
-                        // On parcourt le tableau de la fin pour trouver la dernière montée
-                        int scale_min_frame = -1;
+                        int target_frame = -1;
 
-                        for (int i = node->total_cycles - 1; i >= 0; i--) {
-                            if (node->precomputed_counter_frames[i].is_at_scale_min) {
-                                scale_min_frame = i;
-                                break;
+                        if (is_empty_lungs) {
+                            // Poumons vides : chercher scale_max pour partir vers scale_min
+                            for (int i = node->total_cycles - 1; i >= 0; i--) {
+                                if (node->precomputed_counter_frames[i].is_at_scale_max) {
+                                    target_frame = i;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // Poumons pleins : chercher scale_min pour partir vers scale_max
+                            for (int i = node->total_cycles - 1; i >= 0; i--) {
+                                if (node->precomputed_counter_frames[i].is_at_scale_min) {
+                                    target_frame = i;
+                                    break;
+                                }
                             }
                         }
 
                         // Si trouvé, positionner la tête de lecture
-                        if (scale_min_frame >= 0) {
-                            node->current_cycle = scale_min_frame;
-                            debug_printf("🫁 Hexagone %d: tête de lecture → frame %d (scale_min)\n",
-                                       node->data->element_id, scale_min_frame);
+                        if (target_frame >= 0) {
+                            node->current_cycle = target_frame;
+                            debug_printf("🫁 Hexagone %d: tête de lecture → frame %d (%s)\n",
+                                       node->data->element_id, target_frame,
+                                       is_empty_lungs ? "scale_max" : "scale_min");
                         }
                     }
 
@@ -415,30 +427,41 @@ int main(int argc, char **argv) {
                 }
 
                 inspiration_initialized = true;
-                debug_printf("🎬 Animation inspiration démarrée (scale_min → scale_max)\n");
+                debug_printf("🎬 Animation %s démarrée\n",
+                           is_empty_lungs ? "expiration (max → min)" : "inspiration (min → max)");
             }
 
-            // Vérifier si tous les hexagones ont atteint scale_max
-            bool all_at_scale_max = true;
+            // Vérifier si tous les hexagones ont atteint la cible
+            bool all_at_target = true;
+            bool is_empty_lungs = (app.config.retention_type == 1);
             HexagoneNode* node = hex_list->first;
 
             while (node) {
                 if (node->precomputed_counter_frames && node->current_cycle < node->total_cycles) {
-                    if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_max) {
-                        all_at_scale_max = false;
-                        break;
+                    if (is_empty_lungs) {
+                        // Attendre scale_min pour poumons vides
+                        if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_min) {
+                            all_at_target = false;
+                            break;
+                        }
+                    } else {
+                        // Attendre scale_max pour poumons pleins
+                        if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_max) {
+                            all_at_target = false;
+                            break;
+                        }
                     }
                 }
                 node = node->next;
             }
 
-            // Si tous à scale_max → activer phase de rétention
-            if (all_at_scale_max) {
+            // Si tous à la cible → activer phase de rétention
+            if (all_at_target) {
                 app.inspiration_phase = false;
                 app.retention_phase = true;
                 inspiration_initialized = false;  // Reset pour la prochaine fois
 
-                // Figer l'animation à scale_max
+                // Figer l'animation
                 node = hex_list->first;
                 while (node) {
                     node->is_frozen = true;
@@ -448,12 +471,13 @@ int main(int argc, char **argv) {
                 // Démarrer le timer de rétention (15 secondes)
                 if (app.retention_timer) {
                     timer_start(app.retention_timer);
-                    debug_printf("⏱️  Phase RÉTENTION activée - timer 15s démarré\n");
+                    debug_printf("⏱️  Phase RÉTENTION activée - timer 15s (%s)\n",
+                               is_empty_lungs ? "poumons vides" : "poumons pleins");
                 }
             }
         }
 
-        // === GESTION PHASE RÉTENTION (poumons pleins, timer 15s) ===
+        // === GESTION PHASE RÉTENTION (poumons pleins OU vides, timer 15s) ===
         if (app.retention_phase && app.retention_timer) {
             bool timer_running = timer_update(app.retention_timer);
 
