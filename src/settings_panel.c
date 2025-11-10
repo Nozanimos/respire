@@ -796,8 +796,127 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         // MODE 2 COLONNES (large): Preview à gauche, widgets à droite
         debug_printf("🖥️  Layout responsive: MODE 2 COLONNES (largeur=%d)\n", panel_width);
 
-        // On garde les positions JSON originales
-        // (pas de modification nécessaire, les positions JSON sont déjà bonnes pour ce mode)
+        // Définir les zones
+        const int PREVIEW_COLUMN_X = MARGIN_LEFT;
+        const int WIDGETS_COLUMN_X = MARGIN_LEFT + 130;  // Preview + marge
+
+        node = panel->widget_list->first;
+        current_y = MARGIN_TOP;
+        int widgets_start_y = 0;
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // PASSE 1: Positionner titre, séparateur et preview
+        // ═══════════════════════════════════════════════════════════════════════════
+        while (node) {
+            if (node->type == WIDGET_TYPE_LABEL) {
+                if (node->widget.label_widget) {
+                    LabelWidget* w = node->widget.label_widget;
+                    w->base.x = center_x - (w->base.width / 2);
+                    w->base.y = current_y;
+                    current_y += w->base.height + SECTION_SPACING_Y;
+                }
+            }
+            else if (node->type == WIDGET_TYPE_SEPARATOR) {
+                if (node->widget.separator_widget) {
+                    SeparatorWidget* w = node->widget.separator_widget;
+                    w->base.x = MARGIN_LEFT;
+                    w->base.y = current_y;
+                    w->base.width = panel_width - MARGIN_LEFT - MARGIN_RIGHT;
+                    current_y += w->base.height + SECTION_SPACING_Y;
+                }
+            }
+            else if (node->type == WIDGET_TYPE_PREVIEW) {
+                if (node->widget.preview_widget) {
+                    PreviewWidget* w = node->widget.preview_widget;
+                    w->base.x = PREVIEW_COLUMN_X;
+                    w->base.y = current_y;
+                    widgets_start_y = current_y;  // Les widgets commencent à la même hauteur que le preview
+                }
+                break;  // On s'arrête après le preview
+            }
+            node = node->next;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // PASSE 2: Positionner les widgets à droite du preview
+        // ═══════════════════════════════════════════════════════════════════════════
+        node = panel->widget_list->first;
+        current_y = widgets_start_y;
+        bool preview_passed = false;
+
+        while (node) {
+            // Marquer qu'on a passé le preview
+            if (node->type == WIDGET_TYPE_PREVIEW) {
+                preview_passed = true;
+                node = node->next;
+                continue;
+            }
+
+            // Positionner les widgets APRÈS le preview dans la colonne de droite
+            if (preview_passed) {
+                switch (node->type) {
+                    case WIDGET_TYPE_INCREMENT: {
+                        if (node->widget.increment_widget) {
+                            ConfigWidget* w = node->widget.increment_widget;
+                            w->base.x = WIDGETS_COLUMN_X;
+                            w->base.y = current_y;
+                            current_y += 30 + WIDGET_SPACING_Y;
+                        }
+                        break;
+                    }
+
+                    case WIDGET_TYPE_SELECTOR: {
+                        if (node->widget.selector_widget) {
+                            SelectorWidget* w = node->widget.selector_widget;
+                            w->base.x = WIDGETS_COLUMN_X;
+                            w->base.y = current_y;
+                            current_y += w->base.height + WIDGET_SPACING_Y;
+                        }
+                        break;
+                    }
+
+                    case WIDGET_TYPE_TOGGLE: {
+                        if (node->widget.toggle_widget) {
+                            ToggleWidget* w = node->widget.toggle_widget;
+                            w->base.x = MARGIN_LEFT;
+                            w->base.y = current_y;
+                            current_y += w->base.base_height + WIDGET_SPACING_Y;
+                        }
+                        break;
+                    }
+
+                    case WIDGET_TYPE_SEPARATOR: {
+                        if (node->widget.separator_widget) {
+                            SeparatorWidget* w = node->widget.separator_widget;
+                            w->base.x = MARGIN_LEFT;
+                            w->base.y = current_y;
+                            w->base.width = panel_width - MARGIN_LEFT - MARGIN_RIGHT;
+                            current_y += w->base.height + SECTION_SPACING_Y;
+                        }
+                        break;
+                    }
+
+                    case WIDGET_TYPE_BUTTON: {
+                        if (node->widget.button_widget) {
+                            ButtonWidget* w = node->widget.button_widget;
+                            if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
+                                // Garder position relative au bas mais centrer horizontalement
+                                w->base.x = center_x - (w->base_width / 2);
+                            } else {
+                                w->base.x = center_x - (w->base_width / 2);
+                                w->base.y = current_y;
+                                current_y += w->base_height + WIDGET_SPACING_Y;
+                            }
+                        }
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
+            }
+            node = node->next;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
