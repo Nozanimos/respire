@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
 
     // === CRÉATION DU TIMER DE RÉTENTION (15 secondes) ===
     // Timer pour la phase de rétention après l'inspiration (poumons pleins)
-    app.retention_timer = timer_create("../fonts/arial/ARIALBD.TTF", timer_font_size, 15);
+    app.retention_timer = breathing_timer_create(15, "../fonts/arial/ARIALBD.TTF", timer_font_size);
     if (!app.retention_timer) {
         fprintf(stderr, "⚠️ Échec création timer de rétention\n");
         app.retention_phase = false;
