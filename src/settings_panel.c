@@ -4,6 +4,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "settings_panel.h"
 #include "preview_widget.h"
+#include "button_widget.h"
 #include "debug.h"
 #include "json_config_loader.h"
 
@@ -687,23 +688,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
 
     int current_y = MARGIN_TOP;
     int center_x = panel_width / 2;
-
-    WidgetNode* preview_node = NULL;
     WidgetNode* node = panel->widget_list->first;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 1: TROUVER LE WIDGET PREVIEW ET SAUVEGARDER SES POSITIONS ORIGINALES
-    // ═══════════════════════════════════════════════════════════════════════════
-    while (node) {
-        if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
-            preview_node = node;
-            break;
-        }
-        node = node->next;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 2: REPOSITIONNER LES WIDGETS
+    // ÉTAPE 1: REPOSITIONNER LES WIDGETS
     // ═══════════════════════════════════════════════════════════════════════════
 
     if (use_column_mode) {
@@ -753,8 +741,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                         ConfigWidget* w = node->widget.increment_widget;
                         // Centrer les widgets increment
                         int widget_width = w->local_value_x + 50;
-                        w->local_x = center_x - (widget_width / 2);
-                        w->local_y = current_y;
+                        w->base.x = center_x - (widget_width / 2);
+                        w->base.y = current_y;
                         current_y += 30 + WIDGET_SPACING_Y;
                     }
                     break;
@@ -786,12 +774,12 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                     if (node->widget.button_widget) {
                         ButtonWidget* w = node->widget.button_widget;
                         // Les boutons gardent leur position relative au bas ou se centrent
-                        if (strcmp(w->y_anchor, "bottom") == 0) {
+                        if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
                             // Laisser le y tel quel (relatif au bas)
-                            w->x = center_x - (w->base_width / 2);
+                            w->base.x = center_x - (w->base_width / 2);
                         } else {
-                            w->x = center_x - (w->base_width / 2);
-                            w->y = current_y;
+                            w->base.x = center_x - (w->base_width / 2);
+                            w->base.y = current_y;
                             current_y += w->base_height + WIDGET_SPACING_Y;
                         }
                     }
@@ -833,7 +821,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 break;
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
-                    widget_bottom = node->widget.increment_widget->local_y + 30;
+                    widget_bottom = node->widget.increment_widget->base.y + 30;
                 }
                 break;
             case WIDGET_TYPE_SELECTOR:
@@ -855,8 +843,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 if (node->widget.button_widget) {
                     ButtonWidget* w = node->widget.button_widget;
                     // Les boutons avec anchor bottom ne comptent pas dans le content_height
-                    if (strcmp(w->y_anchor, "top") == 0) {
-                        widget_bottom = w->y + w->base_height;
+                    if (w->y_anchor == BUTTON_ANCHOR_TOP) {
+                        widget_bottom = w->base.y + w->base_height;
                     }
                 }
                 break;
