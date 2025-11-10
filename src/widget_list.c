@@ -252,10 +252,12 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
     // ═════════════════════════════════════════════════════════════════════════
     // ÉTAPE 1 : PRÉ-CALCUL DES GROUPES DE WIDGETS INCREMENT
     // ═════════════════════════════════════════════════════════════════════════
-    // On regroupe les widgets INCREMENT proches verticalement (< 20px d'écart)
+    // On regroupe les widgets INCREMENT proches verticalement
     // et on trouve le plus long nom dans chaque groupe pour aligner les flèches
 
-    const int GROUP_SPACING_THRESHOLD = 20;  // Si écart > 20px, nouveau groupe
+    // Si l'écart entre deux widgets > seuil, c'est un nouveau groupe
+    // Hauteur widget ~20-30px + espacement collision 10px = on prend 60px comme seuil
+    const int GROUP_SPACING_THRESHOLD = 60;
 
     // Structure pour stocker les infos des widgets INCREMENT
     typedef struct {
@@ -264,6 +266,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
         int text_width;
         int group_id;
         int max_text_width_in_group;
+        int container_width_for_group;  // Largeur totale du widget le plus long
     } IncrementInfo;
 
     IncrementInfo increment_infos[50];  // Max 50 widgets INCREMENT
@@ -275,7 +278,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
         if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
             ConfigWidget* w = node->widget.increment_widget;
 
-            // Mesurer la largeur du texte
+            // Mesurer la largeur du texte actuel (avec taille de police actuelle)
             TTF_Font* font = get_font_for_size(w->current_text_size);
             int text_width = 0;
             if (font) {
@@ -287,12 +290,24 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
             increment_infos[increment_count].text_width = text_width;
             increment_infos[increment_count].group_id = -1;
             increment_infos[increment_count].max_text_width_in_group = 0;
+            increment_infos[increment_count].container_width_for_group = 0;
             increment_count++;
         }
         node = node->next;
     }
 
-    // Deuxième passage : regrouper par proximité verticale
+    // Deuxième passage : trier par position Y pour faciliter le regroupement
+    for (int i = 0; i < increment_count - 1; i++) {
+        for (int j = i + 1; j < increment_count; j++) {
+            if (increment_infos[j].y_position < increment_infos[i].y_position) {
+                IncrementInfo temp = increment_infos[i];
+                increment_infos[i] = increment_infos[j];
+                increment_infos[j] = temp;
+            }
+        }
+    }
+
+    // Troisième passage : regrouper par proximité verticale
     int current_group = 0;
     for (int i = 0; i < increment_count; i++) {
         if (increment_infos[i].group_id == -1) {
@@ -300,7 +315,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
             increment_infos[i].group_id = current_group;
             int last_y = increment_infos[i].y_position;
 
-            // Trouver tous les widgets proches qui suivent
+            // Trouver tous les widgets proches qui suivent (maintenant triés par Y)
             for (int j = i + 1; j < increment_count; j++) {
                 int y_diff = increment_infos[j].y_position - last_y;
                 if (y_diff > 0 && y_diff <= GROUP_SPACING_THRESHOLD &&
@@ -313,19 +328,35 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
         }
     }
 
-    // Troisième passage : calculer la largeur maximale dans chaque groupe
+    // Quatrième passage : calculer container_width pour chaque groupe
+    // On utilise le local_arrows_x + arrow_size + espace + valeur du widget le plus long
     for (int g = 0; g < current_group; g++) {
-        int max_width = 0;
+        int max_text_width = 0;
+        ConfigWidget* longest_widget = NULL;
+
+        // Trouver le widget avec le texte le plus long dans ce groupe
         for (int i = 0; i < increment_count; i++) {
-            if (increment_infos[i].group_id == g && increment_infos[i].text_width > max_width) {
-                max_width = increment_infos[i].text_width;
+            if (increment_infos[i].group_id == g && increment_infos[i].text_width > max_text_width) {
+                max_text_width = increment_infos[i].text_width;
+                longest_widget = increment_infos[i].widget;
             }
         }
 
-        // Appliquer cette largeur à tous les widgets du groupe
+        // Calculer le container_width basé sur le widget le plus long
+        int container_width = 0;
+        if (longest_widget) {
+            // Utiliser local_arrows_x (qui inclut texte + espace après texte)
+            // + taille des flèches + espace + largeur estimée valeur
+            container_width = longest_widget->local_arrows_x +
+                            longest_widget->arrow_size +
+                            60;  // Espace après flèches + largeur valeur estimée
+        }
+
+        // Appliquer cette largeur et max_text_width à tous les widgets du groupe
         for (int i = 0; i < increment_count; i++) {
             if (increment_infos[i].group_id == g) {
-                increment_infos[i].max_text_width_in_group = max_width;
+                increment_infos[i].max_text_width_in_group = max_text_width;
+                increment_infos[i].container_width_for_group = container_width;
             }
         }
     }
@@ -342,16 +373,11 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
         switch (node->type) {
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
-                    // Trouver les infos de ce widget pour obtenir max_text_width_in_group
+                    // Trouver le container_width pour ce widget (basé sur son groupe)
                     int container_width = 0;
                     for (int i = 0; i < increment_count; i++) {
                         if (increment_infos[i].widget == node->widget.increment_widget) {
-                            // Calculer container_width basé sur le plus long texte du groupe
-                            ConfigWidget* w = node->widget.increment_widget;
-                            container_width = increment_infos[i].max_text_width_in_group +
-                                            w->base_espace_apres_texte +
-                                            w->arrow_size +
-                                            w->base_espace_apres_fleches + 50;  // +50 pour la valeur
+                            container_width = increment_infos[i].container_width_for_group;
                             break;
                         }
                     }

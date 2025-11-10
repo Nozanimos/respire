@@ -1227,7 +1227,7 @@ int get_minimum_window_width(SettingsPanel* panel) {
     int min_window_width = min_panel_width + BUFFER;
 
     // Assurer une largeur minimale absolue (pour éviter des fenêtres trop petites)
-    const int ABSOLUTE_MIN = 400;
+    const int ABSOLUTE_MIN = 200;
     if (min_window_width < ABSOLUTE_MIN) {
         min_window_width = ABSOLUTE_MIN;
     }
