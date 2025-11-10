@@ -17,3 +17,4 @@ all/
 *.kdev4
 *.html
 AJOUTER_UN_PARAMETRE.*
+bin/
