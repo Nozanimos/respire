@@ -418,7 +418,8 @@ void rescale_selector_widget(SelectorWidget* widget, float panel_ratio) {
     widget->current_arrow_size = (int)(widget->base_arrow_size * panel_ratio);
     if (widget->current_arrow_size < 6) widget->current_arrow_size = 6;
 
-    widget->current_text_size = (int)(widget->base_text_size * panel_ratio);
+    // NE PAS rescaler la taille de police - garder la taille de base
+    widget->current_text_size = widget->base_text_size;
 
     // Obtenir la police à la bonne taille
     TTF_Font* current_font = get_font_for_size(widget->current_text_size);
