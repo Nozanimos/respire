@@ -671,256 +671,219 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
 // Calcule également la hauteur totale du contenu pour le scroll
 // ════════════════════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════════════════
+//  STRUCTURE POUR STOCKER LES RECTANGLES DE COLLISION
+// ════════════════════════════════════════════════════════════════════════════
+typedef struct {
+    WidgetNode* node;
+    WidgetType type;
+    int x, y, width, height;
+} WidgetRect;
+
+// ════════════════════════════════════════════════════════════════════════════
+//  DÉTECTION DE COLLISION ENTRE DEUX RECTANGLES
+// ════════════════════════════════════════════════════════════════════════════
+static bool rects_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+    return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  OBTENIR LE RECTANGLE DE COLLISION D'UN WIDGET
+// ════════════════════════════════════════════════════════════════════════════
+static bool get_widget_rect(WidgetNode* node, WidgetRect* rect) {
+    if (!node || !rect) return false;
+
+    rect->node = node;
+    rect->type = node->type;
+
+    switch (node->type) {
+        case WIDGET_TYPE_LABEL:
+            if (node->widget.label_widget) {
+                LabelWidget* w = node->widget.label_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_PREVIEW:
+            if (node->widget.preview_widget) {
+                PreviewWidget* w = node->widget.preview_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base_frame_size;
+                rect->height = w->base_frame_size;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_INCREMENT:
+            if (node->widget.increment_widget) {
+                ConfigWidget* w = node->widget.increment_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width > 0 ? w->base.width : 300;
+                rect->height = w->base.height > 0 ? w->base.height : 30;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_SELECTOR:
+            if (node->widget.selector_widget) {
+                SelectorWidget* w = node->widget.selector_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_TOGGLE:
+            if (node->widget.toggle_widget) {
+                ToggleWidget* w = node->widget.toggle_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.base_width;
+                rect->height = w->base.base_height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_SEPARATOR:
+            if (node->widget.separator_widget) {
+                SeparatorWidget* w = node->widget.separator_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_BUTTON:
+            // Ignorer les boutons ancrés au bas pour la détection de collision
+            if (node->widget.button_widget) {
+                ButtonWidget* w = node->widget.button_widget;
+                if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
+                    return false;  // Ne pas vérifier les collisions pour les boutons du bas
+                }
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    return false;
+}
+
 void recalculate_widget_layout(SettingsPanel* panel) {
     if (!panel || !panel->widget_list) return;
 
-    int panel_width = panel->rect.w;
-    bool use_column_mode = (panel_width < panel->layout_threshold_width);
-    panel->layout_mode_column = use_column_mode;
+    const int COLLISION_SPACING = 10;  // Espacement en cas de collision
 
-    // Marges et espacements
-    const int MARGIN_TOP = 50;
-    const int MARGIN_LEFT = 20;
-    const int MARGIN_RIGHT = 20;
-    const int WIDGET_SPACING_Y = 30;
-    const int SECTION_SPACING_Y = 15;
-    const int PREVIEW_MARGIN_BOTTOM = 20;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1: CONSTRUIRE LA LISTE DES RECTANGLES DE COLLISION
+    // ═══════════════════════════════════════════════════════════════════════════
+    WidgetRect rects[50];  // Maximum 50 widgets
+    int rect_count = 0;
 
-    int current_y = MARGIN_TOP;
-    int center_x = panel_width / 2;
     WidgetNode* node = panel->widget_list->first;
+    while (node && rect_count < 50) {
+        if (get_widget_rect(node, &rects[rect_count])) {
+            rect_count++;
+        }
+        node = node->next;
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 1: REPOSITIONNER LES WIDGETS
+    // ÉTAPE 2: DÉTECTER LES COLLISIONS
     // ═══════════════════════════════════════════════════════════════════════════
-
-    if (use_column_mode) {
-        // MODE COLONNE (étroit): Tout en vertical, centré
-        debug_printf("📱 Layout responsive: MODE COLONNE (largeur=%d)\n", panel_width);
-
-        node = panel->widget_list->first;
-        current_y = MARGIN_TOP;
-
-        while (node) {
-            switch (node->type) {
-                case WIDGET_TYPE_LABEL: {
-                    if (node->widget.label_widget) {
-                        LabelWidget* w = node->widget.label_widget;
-                        // Centrer le titre
-                        w->base.x = center_x - (w->base.width / 2);
-                        w->base.y = current_y;
-                        current_y += w->base.height + SECTION_SPACING_Y;
-                    }
-                    break;
-                }
-
-                case WIDGET_TYPE_SEPARATOR: {
-                    if (node->widget.separator_widget) {
-                        SeparatorWidget* w = node->widget.separator_widget;
-                        w->base.x = MARGIN_LEFT;
-                        w->base.y = current_y;
-                        w->base.width = panel_width - MARGIN_LEFT - MARGIN_RIGHT;
-                        current_y += w->base.height + SECTION_SPACING_Y;
-                    }
-                    break;
-                }
-
-                case WIDGET_TYPE_PREVIEW: {
-                    if (node->widget.preview_widget) {
-                        PreviewWidget* w = node->widget.preview_widget;
-                        // Centrer le preview
-                        w->base.x = center_x - (w->base_frame_size / 2);
-                        w->base.y = current_y;
-                        current_y += w->base_frame_size + PREVIEW_MARGIN_BOTTOM;
-                    }
-                    break;
-                }
-
-                case WIDGET_TYPE_INCREMENT: {
-                    if (node->widget.increment_widget) {
-                        ConfigWidget* w = node->widget.increment_widget;
-                        // Centrer les widgets increment
-                        int widget_width = w->local_value_x + 50;
-                        w->base.x = center_x - (widget_width / 2);
-                        w->base.y = current_y;
-                        current_y += 30 + WIDGET_SPACING_Y;
-                    }
-                    break;
-                }
-
-                case WIDGET_TYPE_SELECTOR: {
-                    if (node->widget.selector_widget) {
-                        SelectorWidget* w = node->widget.selector_widget;
-                        // Centrer les selectors
-                        w->base.x = center_x - (w->base.width / 2);
-                        w->base.y = current_y;
-                        current_y += w->base.height + WIDGET_SPACING_Y;
-                    }
-                    break;
-                }
-
-                case WIDGET_TYPE_TOGGLE: {
-                    if (node->widget.toggle_widget) {
-                        ToggleWidget* w = node->widget.toggle_widget;
-                        // Centrer les toggles
-                        w->base.x = center_x - (w->base.base_width / 2);
-                        w->base.y = current_y;
-                        current_y += w->base.base_height + WIDGET_SPACING_Y;
-                    }
-                    break;
-                }
-
-                case WIDGET_TYPE_BUTTON: {
-                    if (node->widget.button_widget) {
-                        ButtonWidget* w = node->widget.button_widget;
-                        // Les boutons gardent leur position relative au bas ou se centrent
-                        if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
-                            // Laisser le y tel quel (relatif au bas)
-                            w->base.x = center_x - (w->base_width / 2);
-                        } else {
-                            w->base.x = center_x - (w->base_width / 2);
-                            w->base.y = current_y;
-                            current_y += w->base_height + WIDGET_SPACING_Y;
-                        }
-                    }
-                    break;
-                }
-
-                default:
-                    break;
+    bool has_collision = false;
+    for (int i = 0; i < rect_count && !has_collision; i++) {
+        for (int j = i + 1; j < rect_count; j++) {
+            if (rects_collide(rects[i].x, rects[i].y, rects[i].width, rects[i].height,
+                            rects[j].x, rects[j].y, rects[j].width, rects[j].height)) {
+                debug_printf("⚠️ Collision détectée entre widgets\n");
+                has_collision = true;
+                break;
             }
-            node = node->next;
-        }
-
-    } else {
-        // MODE 2 COLONNES (large): Preview à gauche, widgets à droite
-        debug_printf("🖥️  Layout responsive: MODE 2 COLONNES (largeur=%d)\n", panel_width);
-
-        // Définir les zones
-        const int PREVIEW_COLUMN_X = MARGIN_LEFT;
-        const int WIDGETS_COLUMN_X = MARGIN_LEFT + 130;  // Preview + marge
-
-        node = panel->widget_list->first;
-        current_y = MARGIN_TOP;
-        int widgets_start_y = 0;
-
-        // ═══════════════════════════════════════════════════════════════════════════
-        // PASSE 1: Positionner titre, séparateur et preview
-        // ═══════════════════════════════════════════════════════════════════════════
-        while (node) {
-            if (node->type == WIDGET_TYPE_LABEL) {
-                if (node->widget.label_widget) {
-                    LabelWidget* w = node->widget.label_widget;
-                    w->base.x = center_x - (w->base.width / 2);
-                    w->base.y = current_y;
-                    current_y += w->base.height + SECTION_SPACING_Y;
-                }
-            }
-            else if (node->type == WIDGET_TYPE_SEPARATOR) {
-                if (node->widget.separator_widget) {
-                    SeparatorWidget* w = node->widget.separator_widget;
-                    w->base.x = MARGIN_LEFT;
-                    w->base.y = current_y;
-                    w->base.width = panel_width - MARGIN_LEFT - MARGIN_RIGHT;
-                    current_y += w->base.height + SECTION_SPACING_Y;
-                }
-            }
-            else if (node->type == WIDGET_TYPE_PREVIEW) {
-                if (node->widget.preview_widget) {
-                    PreviewWidget* w = node->widget.preview_widget;
-                    w->base.x = PREVIEW_COLUMN_X;
-                    w->base.y = current_y;
-                    widgets_start_y = current_y;  // Les widgets commencent à la même hauteur que le preview
-                }
-                break;  // On s'arrête après le preview
-            }
-            node = node->next;
-        }
-
-        // ═══════════════════════════════════════════════════════════════════════════
-        // PASSE 2: Positionner les widgets à droite du preview
-        // ═══════════════════════════════════════════════════════════════════════════
-        node = panel->widget_list->first;
-        current_y = widgets_start_y;
-        bool preview_passed = false;
-
-        while (node) {
-            // Marquer qu'on a passé le preview
-            if (node->type == WIDGET_TYPE_PREVIEW) {
-                preview_passed = true;
-                node = node->next;
-                continue;
-            }
-
-            // Positionner les widgets APRÈS le preview dans la colonne de droite
-            if (preview_passed) {
-                switch (node->type) {
-                    case WIDGET_TYPE_INCREMENT: {
-                        if (node->widget.increment_widget) {
-                            ConfigWidget* w = node->widget.increment_widget;
-                            w->base.x = WIDGETS_COLUMN_X;
-                            w->base.y = current_y;
-                            current_y += 30 + WIDGET_SPACING_Y;
-                        }
-                        break;
-                    }
-
-                    case WIDGET_TYPE_SELECTOR: {
-                        if (node->widget.selector_widget) {
-                            SelectorWidget* w = node->widget.selector_widget;
-                            w->base.x = WIDGETS_COLUMN_X;
-                            w->base.y = current_y;
-                            current_y += w->base.height + WIDGET_SPACING_Y;
-                        }
-                        break;
-                    }
-
-                    case WIDGET_TYPE_TOGGLE: {
-                        if (node->widget.toggle_widget) {
-                            ToggleWidget* w = node->widget.toggle_widget;
-                            w->base.x = MARGIN_LEFT;
-                            w->base.y = current_y;
-                            current_y += w->base.base_height + WIDGET_SPACING_Y;
-                        }
-                        break;
-                    }
-
-                    case WIDGET_TYPE_SEPARATOR: {
-                        if (node->widget.separator_widget) {
-                            SeparatorWidget* w = node->widget.separator_widget;
-                            w->base.x = MARGIN_LEFT;
-                            w->base.y = current_y;
-                            w->base.width = panel_width - MARGIN_LEFT - MARGIN_RIGHT;
-                            current_y += w->base.height + SECTION_SPACING_Y;
-                        }
-                        break;
-                    }
-
-                    case WIDGET_TYPE_BUTTON: {
-                        if (node->widget.button_widget) {
-                            ButtonWidget* w = node->widget.button_widget;
-                            if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
-                                // Garder position relative au bas mais centrer horizontalement
-                                w->base.x = center_x - (w->base_width / 2);
-                            } else {
-                                w->base.x = center_x - (w->base_width / 2);
-                                w->base.y = current_y;
-                                current_y += w->base_height + WIDGET_SPACING_Y;
-                            }
-                        }
-                        break;
-                    }
-
-                    default:
-                        break;
-                }
-            }
-            node = node->next;
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 3: CALCULER LA HAUTEUR TOTALE DU CONTENU ET LE MAX_SCROLL
+    // ÉTAPE 3: SI COLLISION, RÉORGANISER EN EMPILANT VERTICALEMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (has_collision) {
+        debug_printf("🔧 Réorganisation des widgets pour éviter les collisions\n");
+
+        int current_y = 50;  // Marge du haut
+
+        for (int i = 0; i < rect_count; i++) {
+            WidgetRect* r = &rects[i];
+
+            // Modifier la position Y pour empiler verticalement
+            switch (r->type) {
+                case WIDGET_TYPE_LABEL:
+                    if (r->node->widget.label_widget) {
+                        r->node->widget.label_widget->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_PREVIEW:
+                    if (r->node->widget.preview_widget) {
+                        r->node->widget.preview_widget->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_INCREMENT:
+                    if (r->node->widget.increment_widget) {
+                        r->node->widget.increment_widget->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_SELECTOR:
+                    if (r->node->widget.selector_widget) {
+                        r->node->widget.selector_widget->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_TOGGLE:
+                    if (r->node->widget.toggle_widget) {
+                        r->node->widget.toggle_widget->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_SEPARATOR:
+                    if (r->node->widget.separator_widget) {
+                        r->node->widget.separator_widget->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    } else {
+        debug_printf("✅ Aucune collision - positions JSON conservées\n");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 4: CALCULER LA HAUTEUR TOTALE DU CONTENU ET LE MAX_SCROLL
     // ═══════════════════════════════════════════════════════════════════════════
     int max_y = 0;
     node = panel->widget_list->first;
@@ -961,7 +924,6 @@ void recalculate_widget_layout(SettingsPanel* panel) {
             case WIDGET_TYPE_BUTTON:
                 if (node->widget.button_widget) {
                     ButtonWidget* w = node->widget.button_widget;
-                    // Les boutons avec anchor bottom ne comptent pas dans le content_height
                     if (w->y_anchor == BUTTON_ANCHOR_TOP) {
                         widget_bottom = w->base.y + w->base_height;
                     }
@@ -981,7 +943,6 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     panel->content_height = max_y + 60;
 
     // Calculer le scroll maximum
-    // Les boutons ancrés au bas prennent 70px
     int available_height = panel->screen_height - 70;
     panel->max_scroll = panel->content_height - available_height;
     if (panel->max_scroll < 0) {
@@ -992,15 +953,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     if (panel->scroll_offset > panel->max_scroll) {
         panel->scroll_offset = panel->max_scroll;
     }
-
-    debug_printf("📏 Content height: %d, Available height: %d, Max scroll: %d\n",
-                 panel->content_height, available_height, panel->max_scroll);
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-//  GESTION DU SCROLL (MOLETTE SOURIS)
-// ════════════════════════════════════════════════════════════════════════════
-
 void handle_panel_scroll(SettingsPanel* panel, SDL_Event* event) {
     if (!panel || !event) return;
     if (event->type != SDL_MOUSEWHEEL) return;
