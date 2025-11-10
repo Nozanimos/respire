@@ -794,25 +794,13 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     int center_x = panel_width / 2;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES
+    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES (pour widgets avec WidgetBase)
     // ═══════════════════════════════════════════════════════════════════════════
+    // Seuls les widgets utilisant WidgetBase ont base_x/base_y
+    // Label, Preview, Separator ont une structure base anonyme sans ces champs
     WidgetNode* node = panel->widget_list->first;
     while (node) {
         switch (node->type) {
-            case WIDGET_TYPE_LABEL:
-                if (node->widget.label_widget) {
-                    LabelWidget* w = node->widget.label_widget;
-                    w->base.x = w->base.base_x;
-                    w->base.y = w->base.base_y;
-                }
-                break;
-            case WIDGET_TYPE_PREVIEW:
-                if (node->widget.preview_widget) {
-                    PreviewWidget* w = node->widget.preview_widget;
-                    w->base.x = w->base.base_x;
-                    w->base.y = w->base.base_y;
-                }
-                break;
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
                     ConfigWidget* w = node->widget.increment_widget;
@@ -834,17 +822,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                     w->base.y = w->base.base_y;
                 }
                 break;
-            case WIDGET_TYPE_SEPARATOR:
-                if (node->widget.separator_widget) {
-                    SeparatorWidget* w = node->widget.separator_widget;
-                    w->base.x = w->base.base_x;
-                    w->base.y = w->base.base_y;
-                }
-                break;
-            case WIDGET_TYPE_BUTTON:
-                // Les boutons gardent leurs positions
-                break;
             default:
+                // Label, Preview, Separator, Button: pas de restauration
                 break;
         }
         node = node->next;
