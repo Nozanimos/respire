@@ -106,6 +106,15 @@ typedef struct {
     int separator_start_x;    // Position X de début de barre
     int separator_end_x;      // Position X de fin de barre
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SCROLL VERTICAL ET LAYOUT RESPONSIVE
+    // ═══════════════════════════════════════════════════════════════════════════
+    int scroll_offset;        // Décalage vertical du scroll (en pixels)
+    int content_height;       // Hauteur totale du contenu (calculée automatiquement)
+    int max_scroll;           // Scroll maximum possible
+    bool layout_mode_column;  // true = mode colonne (étroit), false = mode 2 colonnes (large)
+    int layout_threshold_width; // Largeur en dessous de laquelle on passe en mode colonne
+
     // Anciens éléments (à supprimer progressivement)
     SDL_Texture* apply_button_texture;
     SDL_Texture* cancel_button_texture;
@@ -149,6 +158,10 @@ void check_json_hot_reload(SettingsPanel* panel, float delta_time, int screen_wi
 // Calcul de la largeur minimale de fenêtre
 int get_minimum_window_width(SettingsPanel* panel);
 void update_window_minimum_size(SettingsPanel* panel, SDL_Window* window);
+
+// Layout responsive et scroll
+void recalculate_widget_layout(SettingsPanel* panel);
+void handle_panel_scroll(SettingsPanel* panel, SDL_Event* event);
 
 // Fonction pour la version finale (hardcodée, sans JSON)
 // À décommenter quand on basculera vers la version sans JSON Editor

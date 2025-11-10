@@ -194,6 +194,13 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->time_since_last_check = 0.0f;
     panel->last_json_mtime = 0;
 
+    // Initialisation du scroll et layout responsive
+    panel->scroll_offset = 0;
+    panel->content_height = 0;
+    panel->max_scroll = 0;
+    panel->layout_mode_column = false;
+    panel->layout_threshold_width = 350;  // Passer en mode colonne si largeur < 350px
+
     debug_printf("🎨 Création panneau avec scale: %.2f\n", scale_factor);
 
     // ════════════════════════════════════════════════════════════════════════
@@ -374,8 +381,8 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         int panel_x = panel->rect.x;
         int panel_y = panel->rect.y;
 
-        // Widgets
-        render_all_widgets(renderer, panel->widget_list, panel_x, panel_y, panel->rect.w);
+        // Widgets (avec scroll)
+        render_all_widgets(renderer, panel->widget_list, panel_x, panel_y, panel->rect.w, panel->scroll_offset);
     }
 }
 
@@ -456,6 +463,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
     // Événements du panneau ouvert
     if (panel->state == PANEL_OPEN) {
+        // Gestion du scroll (molette souris)
+        handle_panel_scroll(panel, event);
+
         // Événements des widgets
         handle_widget_list_events(panel->widget_list, event, panel_x, panel_y);
     }
@@ -645,6 +655,264 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     panel->separator_start_x = (int)(BASE_SEPARATOR_MARGIN * panel_ratio);
     panel->separator_end_x = panel_width - (int)(BASE_SEPARATOR_MARGIN * panel_ratio);
 
+    // Recalculer le layout responsive après le resize
+    recalculate_widget_layout(panel);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  RECALCUL DU LAYOUT RESPONSIVE DES WIDGETS
+// ════════════════════════════════════════════════════════════════════════════
+// Cette fonction repositionne automatiquement les widgets en fonction de la
+// largeur disponible:
+//   - Mode large (>= threshold): preview à gauche, widgets à droite
+//   - Mode étroit (< threshold): preview en haut centré, widgets en dessous centrés
+//
+// Calcule également la hauteur totale du contenu pour le scroll
+// ════════════════════════════════════════════════════════════════════════════
+
+void recalculate_widget_layout(SettingsPanel* panel) {
+    if (!panel || !panel->widget_list) return;
+
+    int panel_width = panel->rect.w;
+    bool use_column_mode = (panel_width < panel->layout_threshold_width);
+    panel->layout_mode_column = use_column_mode;
+
+    // Marges et espacements
+    const int MARGIN_TOP = 50;
+    const int MARGIN_LEFT = 20;
+    const int MARGIN_RIGHT = 20;
+    const int WIDGET_SPACING_Y = 30;
+    const int SECTION_SPACING_Y = 15;
+    const int PREVIEW_MARGIN_BOTTOM = 20;
+
+    int current_y = MARGIN_TOP;
+    int center_x = panel_width / 2;
+
+    WidgetNode* preview_node = NULL;
+    WidgetNode* node = panel->widget_list->first;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1: TROUVER LE WIDGET PREVIEW ET SAUVEGARDER SES POSITIONS ORIGINALES
+    // ═══════════════════════════════════════════════════════════════════════════
+    while (node) {
+        if (node->type == WIDGET_TYPE_PREVIEW && node->widget.preview_widget) {
+            preview_node = node;
+            break;
+        }
+        node = node->next;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 2: REPOSITIONNER LES WIDGETS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    if (use_column_mode) {
+        // MODE COLONNE (étroit): Tout en vertical, centré
+        debug_printf("📱 Layout responsive: MODE COLONNE (largeur=%d)\n", panel_width);
+
+        node = panel->widget_list->first;
+        current_y = MARGIN_TOP;
+
+        while (node) {
+            switch (node->type) {
+                case WIDGET_TYPE_LABEL: {
+                    if (node->widget.label_widget) {
+                        LabelWidget* w = node->widget.label_widget;
+                        // Centrer le titre
+                        w->base.x = center_x - (w->base.width / 2);
+                        w->base.y = current_y;
+                        current_y += w->base.height + SECTION_SPACING_Y;
+                    }
+                    break;
+                }
+
+                case WIDGET_TYPE_SEPARATOR: {
+                    if (node->widget.separator_widget) {
+                        SeparatorWidget* w = node->widget.separator_widget;
+                        w->base.x = MARGIN_LEFT;
+                        w->base.y = current_y;
+                        w->base.width = panel_width - MARGIN_LEFT - MARGIN_RIGHT;
+                        current_y += w->base.height + SECTION_SPACING_Y;
+                    }
+                    break;
+                }
+
+                case WIDGET_TYPE_PREVIEW: {
+                    if (node->widget.preview_widget) {
+                        PreviewWidget* w = node->widget.preview_widget;
+                        // Centrer le preview
+                        w->base.x = center_x - (w->base_frame_size / 2);
+                        w->base.y = current_y;
+                        current_y += w->base_frame_size + PREVIEW_MARGIN_BOTTOM;
+                    }
+                    break;
+                }
+
+                case WIDGET_TYPE_INCREMENT: {
+                    if (node->widget.increment_widget) {
+                        ConfigWidget* w = node->widget.increment_widget;
+                        // Centrer les widgets increment
+                        int widget_width = w->local_value_x + 50;
+                        w->local_x = center_x - (widget_width / 2);
+                        w->local_y = current_y;
+                        current_y += 30 + WIDGET_SPACING_Y;
+                    }
+                    break;
+                }
+
+                case WIDGET_TYPE_SELECTOR: {
+                    if (node->widget.selector_widget) {
+                        SelectorWidget* w = node->widget.selector_widget;
+                        // Centrer les selectors
+                        w->base.x = center_x - (w->base.width / 2);
+                        w->base.y = current_y;
+                        current_y += w->base.height + WIDGET_SPACING_Y;
+                    }
+                    break;
+                }
+
+                case WIDGET_TYPE_TOGGLE: {
+                    if (node->widget.toggle_widget) {
+                        ToggleWidget* w = node->widget.toggle_widget;
+                        // Centrer les toggles
+                        w->base.x = center_x - (w->base.base_width / 2);
+                        w->base.y = current_y;
+                        current_y += w->base.base_height + WIDGET_SPACING_Y;
+                    }
+                    break;
+                }
+
+                case WIDGET_TYPE_BUTTON: {
+                    if (node->widget.button_widget) {
+                        ButtonWidget* w = node->widget.button_widget;
+                        // Les boutons gardent leur position relative au bas ou se centrent
+                        if (strcmp(w->y_anchor, "bottom") == 0) {
+                            // Laisser le y tel quel (relatif au bas)
+                            w->x = center_x - (w->base_width / 2);
+                        } else {
+                            w->x = center_x - (w->base_width / 2);
+                            w->y = current_y;
+                            current_y += w->base_height + WIDGET_SPACING_Y;
+                        }
+                    }
+                    break;
+                }
+
+                default:
+                    break;
+            }
+            node = node->next;
+        }
+
+    } else {
+        // MODE 2 COLONNES (large): Preview à gauche, widgets à droite
+        debug_printf("🖥️  Layout responsive: MODE 2 COLONNES (largeur=%d)\n", panel_width);
+
+        // On garde les positions JSON originales
+        // (pas de modification nécessaire, les positions JSON sont déjà bonnes pour ce mode)
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 3: CALCULER LA HAUTEUR TOTALE DU CONTENU ET LE MAX_SCROLL
+    // ═══════════════════════════════════════════════════════════════════════════
+    int max_y = 0;
+    node = panel->widget_list->first;
+    while (node) {
+        int widget_bottom = 0;
+
+        switch (node->type) {
+            case WIDGET_TYPE_LABEL:
+                if (node->widget.label_widget) {
+                    widget_bottom = node->widget.label_widget->base.y + node->widget.label_widget->base.height;
+                }
+                break;
+            case WIDGET_TYPE_PREVIEW:
+                if (node->widget.preview_widget) {
+                    widget_bottom = node->widget.preview_widget->base.y + node->widget.preview_widget->base_frame_size;
+                }
+                break;
+            case WIDGET_TYPE_INCREMENT:
+                if (node->widget.increment_widget) {
+                    widget_bottom = node->widget.increment_widget->local_y + 30;
+                }
+                break;
+            case WIDGET_TYPE_SELECTOR:
+                if (node->widget.selector_widget) {
+                    widget_bottom = node->widget.selector_widget->base.y + node->widget.selector_widget->base.height;
+                }
+                break;
+            case WIDGET_TYPE_TOGGLE:
+                if (node->widget.toggle_widget) {
+                    widget_bottom = node->widget.toggle_widget->base.y + node->widget.toggle_widget->base.base_height;
+                }
+                break;
+            case WIDGET_TYPE_SEPARATOR:
+                if (node->widget.separator_widget) {
+                    widget_bottom = node->widget.separator_widget->base.y + node->widget.separator_widget->base.height;
+                }
+                break;
+            case WIDGET_TYPE_BUTTON:
+                if (node->widget.button_widget) {
+                    ButtonWidget* w = node->widget.button_widget;
+                    // Les boutons avec anchor bottom ne comptent pas dans le content_height
+                    if (strcmp(w->y_anchor, "top") == 0) {
+                        widget_bottom = w->y + w->base_height;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (widget_bottom > max_y) {
+            max_y = widget_bottom;
+        }
+        node = node->next;
+    }
+
+    // Ajouter une marge en bas
+    panel->content_height = max_y + 60;
+
+    // Calculer le scroll maximum
+    // Les boutons ancrés au bas prennent 70px
+    int available_height = panel->screen_height - 70;
+    panel->max_scroll = panel->content_height - available_height;
+    if (panel->max_scroll < 0) {
+        panel->max_scroll = 0;
+    }
+
+    // S'assurer que le scroll actuel ne dépasse pas le max
+    if (panel->scroll_offset > panel->max_scroll) {
+        panel->scroll_offset = panel->max_scroll;
+    }
+
+    debug_printf("📏 Content height: %d, Available height: %d, Max scroll: %d\n",
+                 panel->content_height, available_height, panel->max_scroll);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  GESTION DU SCROLL (MOLETTE SOURIS)
+// ════════════════════════════════════════════════════════════════════════════
+
+void handle_panel_scroll(SettingsPanel* panel, SDL_Event* event) {
+    if (!panel || !event) return;
+    if (event->type != SDL_MOUSEWHEEL) return;
+
+    // Sensibilité du scroll (pixels par cran de molette)
+    const int SCROLL_SPEED = 30;
+
+    // Scroll vers le haut (event->wheel.y > 0) ou vers le bas (event->wheel.y < 0)
+    panel->scroll_offset -= event->wheel.y * SCROLL_SPEED;
+
+    // Limiter le scroll
+    if (panel->scroll_offset < 0) {
+        panel->scroll_offset = 0;
+    }
+    if (panel->scroll_offset > panel->max_scroll) {
+        panel->scroll_offset = panel->max_scroll;
+    }
+
+    debug_printf("🖱️ Scroll: offset=%d, max=%d\n", panel->scroll_offset, panel->max_scroll);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

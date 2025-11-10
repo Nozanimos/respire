@@ -243,8 +243,11 @@ bool add_toggle_widget(WidgetList* list,
 //   - offset_x, offset_y : Offset du conteneur parent (panneau)
 //   - panel_width : Largeur actuelle du panneau (pour separator responsive)
 void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
-                       int offset_x, int offset_y, int panel_width) {
+                       int offset_x, int offset_y, int panel_width, int scroll_offset) {
     if (!renderer || is_widget_list_empty(list)) return;
+
+    // Appliquer le scroll_offset au offset_y
+    int adjusted_offset_y = offset_y - scroll_offset;
 
     WidgetNode* node = list->first;
     while (node) {
@@ -255,21 +258,21 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
                     render_config_widget(renderer, node->widget.increment_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_TOGGLE:
                 if (node->widget.toggle_widget) {
                     render_toggle_widget(renderer, node->widget.toggle_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_LABEL:
                 if (node->widget.label_widget) {
                     render_label_widget(renderer, node->widget.label_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y);
                 }
                 break;
 
@@ -277,21 +280,21 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
                 if (node->widget.separator_widget) {
                     // Utiliser la largeur dynamique du panneau pour le responsive
                     render_separator_widget(renderer, node->widget.separator_widget,
-                                          offset_x, offset_y, panel_width);
+                                          offset_x, adjusted_offset_y, panel_width);
                 }
                 break;
 
             case WIDGET_TYPE_PREVIEW:
                 if (node->widget.preview_widget) {
                     render_preview_widget(renderer, node->widget.preview_widget,
-                                        offset_x, offset_y);
+                                        offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_BUTTON:
                 if (node->widget.button_widget) {
                     render_button_widget(renderer, node->widget.button_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y);
                 }
                 break;
 
@@ -302,7 +305,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
             case WIDGET_TYPE_SELECTOR:
                 if (node->widget.selector_widget) {
                     render_selector_widget(renderer, node->widget.selector_widget,
-                                         offset_x, offset_y);
+                                         offset_x, adjusted_offset_y);
                 }
                 break;
 
