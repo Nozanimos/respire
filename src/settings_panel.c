@@ -172,31 +172,6 @@ void cancel_button_clicked(void) {
     current_panel_for_callbacks->state = PANEL_CLOSING;
     debug_printf("✅ Panneau fermé\n");
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-//  CALLBACKS POUR LE WIDGET SELECTOR (rétention)
-// ════════════════════════════════════════════════════════════════════════════
-void retention_full(void) {
-    if (!current_panel_for_callbacks) return;
-    debug_printf("🫁 Rétention sélectionnée: POUMONS PLEINS\n");
-    // TODO: Implémenter la logique de rétention poumons pleins
-    // Ex: Modifier app_config->retention_type = RETENTION_FULL;
-}
-
-void retention_empty(void) {
-    if (!current_panel_for_callbacks) return;
-    debug_printf("🫁 Rétention sélectionnée: POUMONS VIDES\n");
-    // TODO: Implémenter la logique de rétention poumons vides
-    // Ex: Modifier app_config->retention_type = RETENTION_EMPTY;
-}
-
-void retention_alternate(void) {
-    if (!current_panel_for_callbacks) return;
-    debug_printf("🫁 Rétention sélectionnée: ALTERNÉE\n");
-    // TODO: Implémenter la logique de rétention alternée
-    // Ex: Modifier app_config->retention_type = RETENTION_ALTERNATE;
-}
-
 // ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU PANNEAU
 // ════════════════════════════════════════════════════════════════════════════
