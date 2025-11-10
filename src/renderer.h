@@ -51,6 +51,11 @@ typedef struct {
     bool reappear_phase;            // Phase de réapparition douce de l'hexagone (scale_max/2 → scale_max)
     bool chrono_phase;              // Phase chronomètre actif (hexagones figés à scale_max)
 
+    // 🆕 Phase inspiration + rétention (après le chronomètre)
+    bool inspiration_phase;         // Phase d'inspiration (scale_min → scale_max)
+    TimerState* retention_timer;    // Timer de rétention (15 secondes poumons pleins)
+    bool retention_phase;           // Phase de rétention (poumons pleins, timer actif)
+
     // 🆕 Stockage des temps de session (pour statistiques futures)
     float* session_times;           // Tableau dynamique des temps de chaque session (en secondes)
     int session_count;              // Nombre de sessions effectuées

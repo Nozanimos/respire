@@ -182,11 +182,25 @@ int main(int argc, char **argv) {
         fprintf(stderr, "⚠️ Échec création chronomètre\n");
         app.reappear_phase = false;
         app.chrono_phase = false;
+        app.inspiration_phase = false;
+        app.retention_phase = false;
     } else {
         // Le chronomètre ne démarre PAS immédiatement
         app.reappear_phase = false;
         app.chrono_phase = false;
+        app.inspiration_phase = false;
+        app.retention_phase = false;
         debug_printf("✅ Chronomètre créé (taille police: %d)\n", timer_font_size);
+    }
+
+    // === CRÉATION DU TIMER DE RÉTENTION (15 secondes) ===
+    // Timer pour la phase de rétention après l'inspiration (poumons pleins)
+    app.retention_timer = timer_create("../fonts/arial/ARIALBD.TTF", timer_font_size, 15);
+    if (!app.retention_timer) {
+        fprintf(stderr, "⚠️ Échec création timer de rétention\n");
+        app.retention_phase = false;
+    } else {
+        debug_printf("✅ Timer de rétention créé: 15 secondes (taille police: %d)\n", timer_font_size);
     }
 
     /*------------------------------------------------------------*/
@@ -366,6 +380,92 @@ int main(int argc, char **argv) {
             stopwatch_update(app.session_stopwatch);
         }
 
+        // === GESTION PHASE INSPIRATION (après arrêt du chronomètre) ===
+        // Animation des hexagones de scale_min → scale_max (poumons vides → poumons pleins)
+        if (app.inspiration_phase) {
+            // Au premier appel, positionner la tête de lecture à scale_min
+            static bool inspiration_initialized = false;
+            if (!inspiration_initialized) {
+                HexagoneNode* node = hex_list->first;
+
+                while (node) {
+                    if (node->precomputed_counter_frames && node->total_cycles > 0) {
+                        // Chercher la première frame où on est à scale_min
+                        // On parcourt le tableau de la fin pour trouver la dernière montée
+                        int scale_min_frame = -1;
+
+                        for (int i = node->total_cycles - 1; i >= 0; i--) {
+                            if (node->precomputed_counter_frames[i].is_at_scale_min) {
+                                scale_min_frame = i;
+                                break;
+                            }
+                        }
+
+                        // Si trouvé, positionner la tête de lecture
+                        if (scale_min_frame >= 0) {
+                            node->current_cycle = scale_min_frame;
+                            debug_printf("🫁 Hexagone %d: tête de lecture → frame %d (scale_min)\n",
+                                       node->data->element_id, scale_min_frame);
+                        }
+                    }
+
+                    // Dégeler l'animation
+                    node->is_frozen = false;
+                    node = node->next;
+                }
+
+                inspiration_initialized = true;
+                debug_printf("🎬 Animation inspiration démarrée (scale_min → scale_max)\n");
+            }
+
+            // Vérifier si tous les hexagones ont atteint scale_max
+            bool all_at_scale_max = true;
+            HexagoneNode* node = hex_list->first;
+
+            while (node) {
+                if (node->precomputed_counter_frames && node->current_cycle < node->total_cycles) {
+                    if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_max) {
+                        all_at_scale_max = false;
+                        break;
+                    }
+                }
+                node = node->next;
+            }
+
+            // Si tous à scale_max → activer phase de rétention
+            if (all_at_scale_max) {
+                app.inspiration_phase = false;
+                app.retention_phase = true;
+                inspiration_initialized = false;  // Reset pour la prochaine fois
+
+                // Figer l'animation à scale_max
+                node = hex_list->first;
+                while (node) {
+                    node->is_frozen = true;
+                    node = node->next;
+                }
+
+                // Démarrer le timer de rétention (15 secondes)
+                if (app.retention_timer) {
+                    timer_start(app.retention_timer);
+                    debug_printf("⏱️  Phase RÉTENTION activée - timer 15s démarré\n");
+                }
+            }
+        }
+
+        // === GESTION PHASE RÉTENTION (poumons pleins, timer 15s) ===
+        if (app.retention_phase && app.retention_timer) {
+            bool timer_running = timer_update(app.retention_timer);
+
+            if (!timer_running) {
+                // Timer terminé → fin de la rétention
+                app.retention_phase = false;
+                debug_printf("✅ Phase RÉTENTION terminée\n");
+
+                // TODO: Ajouter la suite (expiration ? nouveau cycle ?)
+            }
+        }
+
         // Mise à jour animation panneau
         if (app.settings_panel) {
             update_settings_panel(app.settings_panel, (float)FRAME_DELAY / 1000.0f);
@@ -407,6 +507,12 @@ int main(int argc, char **argv) {
     if (app.session_stopwatch) {
         stopwatch_destroy(app.session_stopwatch);
         app.session_stopwatch = NULL;
+    }
+
+    // Libérer le timer de rétention
+    if (app.retention_timer) {
+        timer_destroy(app.retention_timer);
+        app.retention_timer = NULL;
     }
 
     // Libérer le tableau des temps de session

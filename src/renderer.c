@@ -495,10 +495,12 @@ void handle_app_events(AppState* app, SDL_Event* event) {
                     }
                 }
 
-                // Désactiver la phase chrono
+                // Désactiver la phase chrono et activer la phase inspiration
                 app->chrono_phase = false;
+                app->inspiration_phase = true;
 
                 debug_printf("⏹️  Chronomètre arrêté par ESPACE\n");
+                debug_printf("🫁 Phase INSPIRATION activée - animation scale_min → scale_max\n");
             }
             break;
 
@@ -550,10 +552,12 @@ void handle_app_events(AppState* app, SDL_Event* event) {
                     }
                 }
 
-                // Désactiver la phase chrono
+                // Désactiver la phase chrono et activer la phase inspiration
                 app->chrono_phase = false;
+                app->inspiration_phase = true;
 
                 debug_printf("⏹️  Chronomètre arrêté par CLIC GAUCHE\n");
+                debug_printf("🫁 Phase INSPIRATION activée - animation scale_min → scale_max\n");
             }
             // Sinon, transmettre l'événement au panneau
             else if (app->settings_panel) {
@@ -598,10 +602,14 @@ void render_app(AppState* app) {
             // - OU le compteur est actif (is_active = true)
             // - OU on est en phase reappear (réapparition douce)
             // - OU on est en phase chrono (chronomètre actif, hexagones figés)
+            // - OU on est en phase inspiration (animation scale_min → scale_max)
+            // - OU on est en phase rétention (poumons pleins, timer 15s)
             bool should_render = app->timer_phase ||
             (app->breath_counter && app->breath_counter->is_active) ||
             app->reappear_phase ||
-            app->chrono_phase;
+            app->chrono_phase ||
+            app->inspiration_phase ||
+            app->retention_phase;
 
             if (should_render) {
                 make_hexagone(app->renderer, node->data);
@@ -664,6 +672,22 @@ void render_app(AppState* app) {
         }
     }
 
+    // 🆕 Dessine le timer de rétention SI on est en phase rétention (après inspiration)
+    if (app->retention_phase && app->retention_timer && app->hexagones && app->hexagones->first) {
+        HexagoneNode* first_node = app->hexagones->first;
+        if (first_node && first_node->data) {
+            // Récupérer les infos de position de l'hexagone
+            int hex_center_x = first_node->data->center_x;
+            int hex_center_y = first_node->data->center_y;
+            int dx = first_node->data->vx[0];
+            int dy = first_node->data->vy[0];
+            int hex_radius = (int)sqrt(dx*dx + dy*dy);
+
+            // Rendre le timer de rétention centré sur l'hexagone
+            timer_render(app->retention_timer, app->renderer,
+                         hex_center_x, hex_center_y, hex_radius);
+        }
+    }
 
     // 3. Dessine le panneau settings (par dessus)
     if (app->settings_panel) {
