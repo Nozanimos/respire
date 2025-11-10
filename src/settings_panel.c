@@ -830,6 +830,99 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 0bis: CALCULER LES GROUPES ET LARGEURS DES WIDGETS INCREMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Pour la détection de collision, on doit utiliser la largeur incluant l'alignement
+
+    const int GROUP_SPACING_THRESHOLD = 30;  // Espacement dans JSON
+
+    typedef struct {
+        ConfigWidget* widget;
+        int y_position;
+        int text_width;
+        int group_id;
+        int container_width_for_group;
+    } IncrementLayoutInfo;
+
+    IncrementLayoutInfo increment_infos[50];
+    int increment_count = 0;
+
+    // Collecter les widgets INCREMENT
+    node = panel->widget_list->first;
+    while (node && increment_count < 50) {
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+            TTF_Font* font = get_font_for_size(w->current_text_size);
+            int text_width = 0;
+            if (font) {
+                TTF_SizeUTF8(font, w->option_name, &text_width, NULL);
+            }
+
+            increment_infos[increment_count].widget = w;
+            increment_infos[increment_count].y_position = w->base.y;
+            increment_infos[increment_count].text_width = text_width;
+            increment_infos[increment_count].group_id = -1;
+            increment_infos[increment_count].container_width_for_group = 0;
+            increment_count++;
+        }
+        node = node->next;
+    }
+
+    // Trier par position Y
+    for (int i = 0; i < increment_count - 1; i++) {
+        for (int j = i + 1; j < increment_count; j++) {
+            if (increment_infos[j].y_position < increment_infos[i].y_position) {
+                IncrementLayoutInfo temp = increment_infos[i];
+                increment_infos[i] = increment_infos[j];
+                increment_infos[j] = temp;
+            }
+        }
+    }
+
+    // Regrouper par proximité verticale
+    int current_group = 0;
+    for (int i = 0; i < increment_count; i++) {
+        if (increment_infos[i].group_id == -1) {
+            increment_infos[i].group_id = current_group;
+            int last_y = increment_infos[i].y_position;
+
+            for (int j = i + 1; j < increment_count; j++) {
+                int y_diff = increment_infos[j].y_position - last_y;
+                if (y_diff > 0 && y_diff <= GROUP_SPACING_THRESHOLD &&
+                    increment_infos[j].group_id == -1) {
+                    increment_infos[j].group_id = current_group;
+                    last_y = increment_infos[j].y_position;
+                }
+            }
+            current_group++;
+        }
+    }
+
+    // Calculer container_width pour chaque groupe
+    for (int g = 0; g < current_group; g++) {
+        int max_text_width = 0;
+        ConfigWidget* longest_widget = NULL;
+
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g && increment_infos[i].text_width > max_text_width) {
+                max_text_width = increment_infos[i].text_width;
+                longest_widget = increment_infos[i].widget;
+            }
+        }
+
+        int container_width = 0;
+        if (longest_widget) {
+            container_width = longest_widget->local_arrows_x + longest_widget->arrow_size + 60;
+        }
+
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g) {
+                increment_infos[i].container_width_for_group = container_width;
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 1: CONSTRUIRE LA LISTE DES RECTANGLES DE COLLISION
     // ═══════════════════════════════════════════════════════════════════════════
     WidgetRect rects[50];  // Maximum 50 widgets
@@ -837,8 +930,31 @@ void recalculate_widget_layout(SettingsPanel* panel) {
 
     node = panel->widget_list->first;
     while (node && rect_count < 50) {
-        if (get_widget_rect(node, &rects[rect_count])) {
+        // Pour les widgets INCREMENT, utiliser le container_width calculé
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+            rects[rect_count].node = node;
+            rects[rect_count].type = node->type;
+            rects[rect_count].x = w->base.x;
+            rects[rect_count].y = w->base.y;
+
+            // Trouver le container_width pour ce widget
+            int container_width = w->base.width;  // Défaut
+            for (int i = 0; i < increment_count; i++) {
+                if (increment_infos[i].widget == w) {
+                    container_width = increment_infos[i].container_width_for_group;
+                    break;
+                }
+            }
+
+            rects[rect_count].width = container_width;
+            rects[rect_count].height = w->base.height > 0 ? w->base.height : 30;
             rect_count++;
+        } else {
+            // Autres widgets: utiliser get_widget_rect normal
+            if (get_widget_rect(node, &rects[rect_count])) {
+                rect_count++;
+            }
         }
         node = node->next;
     }

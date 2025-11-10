@@ -256,8 +256,8 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
     // et on trouve le plus long nom dans chaque groupe pour aligner les flèches
 
     // Si l'écart entre deux widgets > seuil, c'est un nouveau groupe
-    // Hauteur widget ~20-30px + espacement collision 10px = on prend 60px comme seuil
-    const int GROUP_SPACING_THRESHOLD = 60;
+    // Espacement dans JSON = 30px, donc on utilise ce seuil
+    const int GROUP_SPACING_THRESHOLD = 30;
 
     // Structure pour stocker les infos des widgets INCREMENT
     typedef struct {
