@@ -793,33 +793,36 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     int panel_width = panel->rect.w;
     int center_x = panel_width / 2;
 
+    // Calculer le panel_ratio pour rescaler les positions restaurées
+    float panel_ratio = (float)panel_width / (float)panel->base_panel_width;
+
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES (pour widgets avec WidgetBase)
+    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES SCALÉES
     // ═══════════════════════════════════════════════════════════════════════════
+    // On restaure les positions de base, mais SCALÉES avec le panel_ratio actuel
     // Seuls les widgets utilisant WidgetBase ont base_x/base_y
-    // Label, Preview, Separator ont une structure base anonyme sans ces champs
     WidgetNode* node = panel->widget_list->first;
     while (node) {
         switch (node->type) {
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
                     ConfigWidget* w = node->widget.increment_widget;
-                    w->base.x = w->base.base_x;
-                    w->base.y = w->base.base_y;
+                    w->base.x = (int)(w->base.base_x * panel_ratio);
+                    w->base.y = (int)(w->base.base_y * panel_ratio);
                 }
                 break;
             case WIDGET_TYPE_SELECTOR:
                 if (node->widget.selector_widget) {
                     SelectorWidget* w = node->widget.selector_widget;
-                    w->base.x = w->base.base_x;
-                    w->base.y = w->base.base_y;
+                    w->base.x = (int)(w->base.base_x * panel_ratio);
+                    w->base.y = (int)(w->base.base_y * panel_ratio);
                 }
                 break;
             case WIDGET_TYPE_TOGGLE:
                 if (node->widget.toggle_widget) {
                     ToggleWidget* w = node->widget.toggle_widget;
-                    w->base.x = w->base.base_x;
-                    w->base.y = w->base.base_y;
+                    w->base.x = (int)(w->base.base_x * panel_ratio);
+                    w->base.y = (int)(w->base.base_y * panel_ratio);
                 }
                 break;
             default:
