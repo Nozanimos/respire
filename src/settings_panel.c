@@ -109,6 +109,48 @@ void alternate_cycles_changed(bool new_value) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  CALLBACKS POUR LE SELECTOR TYPE DE RÉTENTION
+// ════════════════════════════════════════════════════════════════════════════
+void retention_full(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement : poumons pleins = 0
+    current_main_config_for_callbacks->retention_type = 0;
+    current_panel_for_callbacks->temp_config.retention_type = 0;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Type de rétention changé: POUMONS PLEINS (sauvegardé)\n");
+}
+
+void retention_empty(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement : poumons vides = 1
+    current_main_config_for_callbacks->retention_type = 1;
+    current_panel_for_callbacks->temp_config.retention_type = 1;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Type de rétention changé: POUMONS VIDES (sauvegardé)\n");
+}
+
+void retention_alternate(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement : alternée = 2
+    current_main_config_for_callbacks->retention_type = 2;
+    current_panel_for_callbacks->temp_config.retention_type = 2;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Type de rétention changé: ALTERNÉE (sauvegardé)\n");
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LES BOUTONS APPLIQUER/ANNULER
 // ════════════════════════════════════════════════════════════════════════════
 // NOTE : Les changements sont maintenant appliqués immédiatement lors de chaque
