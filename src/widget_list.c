@@ -249,6 +249,13 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
     // Appliquer le scroll_offset au offset_y
     int adjusted_offset_y = offset_y - scroll_offset;
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // CALCUL DE LA LARGEUR DU CONTENEUR POUR L'ALIGNEMENT EN COLONNES
+    // ═════════════════════════════════════════════════════════════════════════
+    // Pour les widgets INCREMENT, on utilise une largeur de conteneur fixe
+    // pour aligner les flèches+valeurs en colonnes (comme un tableau)
+    const int WIDGET_CONTAINER_WIDTH = 300;  // Largeur du conteneur pour widgets
+
     WidgetNode* node = list->first;
     while (node) {
         // ─────────────────────────────────────────────────────────────────────
@@ -258,7 +265,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
                     render_config_widget(renderer, node->widget.increment_widget,
-                                       offset_x, adjusted_offset_y);
+                                       offset_x, adjusted_offset_y, WIDGET_CONTAINER_WIDTH);
                 }
                 break;
 
