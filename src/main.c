@@ -146,6 +146,7 @@ int main(int argc, char **argv) {
     // 🆕 Compteur simplifié - les données d'animation viennent du précomputing
     app.breath_counter = counter_create(
         config.Nb_respiration,          // Nombre max de respirations
+        config.retention_type,          // Type de rétention (0=pleins, 1=vides)
         "../fonts/arial/ARIALBD.TTF",   // Police (Arial Bold)
         counter_font_size               // Taille dynamique basée sur l'hexagone
     );
@@ -281,65 +282,49 @@ int main(int argc, char **argv) {
 
         // === VÉRIFICATION FIN DU COMPTEUR (le compteur se désactive lui-même) ===
         if (app.counter_phase && app.breath_counter) {
-            // Le compteur se désactive automatiquement après toutes les respirations
+            // Le compteur se désactive automatiquement quand il atteint le scale final
+            // après avoir complété toutes les respirations
             if (!app.breath_counter->is_active) {
                 // Compteur désactivé → LANCER LA PHASE DE RÉAPPARITION
                 app.counter_phase = false;
-                app.reappear_phase = true;
+                app.reappear_phase = true;  // 🆕 Activer la phase de réapparition
 
                 debug_printf("✅ Session terminée: %d/%d respirations\n",
                              app.breath_counter->current_breath, app.breath_counter->total_breaths);
 
-                // 🆕 POSITIONNER LA TÊTE DE LECTURE selon le type de rétention
-                // - Poumons pleins (0) : aller vers scale_max
-                // - Poumons vides (1) : aller vers scale_min
-                bool is_full_lungs = (app.config.retention_type == 0);
+                // 🆕 POSITIONNER LA TÊTE DE LECTURE À scale_max/2
+                // On cherche la première frame où le scale est >= scale_max/2
+                // puis on laisse l'animation jouer jusqu'à scale_max
                 HexagoneNode* node = hex_list->first;
-
                 while (node) {
                     if (node->precomputed_scales && node->total_cycles > 0) {
-                        // Calculer scale_max et scale_min
+                        // Calculer scale_max (le plus grand scale dans le précompute)
                         double scale_max = 0.0;
-                        double scale_min = 999.0;
                         for (int i = 0; i < node->total_cycles; i++) {
                             if (node->precomputed_scales[i] > scale_max) {
                                 scale_max = node->precomputed_scales[i];
                             }
-                            if (node->precomputed_scales[i] < scale_min) {
-                                scale_min = node->precomputed_scales[i];
-                            }
                         }
 
+                        // Chercher la dernière séquence : scale_max/2 → scale_max
+                        // On part de la fin et on remonte
+                        double scale_mid = scale_max / 2.0;
                         int start_frame = -1;
 
-                        if (is_full_lungs) {
-                            // Poumons pleins : chercher scale_max/2 → scale_max
-                            double scale_mid = scale_max / 2.0;
-                            for (int i = node->total_cycles - 1; i >= 0; i--) {
-                                if (node->precomputed_scales[i] <= scale_mid) {
-                                    start_frame = i;
-                                    break;
-                                }
-                            }
-                        } else {
-                            // Poumons vides : chercher scale_mid → scale_min
-                            double scale_mid = (scale_max + scale_min) / 2.0;
-                            for (int i = node->total_cycles - 1; i >= 0; i--) {
-                                if (node->precomputed_scales[i] >= scale_mid &&
-                                    node->precomputed_scales[i] > scale_min) {
-                                    start_frame = i;
-                                    break;
-                                }
+                        // Trouver la dernière montée vers scale_max
+                        for (int i = node->total_cycles - 1; i >= 0; i--) {
+                            if (node->precomputed_scales[i] <= scale_mid) {
+                                start_frame = i;
+                                break;
                             }
                         }
 
                         // Si trouvé, positionner la tête de lecture
                         if (start_frame >= 0) {
                             node->current_cycle = start_frame;
-                            debug_printf("🎯 Hexagone %d: tête de lecture → frame %d (scale %.2f, cible %s)\n",
-                                       node->data->element_id, start_frame,
-                                       node->precomputed_scales[start_frame],
-                                       is_full_lungs ? "max" : "min");
+                            debug_printf("🎯 Hexagone %d: tête de lecture → frame %d (scale %.2f → %.2f)\n",
+                                         node->data->element_id, start_frame,
+                                         node->precomputed_scales[start_frame], scale_max);
                         }
                     }
 
@@ -348,44 +333,34 @@ int main(int argc, char **argv) {
                     node = node->next;
                 }
 
-                debug_printf("🎬 Phase REAPPEAR activée - cible: %s\n",
-                           is_full_lungs ? "scale_max" : "scale_min");
+                debug_printf("🎬 Phase REAPPEAR activée - animation scale_max/2 → scale_max\n");
             }
         }
 
         // === GESTION PHASE REAPPEAR (réapparition douce de l'hexagone) ===
-        // L'animation joue vers scale_max (poumons pleins) ou scale_min (poumons vides)
+        // L'animation joue depuis scale_max/2 jusqu'à scale_max pour un alignement parfait
         if (app.reappear_phase) {
-            // Vérifier si tous les hexagones ont atteint la cible
-            bool all_at_target = true;
-            bool is_full_lungs = (app.config.retention_type == 0);
+            // Vérifier si tous les hexagones ont atteint scale_max
+            bool all_at_scale_max = true;
             HexagoneNode* node = hex_list->first;
 
             while (node) {
                 if (node->precomputed_counter_frames && node->current_cycle < node->total_cycles) {
-                    if (is_full_lungs) {
-                        // Attendre scale_max pour poumons pleins
-                        if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_max) {
-                            all_at_target = false;
-                            break;
-                        }
-                    } else {
-                        // Attendre scale_min pour poumons vides
-                        if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_min) {
-                            all_at_target = false;
-                            break;
-                        }
+                    // Vérifier si on est au scale_max (flag is_at_scale_max)
+                    if (!node->precomputed_counter_frames[node->current_cycle].is_at_scale_max) {
+                        all_at_scale_max = false;
+                        break;
                     }
                 }
                 node = node->next;
             }
 
-            // Si tous à la cible → passer en phase CHRONO
-            if (all_at_target) {
+            // Si tous les hexagones sont à scale_max → passer en phase CHRONO
+            if (all_at_scale_max) {
                 app.reappear_phase = false;
                 app.chrono_phase = true;
 
-                // FIGER L'ANIMATION à la cible
+                // FIGER L'ANIMATION à scale_max
                 node = hex_list->first;
                 while (node) {
                     node->is_frozen = true;
@@ -395,8 +370,7 @@ int main(int argc, char **argv) {
                 // DÉMARRER LE CHRONOMÈTRE
                 if (app.session_stopwatch) {
                     stopwatch_start(app.session_stopwatch);
-                    debug_printf("⏱️  Phase CHRONO activée (%s) - chronomètre démarré à 00:00\n",
-                               is_full_lungs ? "poumons pleins" : "poumons vides");
+                    debug_printf("⏱️  Phase CHRONO activée - chronomètre démarré à 00:00\n");
                 }
             }
         }

@@ -9,7 +9,7 @@
 // ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU COMPTEUR
 // ════════════════════════════════════════════════════════════════════════
-CounterState* counter_create(int total_breaths, const char* font_path, int base_font_size) {
+CounterState* counter_create(int total_breaths, int retention_type, const char* font_path, int base_font_size) {
     // Allocation de la structure
     CounterState* counter = malloc(sizeof(CounterState));
     if (!counter) {
@@ -19,6 +19,7 @@ CounterState* counter_create(int total_breaths, const char* font_path, int base_
 
     // Initialisation des valeurs
     counter->total_breaths = total_breaths;
+    counter->retention_type = retention_type;
     counter->is_active = false;
 
     // 🆕 Initialiser l'état du compteur
@@ -37,8 +38,9 @@ CounterState* counter_create(int total_breaths, const char* font_path, int base_
     counter->font_path = font_path;
     counter->base_font_size = base_font_size;
 
-    debug_printf("✅ Compteur créé: %d respirations max, police %s taille %d\n",
-                 total_breaths, font_path, base_font_size);
+    const char* retention_name = (retention_type == 0) ? "poumons pleins" : "poumons vides";
+    debug_printf("✅ Compteur créé: %d respirations max (%s), police %s taille %d\n",
+                 total_breaths, retention_name, font_path, base_font_size);
 
     return counter;
 }
@@ -82,29 +84,45 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     bool is_at_max_now = current_frame->is_at_scale_max;
     double text_scale = current_frame->text_scale;
 
-    // 🚩 DÉTECTION DE TRANSITION VERS SCALE_MIN : flag passe de false → true
-    // C'est l'expire (poumons vides) - on incrémente le compteur ici
-    if (is_at_min_now && !counter->was_at_min_last_frame) {
-        // On arrive au scale_min (expire = poumons vides)
+    // 🚩 LOGIQUE DE COMPTAGE SELON LE TYPE DE RÉTENTION
+    // retention_type=0 (poumons pleins) : compter sur scale_MAX (inspire)
+    // retention_type=1 (poumons vides) : compter sur scale_MIN (expire)
 
-        // Si on n'est PAS en attente du dernier scale_min, incrémenter normalement
-        if (!counter->waiting_for_scale_min) {
-            counter->current_breath++;
-            debug_printf("🫁 Respiration %d/%d détectée à scale_min (frame %d)\n",
-                         counter->current_breath, counter->total_breaths, hex_node->current_cycle);
+    if (counter->retention_type == 0) {
+        // POUMONS PLEINS : compter sur scale_MAX
+        if (is_at_max_now && !counter->was_at_max_last_frame) {
+            if (!counter->waiting_for_scale_min) {  // Note: le flag est mal nommé, devrait être "waiting_for_target"
+                counter->current_breath++;
+                debug_printf("🫁 Respiration %d/%d détectée à scale_max (poumons pleins) (frame %d)\n",
+                             counter->current_breath, counter->total_breaths, hex_node->current_cycle);
 
-            // Vérifier si on a atteint le maximum
-            if (counter->current_breath >= counter->total_breaths) {
-                // On a fait toutes les respirations, maintenant attendre le PROCHAIN scale_min
-                counter->waiting_for_scale_min = true;
-                debug_printf("✅ %d respirations complétées - attente du prochain scale_min (fin du dernier expire)...\n",
-                             counter->total_breaths);
+                if (counter->current_breath >= counter->total_breaths) {
+                    counter->waiting_for_scale_min = true;  // On attend le dernier scale_max
+                    debug_printf("✅ %d respirations complétées - attente du prochain scale_max...\n",
+                                 counter->total_breaths);
+                }
+            } else {
+                counter->is_active = false;
+                debug_printf("🎯 Scale_max final atteint - session terminée (poumons pleins)\n");
             }
-        } else {
-            // On était en attente du dernier scale_min, et on vient de l'atteindre
-            counter->is_active = false;  // Désactiver le compteur (il ne s'affichera plus)
-            debug_printf("🎯 Scale_min final atteint - session terminée proprement (poumons vides)\n");
-            // Note : main.c va détecter que is_active = false et figer l'animation
+        }
+    } else {
+        // POUMONS VIDES : compter sur scale_MIN (comportement original)
+        if (is_at_min_now && !counter->was_at_min_last_frame) {
+            if (!counter->waiting_for_scale_min) {
+                counter->current_breath++;
+                debug_printf("🫁 Respiration %d/%d détectée à scale_min (poumons vides) (frame %d)\n",
+                             counter->current_breath, counter->total_breaths, hex_node->current_cycle);
+
+                if (counter->current_breath >= counter->total_breaths) {
+                    counter->waiting_for_scale_min = true;
+                    debug_printf("✅ %d respirations complétées - attente du prochain scale_min...\n",
+                                 counter->total_breaths);
+                }
+            } else {
+                counter->is_active = false;
+                debug_printf("🎯 Scale_min final atteint - session terminée (poumons vides)\n");
+            }
         }
     }
 

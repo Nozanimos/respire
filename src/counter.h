@@ -15,6 +15,8 @@
 typedef struct {
     int total_breaths;          // Total de cycles configuré (pour vérification)
     bool is_active;             // Compteur actif ou non
+    int retention_type;         // Type de rétention: 0=poumons pleins, 1=poumons vides
+
     // 🆕 État du compteur (persiste même quand le précomputing reboucle)
     int current_breath;         // Numéro actuel (0 au départ, puis 1, 2, 3...)
     bool was_at_min_last_frame; // État du flag à la frame précédente (pour détecter transitions)
@@ -38,13 +40,12 @@ typedef struct {
 /**
  * Créer et initialiser un nouveau compteur de respirations
  * @param total_breaths Nombre total de cycles à compter (depuis config.Nb_respiration)
- * @param breath_duration Durée d'un cycle complet en secondes
- * @param sin_config Configuration sinusoïdale (scale_min, scale_max, etc.)
+ * @param retention_type Type de rétention (0=poumons pleins, 1=poumons vides)
  * @param font_path Chemin vers la police TTF
  * @param base_font_size Taille de base de la police (sera scalée dynamiquement)
  * @return Pointeur vers le CounterState créé, NULL si erreur
  */
-CounterState* counter_create(int total_breaths, const char* font_path, int base_font_size);
+CounterState* counter_create(int total_breaths, int retention_type, const char* font_path, int base_font_size);
 
 /**
  * Dessiner le compteur centré sur l'hexagone avec effet fish-eye
