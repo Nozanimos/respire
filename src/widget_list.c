@@ -459,15 +459,22 @@ bool get_widget_int_value(WidgetList* list, const char* id, int* out_value) {
     WidgetNode* node = find_widget_by_id(list, id);
     if (!node) return false;
 
-    if (node->type != WIDGET_TYPE_INCREMENT) {
-        debug_printf("❌ Widget '%s' n'est pas de type INCREMENT\n", id);
-        return false;
+    // Gérer les widgets INCREMENT
+    if (node->type == WIDGET_TYPE_INCREMENT) {
+        if (!node->widget.increment_widget) return false;
+        *out_value = node->widget.increment_widget->value;
+        return true;
     }
 
-    if (!node->widget.increment_widget) return false;
+    // Gérer les widgets SELECTOR (retourne l'index actuel)
+    if (node->type == WIDGET_TYPE_SELECTOR) {
+        if (!node->widget.selector_widget) return false;
+        *out_value = node->widget.selector_widget->current_index;
+        return true;
+    }
 
-    *out_value = node->widget.increment_widget->value;
-    return true;
+    debug_printf("❌ Widget '%s' n'est ni INCREMENT ni SELECTOR\n", id);
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -508,26 +515,45 @@ bool set_widget_int_value(WidgetList* list, const char* id, int new_value) {
     WidgetNode* node = find_widget_by_id(list, id);
     if (!node) return false;
 
-    if (node->type != WIDGET_TYPE_INCREMENT) {
-        debug_printf("❌ Widget '%s' n'est pas de type INCREMENT\n", id);
-        return false;
+    // Gérer les widgets INCREMENT
+    if (node->type == WIDGET_TYPE_INCREMENT) {
+        if (!node->widget.increment_widget) return false;
+
+        ConfigWidget* widget = node->widget.increment_widget;
+
+        // Vérifier les limites
+        if (new_value < widget->min_value || new_value > widget->max_value) {
+            debug_printf("⚠️ Valeur %d hors limites pour '%s' [%d, %d]\n",
+                         new_value, id, widget->min_value, widget->max_value);
+            return false;
+        }
+
+        widget->value = new_value;
+        debug_printf("🔧 Widget '%s' mis à jour: %d\n", id, new_value);
+        return true;
     }
 
-    if (!node->widget.increment_widget) return false;
+    // Gérer les widgets SELECTOR (change l'index actuel)
+    if (node->type == WIDGET_TYPE_SELECTOR) {
+        if (!node->widget.selector_widget) return false;
 
-    ConfigWidget* widget = node->widget.increment_widget;
+        SelectorWidget* widget = node->widget.selector_widget;
 
-    // Vérifier les limites
-    if (new_value < widget->min_value || new_value > widget->max_value) {
-        debug_printf("⚠️ Valeur %d hors limites pour '%s' [%d, %d]\n",
-                     new_value, id, widget->min_value, widget->max_value);
-        return false;
+        // Vérifier que l'index est valide
+        if (new_value < 0 || new_value >= widget->num_options) {
+            debug_printf("⚠️ Index %d hors limites pour selector '%s' [0, %d]\n",
+                         new_value, id, widget->num_options - 1);
+            return false;
+        }
+
+        widget->current_index = new_value;
+        debug_printf("🔧 Selector '%s' mis à jour: index %d (%s)\n",
+                     id, new_value, widget->options[new_value].text);
+        return true;
     }
 
-    widget->value = new_value;
-    debug_printf("🔧 Widget '%s' mis à jour: %d\n", id, new_value);
-
-    return true;
+    debug_printf("❌ Widget '%s' n'est ni INCREMENT ni SELECTOR\n", id);
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
