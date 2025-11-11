@@ -850,8 +850,15 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                         w->base.y = (int)(w->base.base_y * panel_ratio);
                     }
                     break;
+                case WIDGET_TYPE_SEPARATOR:
+                    if (node->widget.separator_widget) {
+                        SeparatorWidget* w = node->widget.separator_widget;
+                        // Restaurer Y à la position originale (scalée)
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
                 default:
-                    // Separator, Button: pas de restauration (gérés différemment)
+                    // Button: pas de restauration (géré différemment)
                     break;
             }
             node = node->next;
@@ -1084,11 +1091,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_SEPARATOR:
                     if (r->node->widget.separator_widget) {
                         SeparatorWidget* w = r->node->widget.separator_widget;
-                        // Séparateurs pleine largeur
-                        w->base.x = 20;
-                        w->base.y = current_y;
-                        w->base.width = panel_width - 40;
-                        current_y += r->height + COLLISION_SPACING;
+                        // Séparateurs : largeur avec marges, Y garde sa position originale
+                        w->base.x = 20;  // Marge gauche fixe
+                        // Ne PAS modifier base.y (doit rester à sa position originale)
+                        w->base.width = panel_width - 40;  // Largeur = panneau - marges
                     }
                     break;
 

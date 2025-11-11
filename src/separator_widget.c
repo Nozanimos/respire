@@ -18,6 +18,7 @@ SeparatorWidget* create_separator_widget(int y, int start_margin, int end_margin
     // Initialiser la base
     sep->base.x = start_margin;
     sep->base.y = y;
+    sep->base.base_y = y;        // Position Y originale (ne change jamais)
     sep->base.width = 0;         // Sera calculé lors du rescale
     sep->base.height = thickness;
     sep->base.is_hovered = false;
