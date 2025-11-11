@@ -580,7 +580,7 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
 
     // Vérifier si les boutons entrent en collision (espacement < 20px) ou sortent du panneau
     const int MIN_SPACING = 20;
-    const int BUTTON_MARGIN = 20;  // Marge pour éviter que les boutons touchent les bords
+    // Utiliser la macro BUTTON_MARGIN déjà définie (ligne 15)
 
     bool buttons_should_stack = (scaled_spacing < MIN_SPACING) ||
                                  (total_buttons_width > panel_width - (2 * BUTTON_MARGIN));
