@@ -683,22 +683,11 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // RESCALE DES WIDGETS QUI EN ONT BESOIN
-    // ═════════════════════════════════════════════════════════════════════════
-    // Le Selector doit être rescalé pour recréer ses flèches et recalculer son layout
-    WidgetNode* widget_node = panel->widget_list->first;
-    while (widget_node) {
-        if (widget_node->type == WIDGET_TYPE_SELECTOR && widget_node->widget.selector_widget) {
-            rescale_selector_widget(widget_node->widget.selector_widget, panel_ratio);
-        }
-        widget_node = widget_node->next;
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
     // RESCALE ET POSITIONNEMENT CENTRALISÉ DES WIDGETS - SUPPRIMÉ
     // ═════════════════════════════════════════════════════════════════════════
     // L'empilement est géré uniquement par recalculate_widget_layout() plus bas
     // Plus besoin de rescale_and_layout_widgets() qui repositionnait automatiquement
+    // Le Selector est initialisé dès le chargement JSON, pas besoin de rescale ici
 
     // Barre de séparation
 
