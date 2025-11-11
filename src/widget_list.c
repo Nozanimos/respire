@@ -1272,18 +1272,6 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
                 debug_printf("🔄 LABEL centré: %d → %d (collision)\n", widget_x, new_x);
             }
         }
-        else if (node->type == WIDGET_TYPE_SELECTOR && node->widget.selector_widget) {  // ← AJOUTER CE BLOC
-            SelectorWidget* w = node->widget.selector_widget;
-            widget_x = w->base.x;
-            widget_width = w->base.width;
-            has_collision = (widget_x + widget_width + MARGIN_RIGHT > panel_width);
-
-            if (has_collision) {
-                int new_x = (panel_width - widget_width) / 2;
-                w->base.x = new_x;
-                debug_printf("🔄 SELECTOR centré: %d → %d (collision)\n", widget_x, new_x);
-            }
-        }
         else if (node->type == WIDGET_TYPE_SEPARATOR && node->widget.separator_widget) {
             // La barre de séparation : rester centrée avec marges constantes
             SeparatorWidget* w = node->widget.separator_widget;
