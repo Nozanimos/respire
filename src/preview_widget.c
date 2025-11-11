@@ -21,6 +21,8 @@ PreviewWidget* create_preview_widget(int x, int y, int frame_size,
     // Initialiser la base
     preview->base.x = x;
     preview->base.y = y;
+    preview->base.base_x = x;         // Position originale depuis JSON
+    preview->base.base_y = y;         // Position originale depuis JSON
     preview->base.width = frame_size;
     preview->base.height = frame_size;
     preview->base.is_hovered = false;

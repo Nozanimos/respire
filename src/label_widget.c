@@ -19,8 +19,10 @@ LabelWidget* create_label_widget(const char* text, int x, int y,
     // Initialiser la base
     label->base.x = x;
     label->base.y = y;
-    label->base.width = 0;   // Sera calculé lors du rendu
-    label->base.height = 0;  // Sera calculé lors du rendu
+    label->base.base_x = x;   // Position originale depuis JSON
+    label->base.base_y = y;   // Position originale depuis JSON
+    label->base.width = 0;    // Sera calculé lors du rendu
+    label->base.height = 0;   // Sera calculé lors du rendu
     label->base.is_hovered = false;
 
     // Copier le texte

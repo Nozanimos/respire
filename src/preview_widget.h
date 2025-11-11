@@ -14,7 +14,8 @@ typedef struct {
     // BASE (position et dimensions relatives)
     // ─────────────────────────────────────────────────────────────────────────
     struct {
-        int x, y;              // Position relative au panneau
+        int x, y;              // Position actuelle (après scaling/empilement)
+        int base_x, base_y;    // Position de référence originale (depuis JSON)
         int width, height;     // Dimensions de la frame (carré)
         bool is_hovered;       // Toujours false (non interactif)
     } base;

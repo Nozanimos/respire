@@ -814,6 +814,20 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         node = panel->widget_list->first;
         while (node) {
             switch (node->type) {
+                case WIDGET_TYPE_LABEL:
+                    if (node->widget.label_widget) {
+                        LabelWidget* w = node->widget.label_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_PREVIEW:
+                    if (node->widget.preview_widget) {
+                        PreviewWidget* w = node->widget.preview_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
                 case WIDGET_TYPE_INCREMENT:
                     if (node->widget.increment_widget) {
                         ConfigWidget* w = node->widget.increment_widget;
@@ -836,7 +850,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                     }
                     break;
                 default:
-                    // Label, Preview, Separator, Button: pas de restauration
+                    // Separator, Button: pas de restauration (gérés différemment)
                     break;
             }
             node = node->next;
