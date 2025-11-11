@@ -627,6 +627,26 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     panel->preview_system.center_x = panel->preview_system.container_size / 2;
     panel->preview_system.center_y = panel->preview_system.container_size / 2;
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // POSITIONNEMENT DES BOUTONS DE LA WIDGET LIST (y_anchor)
+    // ═════════════════════════════════════════════════════════════════════════
+    WidgetNode* node = panel->widget_list->first;
+    while (node) {
+        if (node->type == WIDGET_TYPE_BUTTON && node->widget.button_widget) {
+            ButtonWidget* btn = node->widget.button_widget;
+
+            // Gérer l'ancrage en Y
+            if (btn->y_anchor == BUTTON_ANCHOR_BOTTOM) {
+                // Position relative au bas du panneau
+                btn->base.y = screen_height - btn->base_y - btn->base_height / 2;
+            } else {
+                // Position relative au haut (comportement par défaut)
+                btn->base.y = btn->base_y;
+            }
+        }
+        node = node->next;
+    }
+
     // Redimensionner les hexagones du preview
     if (panel->preview_system.hex_list) {
         HexagoneNode* node = panel->preview_system.hex_list->first;
