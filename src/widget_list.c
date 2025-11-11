@@ -1097,8 +1097,9 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
     // appelle rescale_widget_base() qui écrase les positions empilées.
     // ═════════════════════════════════════════════════════════════════════════
 
+    WidgetNode* node = list->first;  // Déclarer ici pour usage dans toutes les phases
+
     if (!widgets_stacked) {
-        WidgetNode* node = list->first;
         while (node) {
             switch (node->type) {
                 case WIDGET_TYPE_SELECTOR:
