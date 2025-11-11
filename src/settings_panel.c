@@ -201,6 +201,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->max_scroll = 0;
     panel->layout_mode_column = false;
     panel->layout_threshold_width = 350;  // Passer en mode colonne si largeur < 350px
+    panel->widgets_stacked = false;       // Initialement, widgets aux positions originales
 
     debug_printf("🎨 Création panneau avec scale: %.2f\n", scale_factor);
 
@@ -798,18 +799,21 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     float panel_ratio = panel->panel_ratio;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES (uniquement si largeur normale)
+    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES (uniquement si désempilement possible)
     // ═══════════════════════════════════════════════════════════════════════════
-    // ⚠️ IMPORTANT : On ne restaure les positions originales QUE si le panneau est
-    // à sa largeur de base (500px), c'est-à-dire panel_ratio proche de 1.0.
-    // Sinon, les positions JSON créeront des collisions ou sortiront du panneau.
-    // Si panel_ratio != 1.0, on garde les positions actuelles (empilées ou non).
+    // ⚠️ NOUVELLE LOGIQUE : On ne restaure les positions originales QUE si:
+    // 1. Les widgets sont actuellement empilés (widgets_stacked == true)
+    // 2. Le panneau est revenu à une largeur suffisante (panel_ratio ~1.0 ET largeur > seuil)
+    // Cela évite de restaurer puis ré-empiler immédiatement si le panneau est encore trop étroit
     // ═══════════════════════════════════════════════════════════════════════════
 
-    bool should_restore = (panel_ratio >= 0.99f && panel_ratio <= 1.01f);  // Tolérance 1%
+    bool should_restore = (panel->widgets_stacked &&
+                           panel_ratio >= 0.99f && panel_ratio <= 1.01f &&
+                           panel_width >= panel->layout_threshold_width);
 
     if (should_restore) {
-        debug_printf("🔄 Restauration des positions JSON (panel_ratio = %.2f)\n", panel_ratio);
+        debug_printf("🔄 Tentative de restauration des positions JSON (panel_ratio = %.2f, stacked = %d)\n",
+                     panel_ratio, panel->widgets_stacked);
         node = panel->widget_list->first;
         while (node) {
             switch (node->type) {
@@ -841,7 +845,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
             node = node->next;
         }
     } else {
-        debug_printf("⏭️  Pas de restauration (panel_ratio = %.2f, panneau pas à sa largeur normale)\n", panel_ratio);
+        if (panel->widgets_stacked) {
+            debug_printf("⏭️  Pas de restauration - widgets empilés, panneau encore trop étroit (width=%d, seuil=%d)\n",
+                         panel_width, panel->layout_threshold_width);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1005,7 +1012,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE
     // ═══════════════════════════════════════════════════════════════════════════
     if (needs_reorganization) {
-        debug_printf("🔧 Réorganisation des widgets pour éviter les collisions\n");
+        debug_printf("🔧 Réorganisation des widgets pour éviter les collisions (empilement)\n");
+
+        // Marquer que les widgets sont maintenant empilés
+        panel->widgets_stacked = true;
 
         int current_y = 50;  // Marge du haut
         int content_left_x = center_x - 150;  // Point de départ à gauche du centre (alignement à gauche)
@@ -1082,6 +1092,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         }
     } else {
         debug_printf("✅ Aucune collision - positions JSON conservées\n");
+        // Marquer que les widgets ne sont plus empilés (positions originales restaurées)
+        panel->widgets_stacked = false;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
