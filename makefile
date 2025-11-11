@@ -30,7 +30,7 @@ $(TARGET): $(OBJS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "📦 Compilation de $<..."
 	@mkdir -p $(dir $@)  # Crée le dossier si inexistant
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) `sdl2-config --cflags` -c $< -o $@
 
 # Nettoyage
 clean:

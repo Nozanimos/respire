@@ -154,7 +154,7 @@ bool add_selector_widget(WidgetList* list,
 // Ces fonctions parcourent TOUTE la liste et appellent les bonnes fonctions
 // pour chaque widget selon son type
 void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
-                        int offset_x, int offset_y, int panel_width);
+                        int offset_x, int offset_y, int panel_width, int scroll_offset);
 
 void handle_widget_list_events(WidgetList* list, SDL_Event* event,
                                int offset_x, int offset_y);

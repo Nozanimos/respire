@@ -28,6 +28,11 @@ extern void alternate_cycles_changed(bool value);
 extern void apply_button_clicked(void);
 extern void cancel_button_clicked(void);
 
+// Callbacks pour le selector type de rétention
+extern void retention_full(void);
+extern void retention_empty(void);
+extern void retention_alternate(void);
+
 // Fonction helper pour récupérer un callback INT par son nom
 static void (*obtenir_callback_int(const char* nom))(int) {
     if (!nom) return NULL;
@@ -61,7 +66,7 @@ static void (*obtenir_callback_bool(const char* nom))(bool) {
     return NULL;
 }
 
-// Fonction helper pour récupérer un callback VOID (pour les boutons) par son nom
+// Fonction helper pour récupérer un callback VOID (pour les boutons et selectors) par son nom
 static void (*obtenir_callback_void(const char* nom))(void) {
     if (!nom) return NULL;
 
@@ -70,6 +75,17 @@ static void (*obtenir_callback_void(const char* nom))(void) {
     }
     if (strcmp(nom, "cancel_button_clicked") == 0) {
         return cancel_button_clicked;
+    }
+
+    // Callbacks du selector type de rétention
+    if (strcmp(nom, "retention_full") == 0) {
+        return retention_full;
+    }
+    if (strcmp(nom, "retention_empty") == 0) {
+        return retention_empty;
+    }
+    if (strcmp(nom, "retention_alternate") == 0) {
+        return retention_alternate;
     }
 
     debug_printf("⚠️ Callback VOID inconnu: '%s'\n", nom);

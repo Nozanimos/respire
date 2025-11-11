@@ -238,11 +238,40 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
 //  RENDU DU WIDGET
 // ════════════════════════════════════════════════════════════════════════════
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
-                          int offset_x, int offset_y) {
+                          int offset_x, int offset_y, int container_width) {
     if (!widget || !renderer) return;
 
     int widget_screen_x = offset_x + widget->base.x;
     int widget_screen_y = offset_y + widget->base.y;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DES POSITIONS POUR L'ALIGNEMENT EN COLONNES
+    // ─────────────────────────────────────────────────────────────────────────
+    // Si container_width > 0, on aligne les flèches+valeur à droite
+    // Sinon, on utilise le layout normal (séquentiel)
+    int arrows_x_offset = widget->local_arrows_x;  // Position par défaut
+    int value_x_offset = widget->local_value_x;    // Position par défaut
+
+    if (container_width > 0) {
+        // Distance depuis le bord droit pour les flèches+valeur
+        // On réserve: arrow_size + espace + largeur_valeur (estimée à 40px)
+        const int RIGHT_MARGIN = 10;  // Marge depuis le bord droit
+        const int ESTIMATED_VALUE_WIDTH = 40;  // Largeur estimée pour la valeur
+
+        int arrows_value_width = widget->arrow_size + widget->base_espace_apres_fleches + ESTIMATED_VALUE_WIDTH;
+
+        // Positionner les flèches à partir de la droite
+        arrows_x_offset = container_width - arrows_value_width - RIGHT_MARGIN;
+        value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
+
+        // S'assurer que les flèches ne se superposent pas au texte
+        // Laisser au moins un petit espace après le texte
+        int min_arrows_x = widget->local_arrows_x;
+        if (arrows_x_offset < min_arrows_x) {
+            arrows_x_offset = min_arrows_x;
+            value_x_offset = widget->local_value_x;
+        }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // FOND AU SURVOL (rectangle arrondi)
@@ -285,7 +314,7 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     // ─────────────────────────────────────────────────────────────────────────
     // RENDU DES FLÈCHES (▲ et ▼)
     // ─────────────────────────────────────────────────────────────────────────
-    int arrows_screen_x = widget_screen_x + widget->local_arrows_x;
+    int arrows_screen_x = widget_screen_x + arrows_x_offset;
     int arrows_screen_y = widget_screen_y + widget->local_arrows_y;
 
     SDL_Color up_color = widget->up_arrow_hovered ? widget->hover_color : widget->color;
@@ -317,7 +346,7 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
             SDL_Texture* value_texture = SDL_CreateTextureFromSurface(renderer, value_surface);
             if (value_texture) {
                 SDL_Rect value_rect = {
-                    widget_screen_x + widget->local_value_x,
+                    widget_screen_x + value_x_offset,
                     widget_screen_y + widget->local_value_y,
                     value_surface->w,
                     value_surface->h

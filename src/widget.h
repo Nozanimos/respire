@@ -108,8 +108,9 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
 void update_config_widget(ConfigWidget* widget, float delta_time);
 
 // Rend le widget à l'écran (la police doit être à current_text_size)
+// Si container_width > 0, les flèches+valeur sont alignées à droite
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
-                          int offset_x, int offset_y);
+                          int offset_x, int offset_y, int container_width);
 
 // Gère les événements souris du widget
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,

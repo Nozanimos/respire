@@ -243,10 +243,129 @@ bool add_toggle_widget(WidgetList* list,
 //   - offset_x, offset_y : Offset du conteneur parent (panneau)
 //   - panel_width : Largeur actuelle du panneau (pour separator responsive)
 void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
-                       int offset_x, int offset_y, int panel_width) {
+                       int offset_x, int offset_y, int panel_width, int scroll_offset) {
     if (!renderer || is_widget_list_empty(list)) return;
 
+    // Appliquer le scroll_offset au offset_y
+    int adjusted_offset_y = offset_y - scroll_offset;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1 : PRÉ-CALCUL DES GROUPES DE WIDGETS INCREMENT
+    // ═════════════════════════════════════════════════════════════════════════
+    // On regroupe les widgets INCREMENT proches verticalement
+    // et on trouve le plus long nom dans chaque groupe pour aligner les flèches
+
+    // Si l'écart entre deux widgets > seuil, c'est un nouveau groupe
+    // Espacement dans JSON = 30px, donc on utilise ce seuil
+    const int GROUP_SPACING_THRESHOLD = 30;
+
+    // Structure pour stocker les infos des widgets INCREMENT
+    typedef struct {
+        ConfigWidget* widget;
+        int y_position;
+        int text_width;
+        int group_id;
+        int max_text_width_in_group;
+        int container_width_for_group;  // Largeur totale du widget le plus long
+    } IncrementInfo;
+
+    IncrementInfo increment_infos[50];  // Max 50 widgets INCREMENT
+    int increment_count = 0;
+
+    // Premier passage : collecter tous les widgets INCREMENT
     WidgetNode* node = list->first;
+    while (node && increment_count < 50) {
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+
+            // Mesurer la largeur du texte actuel (avec taille de police actuelle)
+            TTF_Font* font = get_font_for_size(w->current_text_size);
+            int text_width = 0;
+            if (font) {
+                TTF_SizeUTF8(font, w->option_name, &text_width, NULL);
+            }
+
+            increment_infos[increment_count].widget = w;
+            increment_infos[increment_count].y_position = w->base.y;
+            increment_infos[increment_count].text_width = text_width;
+            increment_infos[increment_count].group_id = -1;
+            increment_infos[increment_count].max_text_width_in_group = 0;
+            increment_infos[increment_count].container_width_for_group = 0;
+            increment_count++;
+        }
+        node = node->next;
+    }
+
+    // Deuxième passage : trier par position Y pour faciliter le regroupement
+    for (int i = 0; i < increment_count - 1; i++) {
+        for (int j = i + 1; j < increment_count; j++) {
+            if (increment_infos[j].y_position < increment_infos[i].y_position) {
+                IncrementInfo temp = increment_infos[i];
+                increment_infos[i] = increment_infos[j];
+                increment_infos[j] = temp;
+            }
+        }
+    }
+
+    // Troisième passage : regrouper par proximité verticale
+    int current_group = 0;
+    for (int i = 0; i < increment_count; i++) {
+        if (increment_infos[i].group_id == -1) {
+            // Nouveau groupe
+            increment_infos[i].group_id = current_group;
+            int last_y = increment_infos[i].y_position;
+
+            // Trouver tous les widgets proches qui suivent (maintenant triés par Y)
+            for (int j = i + 1; j < increment_count; j++) {
+                int y_diff = increment_infos[j].y_position - last_y;
+                if (y_diff > 0 && y_diff <= GROUP_SPACING_THRESHOLD &&
+                    increment_infos[j].group_id == -1) {
+                    increment_infos[j].group_id = current_group;
+                    last_y = increment_infos[j].y_position;
+                }
+            }
+            current_group++;
+        }
+    }
+
+    // Quatrième passage : calculer container_width pour chaque groupe
+    // On utilise le local_arrows_x + arrow_size + espace + valeur du widget le plus long
+    for (int g = 0; g < current_group; g++) {
+        int max_text_width = 0;
+        ConfigWidget* longest_widget = NULL;
+
+        // Trouver le widget avec le texte le plus long dans ce groupe
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g && increment_infos[i].text_width > max_text_width) {
+                max_text_width = increment_infos[i].text_width;
+                longest_widget = increment_infos[i].widget;
+            }
+        }
+
+        // Calculer le container_width basé sur le widget le plus long
+        int container_width = 0;
+        if (longest_widget) {
+            // Utiliser local_arrows_x (qui inclut texte + espace après texte)
+            // + taille des flèches + espace + largeur estimée valeur
+            container_width = longest_widget->local_arrows_x +
+                            longest_widget->arrow_size +
+                            60;  // Espace après flèches + largeur valeur estimée
+        }
+
+        // Appliquer cette largeur et max_text_width à tous les widgets du groupe
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g) {
+                increment_infos[i].max_text_width_in_group = max_text_width;
+                increment_infos[i].container_width_for_group = container_width;
+            }
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 2 : RENDU DE TOUS LES WIDGETS
+    // ═════════════════════════════════════════════════════════════════════════
+
+    node = list->first;
     while (node) {
         // ─────────────────────────────────────────────────────────────────────
         // SWITCH sur le type de widget
@@ -254,22 +373,31 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
         switch (node->type) {
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
+                    // Trouver le container_width pour ce widget (basé sur son groupe)
+                    int container_width = 0;
+                    for (int i = 0; i < increment_count; i++) {
+                        if (increment_infos[i].widget == node->widget.increment_widget) {
+                            container_width = increment_infos[i].container_width_for_group;
+                            break;
+                        }
+                    }
+
                     render_config_widget(renderer, node->widget.increment_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y, container_width);
                 }
                 break;
 
             case WIDGET_TYPE_TOGGLE:
                 if (node->widget.toggle_widget) {
                     render_toggle_widget(renderer, node->widget.toggle_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_LABEL:
                 if (node->widget.label_widget) {
                     render_label_widget(renderer, node->widget.label_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y);
                 }
                 break;
 
@@ -277,21 +405,21 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
                 if (node->widget.separator_widget) {
                     // Utiliser la largeur dynamique du panneau pour le responsive
                     render_separator_widget(renderer, node->widget.separator_widget,
-                                          offset_x, offset_y, panel_width);
+                                          offset_x, adjusted_offset_y, panel_width);
                 }
                 break;
 
             case WIDGET_TYPE_PREVIEW:
                 if (node->widget.preview_widget) {
                     render_preview_widget(renderer, node->widget.preview_widget,
-                                        offset_x, offset_y);
+                                        offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_BUTTON:
                 if (node->widget.button_widget) {
                     render_button_widget(renderer, node->widget.button_widget,
-                                       offset_x, offset_y);
+                                       offset_x, adjusted_offset_y);
                 }
                 break;
 
@@ -302,7 +430,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
             case WIDGET_TYPE_SELECTOR:
                 if (node->widget.selector_widget) {
                     render_selector_widget(renderer, node->widget.selector_widget,
-                                         offset_x, offset_y);
+                                         offset_x, adjusted_offset_y);
                 }
                 break;
 
@@ -459,15 +587,22 @@ bool get_widget_int_value(WidgetList* list, const char* id, int* out_value) {
     WidgetNode* node = find_widget_by_id(list, id);
     if (!node) return false;
 
-    if (node->type != WIDGET_TYPE_INCREMENT) {
-        debug_printf("❌ Widget '%s' n'est pas de type INCREMENT\n", id);
-        return false;
+    // Gérer les widgets INCREMENT
+    if (node->type == WIDGET_TYPE_INCREMENT) {
+        if (!node->widget.increment_widget) return false;
+        *out_value = node->widget.increment_widget->value;
+        return true;
     }
 
-    if (!node->widget.increment_widget) return false;
+    // Gérer les widgets SELECTOR (retourne l'index actuel)
+    if (node->type == WIDGET_TYPE_SELECTOR) {
+        if (!node->widget.selector_widget) return false;
+        *out_value = node->widget.selector_widget->current_index;
+        return true;
+    }
 
-    *out_value = node->widget.increment_widget->value;
-    return true;
+    debug_printf("❌ Widget '%s' n'est ni INCREMENT ni SELECTOR\n", id);
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -508,26 +643,45 @@ bool set_widget_int_value(WidgetList* list, const char* id, int new_value) {
     WidgetNode* node = find_widget_by_id(list, id);
     if (!node) return false;
 
-    if (node->type != WIDGET_TYPE_INCREMENT) {
-        debug_printf("❌ Widget '%s' n'est pas de type INCREMENT\n", id);
-        return false;
+    // Gérer les widgets INCREMENT
+    if (node->type == WIDGET_TYPE_INCREMENT) {
+        if (!node->widget.increment_widget) return false;
+
+        ConfigWidget* widget = node->widget.increment_widget;
+
+        // Vérifier les limites
+        if (new_value < widget->min_value || new_value > widget->max_value) {
+            debug_printf("⚠️ Valeur %d hors limites pour '%s' [%d, %d]\n",
+                         new_value, id, widget->min_value, widget->max_value);
+            return false;
+        }
+
+        widget->value = new_value;
+        debug_printf("🔧 Widget '%s' mis à jour: %d\n", id, new_value);
+        return true;
     }
 
-    if (!node->widget.increment_widget) return false;
+    // Gérer les widgets SELECTOR (change l'index actuel)
+    if (node->type == WIDGET_TYPE_SELECTOR) {
+        if (!node->widget.selector_widget) return false;
 
-    ConfigWidget* widget = node->widget.increment_widget;
+        SelectorWidget* widget = node->widget.selector_widget;
 
-    // Vérifier les limites
-    if (new_value < widget->min_value || new_value > widget->max_value) {
-        debug_printf("⚠️ Valeur %d hors limites pour '%s' [%d, %d]\n",
-                     new_value, id, widget->min_value, widget->max_value);
-        return false;
+        // Vérifier que l'index est valide
+        if (new_value < 0 || new_value >= widget->num_options) {
+            debug_printf("⚠️ Index %d hors limites pour selector '%s' [0, %d]\n",
+                         new_value, id, widget->num_options - 1);
+            return false;
+        }
+
+        widget->current_index = new_value;
+        debug_printf("🔧 Selector '%s' mis à jour: index %d (%s)\n",
+                     id, new_value, widget->options[new_value].text);
+        return true;
     }
 
-    widget->value = new_value;
-    debug_printf("🔧 Widget '%s' mis à jour: %d\n", id, new_value);
-
-    return true;
+    debug_printf("❌ Widget '%s' n'est ni INCREMENT ni SELECTOR\n", id);
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

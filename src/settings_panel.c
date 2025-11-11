@@ -4,6 +4,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "settings_panel.h"
 #include "preview_widget.h"
+#include "button_widget.h"
 #include "debug.h"
 #include "json_config_loader.h"
 
@@ -109,6 +110,48 @@ void alternate_cycles_changed(bool new_value) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  CALLBACKS POUR LE SELECTOR TYPE DE RÉTENTION
+// ════════════════════════════════════════════════════════════════════════════
+void retention_full(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement : poumons pleins = 0
+    current_main_config_for_callbacks->retention_type = 0;
+    current_panel_for_callbacks->temp_config.retention_type = 0;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Type de rétention changé: POUMONS PLEINS (sauvegardé)\n");
+}
+
+void retention_empty(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement : poumons vides = 1
+    current_main_config_for_callbacks->retention_type = 1;
+    current_panel_for_callbacks->temp_config.retention_type = 1;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Type de rétention changé: POUMONS VIDES (sauvegardé)\n");
+}
+
+void retention_alternate(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Appliquer immédiatement : alternée = 2
+    current_main_config_for_callbacks->retention_type = 2;
+    current_panel_for_callbacks->temp_config.retention_type = 2;
+
+    // Sauvegarder immédiatement
+    save_config(current_main_config_for_callbacks);
+
+    debug_printf("✅ Type de rétention changé: ALTERNÉE (sauvegardé)\n");
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LES BOUTONS APPLIQUER/ANNULER
 // ════════════════════════════════════════════════════════════════════════════
 // NOTE : Les changements sont maintenant appliqués immédiatement lors de chaque
@@ -130,31 +173,6 @@ void cancel_button_clicked(void) {
     current_panel_for_callbacks->state = PANEL_CLOSING;
     debug_printf("✅ Panneau fermé\n");
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-//  CALLBACKS POUR LE WIDGET SELECTOR (rétention)
-// ════════════════════════════════════════════════════════════════════════════
-void retention_full(void) {
-    if (!current_panel_for_callbacks) return;
-    debug_printf("🫁 Rétention sélectionnée: POUMONS PLEINS\n");
-    // TODO: Implémenter la logique de rétention poumons pleins
-    // Ex: Modifier app_config->retention_type = RETENTION_FULL;
-}
-
-void retention_empty(void) {
-    if (!current_panel_for_callbacks) return;
-    debug_printf("🫁 Rétention sélectionnée: POUMONS VIDES\n");
-    // TODO: Implémenter la logique de rétention poumons vides
-    // Ex: Modifier app_config->retention_type = RETENTION_EMPTY;
-}
-
-void retention_alternate(void) {
-    if (!current_panel_for_callbacks) return;
-    debug_printf("🫁 Rétention sélectionnée: ALTERNÉE\n");
-    // TODO: Implémenter la logique de rétention alternée
-    // Ex: Modifier app_config->retention_type = RETENTION_ALTERNATE;
-}
-
 // ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU PANNEAU
 // ════════════════════════════════════════════════════════════════════════════
@@ -176,6 +194,13 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->json_check_interval = 0.5f;  // Vérifier toutes les 0.5 secondes
     panel->time_since_last_check = 0.0f;
     panel->last_json_mtime = 0;
+
+    // Initialisation du scroll et layout responsive
+    panel->scroll_offset = 0;
+    panel->content_height = 0;
+    panel->max_scroll = 0;
+    panel->layout_mode_column = false;
+    panel->layout_threshold_width = 350;  // Passer en mode colonne si largeur < 350px
 
     debug_printf("🎨 Création panneau avec scale: %.2f\n", scale_factor);
 
@@ -230,6 +255,9 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     }
 
     debug_print_widget_list(panel->widget_list);
+
+    // Synchroniser les widgets avec la config chargée (pour initialiser les valeurs)
+    sync_config_to_widgets(&panel->temp_config, panel->widget_list);
 
     // ════════════════════════════════════════════════════════════════════════
     // CHARGEMENT DU FOND ET DE L'ICÔNE
@@ -354,8 +382,8 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
         int panel_x = panel->rect.x;
         int panel_y = panel->rect.y;
 
-        // Widgets
-        render_all_widgets(renderer, panel->widget_list, panel_x, panel_y, panel->rect.w);
+        // Widgets (avec scroll)
+        render_all_widgets(renderer, panel->widget_list, panel_x, panel_y, panel->rect.w, panel->scroll_offset);
     }
 }
 
@@ -408,14 +436,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
                 // Recharger la config et mettre à jour les widgets
                 load_config(&panel->temp_config);
-                set_widget_int_value(panel->widget_list, "breath_duration",
-                                     panel->temp_config.breath_duration);
-                set_widget_int_value(panel->widget_list, "nb_session",
-                                     panel->temp_config.nb_session);
-                set_widget_int_value(panel->widget_list, "start_duration",
-                                     panel->temp_config.start_duration);
-                set_widget_bool_value(panel->widget_list, "alternate_cycles",
-                                      panel->temp_config.alternate_cycles);
+
+                // Synchroniser TOUS les widgets depuis la config (générique)
+                sync_config_to_widgets(&panel->temp_config, panel->widget_list);
 
                 // Mettre à jour la durée du preview widget via la widget_list
                 if (panel->widget_list) {
@@ -441,6 +464,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
     // Événements du panneau ouvert
     if (panel->state == PANEL_OPEN) {
+        // Gestion du scroll (molette souris)
+        handle_panel_scroll(panel, event);
+
         // Événements des widgets
         handle_widget_list_events(panel->widget_list, event, panel_x, panel_y);
     }
@@ -630,6 +656,525 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     panel->separator_start_x = (int)(BASE_SEPARATOR_MARGIN * panel_ratio);
     panel->separator_end_x = panel_width - (int)(BASE_SEPARATOR_MARGIN * panel_ratio);
 
+    // Recalculer le layout responsive après le resize
+    recalculate_widget_layout(panel);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  RECALCUL DU LAYOUT RESPONSIVE DES WIDGETS
+// ════════════════════════════════════════════════════════════════════════════
+// Cette fonction repositionne automatiquement les widgets en fonction de la
+// largeur disponible:
+//   - Mode large (>= threshold): preview à gauche, widgets à droite
+//   - Mode étroit (< threshold): preview en haut centré, widgets en dessous centrés
+//
+// Calcule également la hauteur totale du contenu pour le scroll
+// ════════════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════════════
+//  STRUCTURE POUR STOCKER LES RECTANGLES DE COLLISION
+// ════════════════════════════════════════════════════════════════════════════
+typedef struct {
+    WidgetNode* node;
+    WidgetType type;
+    int x, y, width, height;
+} WidgetRect;
+
+// ════════════════════════════════════════════════════════════════════════════
+//  DÉTECTION DE COLLISION ENTRE DEUX RECTANGLES
+// ════════════════════════════════════════════════════════════════════════════
+static bool rects_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+    return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  OBTENIR LE RECTANGLE DE COLLISION D'UN WIDGET
+// ════════════════════════════════════════════════════════════════════════════
+static bool get_widget_rect(WidgetNode* node, WidgetRect* rect) {
+    if (!node || !rect) return false;
+
+    rect->node = node;
+    rect->type = node->type;
+
+    switch (node->type) {
+        case WIDGET_TYPE_LABEL:
+            if (node->widget.label_widget) {
+                LabelWidget* w = node->widget.label_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_PREVIEW:
+            if (node->widget.preview_widget) {
+                PreviewWidget* w = node->widget.preview_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base_frame_size;
+                rect->height = w->base_frame_size;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_INCREMENT:
+            if (node->widget.increment_widget) {
+                ConfigWidget* w = node->widget.increment_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width > 0 ? w->base.width : 300;
+                rect->height = w->base.height > 0 ? w->base.height : 30;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_SELECTOR:
+            if (node->widget.selector_widget) {
+                SelectorWidget* w = node->widget.selector_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_TOGGLE:
+            if (node->widget.toggle_widget) {
+                ToggleWidget* w = node->widget.toggle_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.base_width;
+                rect->height = w->base.base_height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_SEPARATOR:
+            if (node->widget.separator_widget) {
+                SeparatorWidget* w = node->widget.separator_widget;
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        case WIDGET_TYPE_BUTTON:
+            // Ignorer les boutons ancrés au bas pour la détection de collision
+            if (node->widget.button_widget) {
+                ButtonWidget* w = node->widget.button_widget;
+                if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
+                    return false;  // Ne pas vérifier les collisions pour les boutons du bas
+                }
+                rect->x = w->base.x;
+                rect->y = w->base.y;
+                rect->width = w->base.width;
+                rect->height = w->base.height;
+                return true;
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    return false;
+}
+
+void recalculate_widget_layout(SettingsPanel* panel) {
+    if (!panel || !panel->widget_list) return;
+
+    const int COLLISION_SPACING = 10;  // Espacement en cas de collision
+    const int PREVIEW_SPACING = 20;    // Espacement après le preview
+    int panel_width = panel->rect.w;
+    int center_x = panel_width / 2;
+    WidgetNode* node;
+
+    // Utiliser le panel_ratio déjà calculé dans la structure
+    float panel_ratio = panel->panel_ratio;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES (uniquement si largeur normale)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ⚠️ IMPORTANT : On ne restaure les positions originales QUE si le panneau est
+    // à sa largeur de base (500px), c'est-à-dire panel_ratio proche de 1.0.
+    // Sinon, les positions JSON créeront des collisions ou sortiront du panneau.
+    // Si panel_ratio != 1.0, on garde les positions actuelles (empilées ou non).
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    bool should_restore = (panel_ratio >= 0.99f && panel_ratio <= 1.01f);  // Tolérance 1%
+
+    if (should_restore) {
+        debug_printf("🔄 Restauration des positions JSON (panel_ratio = %.2f)\n", panel_ratio);
+        node = panel->widget_list->first;
+        while (node) {
+            switch (node->type) {
+                case WIDGET_TYPE_INCREMENT:
+                    if (node->widget.increment_widget) {
+                        ConfigWidget* w = node->widget.increment_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_SELECTOR:
+                    if (node->widget.selector_widget) {
+                        SelectorWidget* w = node->widget.selector_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_TOGGLE:
+                    if (node->widget.toggle_widget) {
+                        ToggleWidget* w = node->widget.toggle_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                default:
+                    // Label, Preview, Separator, Button: pas de restauration
+                    break;
+            }
+            node = node->next;
+        }
+    } else {
+        debug_printf("⏭️  Pas de restauration (panel_ratio = %.2f, panneau pas à sa largeur normale)\n", panel_ratio);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 0bis: CALCULER LES GROUPES ET LARGEURS DES WIDGETS INCREMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Pour la détection de collision, on doit utiliser la largeur incluant l'alignement
+
+    const int GROUP_SPACING_THRESHOLD = 30;  // Espacement dans JSON
+
+    typedef struct {
+        ConfigWidget* widget;
+        int y_position;
+        int text_width;
+        int group_id;
+        int container_width_for_group;
+    } IncrementLayoutInfo;
+
+    IncrementLayoutInfo increment_infos[50];
+    int increment_count = 0;
+
+    // Collecter les widgets INCREMENT
+    node = panel->widget_list->first;
+    while (node && increment_count < 50) {
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+            TTF_Font* font = get_font_for_size(w->current_text_size);
+            int text_width = 0;
+            if (font) {
+                TTF_SizeUTF8(font, w->option_name, &text_width, NULL);
+            }
+
+            increment_infos[increment_count].widget = w;
+            increment_infos[increment_count].y_position = w->base.y;
+            increment_infos[increment_count].text_width = text_width;
+            increment_infos[increment_count].group_id = -1;
+            increment_infos[increment_count].container_width_for_group = 0;
+            increment_count++;
+        }
+        node = node->next;
+    }
+
+    // Trier par position Y
+    for (int i = 0; i < increment_count - 1; i++) {
+        for (int j = i + 1; j < increment_count; j++) {
+            if (increment_infos[j].y_position < increment_infos[i].y_position) {
+                IncrementLayoutInfo temp = increment_infos[i];
+                increment_infos[i] = increment_infos[j];
+                increment_infos[j] = temp;
+            }
+        }
+    }
+
+    // Regrouper par proximité verticale
+    int current_group = 0;
+    for (int i = 0; i < increment_count; i++) {
+        if (increment_infos[i].group_id == -1) {
+            increment_infos[i].group_id = current_group;
+            int last_y = increment_infos[i].y_position;
+
+            for (int j = i + 1; j < increment_count; j++) {
+                int y_diff = increment_infos[j].y_position - last_y;
+                if (y_diff > 0 && y_diff <= GROUP_SPACING_THRESHOLD &&
+                    increment_infos[j].group_id == -1) {
+                    increment_infos[j].group_id = current_group;
+                    last_y = increment_infos[j].y_position;
+                }
+            }
+            current_group++;
+        }
+    }
+
+    // Calculer container_width pour chaque groupe
+    for (int g = 0; g < current_group; g++) {
+        int max_text_width = 0;
+        ConfigWidget* longest_widget = NULL;
+
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g && increment_infos[i].text_width > max_text_width) {
+                max_text_width = increment_infos[i].text_width;
+                longest_widget = increment_infos[i].widget;
+            }
+        }
+
+        int container_width = 0;
+        if (longest_widget) {
+            container_width = longest_widget->local_arrows_x + longest_widget->arrow_size + 60;
+        }
+
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g) {
+                increment_infos[i].container_width_for_group = container_width;
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1: CONSTRUIRE LA LISTE DES RECTANGLES DE COLLISION
+    // ═══════════════════════════════════════════════════════════════════════════
+    WidgetRect rects[50];  // Maximum 50 widgets
+    int rect_count = 0;
+
+    node = panel->widget_list->first;
+    while (node && rect_count < 50) {
+        // Pour les widgets INCREMENT, utiliser le container_width calculé
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+            rects[rect_count].node = node;
+            rects[rect_count].type = node->type;
+            rects[rect_count].x = w->base.x;
+            rects[rect_count].y = w->base.y;
+
+            // Trouver le container_width pour ce widget
+            int container_width = w->base.width;  // Défaut
+            for (int i = 0; i < increment_count; i++) {
+                if (increment_infos[i].widget == w) {
+                    container_width = increment_infos[i].container_width_for_group;
+                    break;
+                }
+            }
+
+            rects[rect_count].width = container_width;
+            rects[rect_count].height = w->base.height > 0 ? w->base.height : 30;
+            rect_count++;
+        } else {
+            // Autres widgets: utiliser get_widget_rect normal
+            if (get_widget_rect(node, &rects[rect_count])) {
+                rect_count++;
+            }
+        }
+        node = node->next;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 2: DÉTERMINER SI ON DOIT RÉORGANISER
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
+    // Critère 2: Détection de collision (si collision, réorganiser)
+
+    bool needs_reorganization = false;
+
+    // Vérifier si le panneau est trop étroit
+    if (panel_width < panel->layout_threshold_width) {
+        debug_printf("📱 Panneau étroit (%dpx < %dpx) - empilement forcé\n",
+                     panel_width, panel->layout_threshold_width);
+        needs_reorganization = true;
+    } else {
+        // Panneau large: vérifier les collisions
+        for (int i = 0; i < rect_count && !needs_reorganization; i++) {
+            for (int j = i + 1; j < rect_count; j++) {
+                if (rects_collide(rects[i].x, rects[i].y, rects[i].width, rects[i].height,
+                                rects[j].x, rects[j].y, rects[j].width, rects[j].height)) {
+                    debug_printf("⚠️ Collision détectée entre widgets\n");
+                    needs_reorganization = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (needs_reorganization) {
+        debug_printf("🔧 Réorganisation des widgets pour éviter les collisions\n");
+
+        int current_y = 50;  // Marge du haut
+        int content_left_x = center_x - 150;  // Point de départ à gauche du centre (alignement à gauche)
+
+        for (int i = 0; i < rect_count; i++) {
+            WidgetRect* r = &rects[i];
+
+            // Empiler verticalement et centrer avec alignement à gauche
+            switch (r->type) {
+                case WIDGET_TYPE_LABEL:
+                    if (r->node->widget.label_widget) {
+                        LabelWidget* w = r->node->widget.label_widget;
+                        // Centrer le titre
+                        w->base.x = center_x - (w->base.width / 2);
+                        w->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_PREVIEW:
+                    if (r->node->widget.preview_widget) {
+                        PreviewWidget* w = r->node->widget.preview_widget;
+                        // Centrer le preview
+                        w->base.x = center_x - (w->base_frame_size / 2);
+                        w->base.y = current_y;
+                        current_y += r->height + PREVIEW_SPACING;  // Plus d'espace après le preview
+                    }
+                    break;
+
+                case WIDGET_TYPE_INCREMENT:
+                    if (r->node->widget.increment_widget) {
+                        ConfigWidget* w = r->node->widget.increment_widget;
+                        // Aligner à gauche depuis le centre
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_SELECTOR:
+                    if (r->node->widget.selector_widget) {
+                        SelectorWidget* w = r->node->widget.selector_widget;
+                        // Aligner à gauche depuis le centre
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_TOGGLE:
+                    if (r->node->widget.toggle_widget) {
+                        ToggleWidget* w = r->node->widget.toggle_widget;
+                        // Aligner à gauche depuis le centre
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_SEPARATOR:
+                    if (r->node->widget.separator_widget) {
+                        SeparatorWidget* w = r->node->widget.separator_widget;
+                        // Séparateurs pleine largeur
+                        w->base.x = 20;
+                        w->base.y = current_y;
+                        w->base.width = panel_width - 40;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    } else {
+        debug_printf("✅ Aucune collision - positions JSON conservées\n");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 4: CALCULER LA HAUTEUR TOTALE DU CONTENU ET LE MAX_SCROLL
+    // ═══════════════════════════════════════════════════════════════════════════
+    int max_y = 0;
+    node = panel->widget_list->first;
+    while (node) {
+        int widget_bottom = 0;
+
+        switch (node->type) {
+            case WIDGET_TYPE_LABEL:
+                if (node->widget.label_widget) {
+                    widget_bottom = node->widget.label_widget->base.y + node->widget.label_widget->base.height;
+                }
+                break;
+            case WIDGET_TYPE_PREVIEW:
+                if (node->widget.preview_widget) {
+                    widget_bottom = node->widget.preview_widget->base.y + node->widget.preview_widget->base_frame_size;
+                }
+                break;
+            case WIDGET_TYPE_INCREMENT:
+                if (node->widget.increment_widget) {
+                    widget_bottom = node->widget.increment_widget->base.y + 30;
+                }
+                break;
+            case WIDGET_TYPE_SELECTOR:
+                if (node->widget.selector_widget) {
+                    widget_bottom = node->widget.selector_widget->base.y + node->widget.selector_widget->base.height;
+                }
+                break;
+            case WIDGET_TYPE_TOGGLE:
+                if (node->widget.toggle_widget) {
+                    widget_bottom = node->widget.toggle_widget->base.y + node->widget.toggle_widget->base.base_height;
+                }
+                break;
+            case WIDGET_TYPE_SEPARATOR:
+                if (node->widget.separator_widget) {
+                    widget_bottom = node->widget.separator_widget->base.y + node->widget.separator_widget->base.height;
+                }
+                break;
+            case WIDGET_TYPE_BUTTON:
+                if (node->widget.button_widget) {
+                    ButtonWidget* w = node->widget.button_widget;
+                    if (w->y_anchor == BUTTON_ANCHOR_TOP) {
+                        widget_bottom = w->base.y + w->base_height;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (widget_bottom > max_y) {
+            max_y = widget_bottom;
+        }
+        node = node->next;
+    }
+
+    // Ajouter une marge en bas
+    panel->content_height = max_y + 60;
+
+    // Calculer le scroll maximum
+    int available_height = panel->screen_height - 70;
+    panel->max_scroll = panel->content_height - available_height;
+    if (panel->max_scroll < 0) {
+        panel->max_scroll = 0;
+    }
+
+    // S'assurer que le scroll actuel ne dépasse pas le max
+    if (panel->scroll_offset > panel->max_scroll) {
+        panel->scroll_offset = panel->max_scroll;
+    }
+}
+void handle_panel_scroll(SettingsPanel* panel, SDL_Event* event) {
+    if (!panel || !event) return;
+    if (event->type != SDL_MOUSEWHEEL) return;
+
+    // Sensibilité du scroll (pixels par cran de molette)
+    const int SCROLL_SPEED = 30;
+
+    // Scroll vers le haut (event->wheel.y > 0) ou vers le bas (event->wheel.y < 0)
+    panel->scroll_offset -= event->wheel.y * SCROLL_SPEED;
+
+    // Limiter le scroll
+    if (panel->scroll_offset < 0) {
+        panel->scroll_offset = 0;
+    }
+    if (panel->scroll_offset > panel->max_scroll) {
+        panel->scroll_offset = panel->max_scroll;
+    }
+
+    debug_printf("🖱️ Scroll: offset=%d, max=%d\n", panel->scroll_offset, panel->max_scroll);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -813,7 +1358,7 @@ int get_minimum_window_width(SettingsPanel* panel) {
     int min_window_width = min_panel_width + BUFFER;
 
     // Assurer une largeur minimale absolue (pour éviter des fenêtres trop petites)
-    const int ABSOLUTE_MIN = 400;
+    const int ABSOLUTE_MIN = 200;
     if (min_window_width < ABSOLUTE_MIN) {
         min_window_width = ABSOLUTE_MIN;
     }

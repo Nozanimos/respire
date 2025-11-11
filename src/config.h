@@ -38,6 +38,7 @@ typedef struct {
     float breath_duration;      // Durée d'un cycle en secondes (1.0-10.0)
     bool alternate_cycles;      // Alterner sens rotation entre cycles
     int Nb_respiration;         // Nombre de respirations (10-60)
+    int retention_type;         // Type de rétention: 0=poumons pleins, 1=poumons vides, 2=alternée
 
     // Timer de démarrage
     int start_duration;         // Secondes avant démarrage (3-60)
