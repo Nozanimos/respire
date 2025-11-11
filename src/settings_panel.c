@@ -797,39 +797,50 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     float panel_ratio = panel->panel_ratio;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES SCALÉES
+    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES (uniquement si largeur normale)
     // ═══════════════════════════════════════════════════════════════════════════
-    // On restaure les positions de base, mais SCALÉES avec le panel_ratio actuel
-    // Seuls les widgets utilisant WidgetBase ont base_x/base_y
-    WidgetNode* node = panel->widget_list->first;
-    while (node) {
-        switch (node->type) {
-            case WIDGET_TYPE_INCREMENT:
-                if (node->widget.increment_widget) {
-                    ConfigWidget* w = node->widget.increment_widget;
-                    w->base.x = (int)(w->base.base_x * panel_ratio);
-                    w->base.y = (int)(w->base.base_y * panel_ratio);
-                }
-                break;
-            case WIDGET_TYPE_SELECTOR:
-                if (node->widget.selector_widget) {
-                    SelectorWidget* w = node->widget.selector_widget;
-                    w->base.x = (int)(w->base.base_x * panel_ratio);
-                    w->base.y = (int)(w->base.base_y * panel_ratio);
-                }
-                break;
-            case WIDGET_TYPE_TOGGLE:
-                if (node->widget.toggle_widget) {
-                    ToggleWidget* w = node->widget.toggle_widget;
-                    w->base.x = (int)(w->base.base_x * panel_ratio);
-                    w->base.y = (int)(w->base.base_y * panel_ratio);
-                }
-                break;
-            default:
-                // Label, Preview, Separator, Button: pas de restauration
-                break;
+    // ⚠️ IMPORTANT : On ne restaure les positions originales QUE si le panneau est
+    // à sa largeur de base (500px), c'est-à-dire panel_ratio proche de 1.0.
+    // Sinon, les positions JSON créeront des collisions ou sortiront du panneau.
+    // Si panel_ratio != 1.0, on garde les positions actuelles (empilées ou non).
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    bool should_restore = (panel_ratio >= 0.99f && panel_ratio <= 1.01f);  // Tolérance 1%
+
+    if (should_restore) {
+        debug_printf("🔄 Restauration des positions JSON (panel_ratio = %.2f)\n", panel_ratio);
+        WidgetNode* node = panel->widget_list->first;
+        while (node) {
+            switch (node->type) {
+                case WIDGET_TYPE_INCREMENT:
+                    if (node->widget.increment_widget) {
+                        ConfigWidget* w = node->widget.increment_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_SELECTOR:
+                    if (node->widget.selector_widget) {
+                        SelectorWidget* w = node->widget.selector_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_TOGGLE:
+                    if (node->widget.toggle_widget) {
+                        ToggleWidget* w = node->widget.toggle_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                default:
+                    // Label, Preview, Separator, Button: pas de restauration
+                    break;
+            }
+            node = node->next;
         }
-        node = node->next;
+    } else {
+        debug_printf("⏭️  Pas de restauration (panel_ratio = %.2f, panneau pas à sa largeur normale)\n", panel_ratio);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
