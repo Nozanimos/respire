@@ -9,7 +9,8 @@
 //  CRÉATION DU WIDGET LABEL
 // ════════════════════════════════════════════════════════════════════════════
 LabelWidget* create_label_widget(const char* text, int x, int y,
-                                 int text_size, SDL_Color color, bool underlined) {
+                                 int text_size, SDL_Color color, bool underlined,
+                                 LabelAlignment alignment) {
     LabelWidget* label = malloc(sizeof(LabelWidget));
     if (!label) {
         debug_printf("❌ Erreur allocation LabelWidget\n");
@@ -37,8 +38,13 @@ LabelWidget* create_label_widget(const char* text, int x, int y,
     label->base_text_size = text_size;
     label->current_text_size = text_size;
 
-    debug_printf("📝 Label créé - Texte: \"%s\", Pos: (%d,%d), Taille: %d\n",
-                 text, x, y, text_size);
+    // Alignement
+    label->alignment = alignment;
+
+    const char* align_str = (alignment == LABEL_ALIGN_LEFT) ? "left" :
+                           (alignment == LABEL_ALIGN_RIGHT) ? "right" : "center";
+    debug_printf("📝 Label créé - Texte: \"%s\", Pos: (%d,%d), Taille: %d, Align: %s\n",
+                 text, x, y, text_size, align_str);
 
     return label;
 }

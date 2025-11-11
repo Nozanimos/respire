@@ -7,6 +7,15 @@
 #include <stdbool.h>
 
 // ════════════════════════════════════════════════════════════════════════════
+//  ALIGNEMENT DU LABEL
+// ════════════════════════════════════════════════════════════════════════════
+typedef enum {
+    LABEL_ALIGN_LEFT,      // Aligné à gauche
+    LABEL_ALIGN_CENTER,    // Centré dans le panneau
+    LABEL_ALIGN_RIGHT      // Aligné à droite
+} LabelAlignment;
+
+// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DU WIDGET LABEL
 // ════════════════════════════════════════════════════════════════════════════
 typedef struct {
@@ -33,6 +42,11 @@ typedef struct {
     int base_text_size;              // Taille de police de base
     int current_text_size;           // Taille de police actuelle (après scaling)
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // ALIGNEMENT
+    // ─────────────────────────────────────────────────────────────────────────
+    LabelAlignment alignment;        // Alignement du label (left/center/right)
+
 } LabelWidget;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -44,8 +58,10 @@ typedef struct {
 // text_size : taille de la police
 // color : couleur du texte
 // underlined : si true, souligne le texte
+// alignment : alignement du label (left/center/right)
 LabelWidget* create_label_widget(const char* text, int x, int y,
-                                 int text_size, SDL_Color color, bool underlined);
+                                 int text_size, SDL_Color color, bool underlined,
+                                 LabelAlignment alignment);
 
 // Rendu du label
 // offset_x, offset_y : offset du panneau parent

@@ -215,6 +215,7 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     cJSON* y = cJSON_GetObjectItem(obj, "y");
     cJSON* taille = cJSON_GetObjectItem(obj, "taille_texte");
     cJSON* souligne = cJSON_GetObjectItem(obj, "souligne");
+    cJSON* alignement = cJSON_GetObjectItem(obj, "alignment");
 
     // Validation minimale
     if (!cJSON_IsString(texte) || !cJSON_IsNumber(x) || !cJSON_IsNumber(y)) {
@@ -226,6 +227,19 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     int text_size = cJSON_IsNumber(taille) ? taille->valueint : 24;
     bool underlined = (cJSON_IsBool(souligne) && cJSON_IsTrue(souligne));
     SDL_Color color = {0, 0, 0, 255};  // Noir par défaut
+
+    // Parser l'alignement
+    LabelAlignment alignment = LABEL_ALIGN_CENTER;  // Par défaut centré
+    if (cJSON_IsString(alignement)) {
+        const char* align_str = alignement->valuestring;
+        if (strcmp(align_str, "left") == 0) {
+            alignment = LABEL_ALIGN_LEFT;
+        } else if (strcmp(align_str, "right") == 0) {
+            alignment = LABEL_ALIGN_RIGHT;
+        } else if (strcmp(align_str, "center") == 0) {
+            alignment = LABEL_ALIGN_CENTER;
+        }
+    }
 
     // ═══ AJOUTER À LA WIDGET LIST ═══
     // Générer un id unique pour le titre
@@ -240,7 +254,8 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
         y->valueint,
         text_size,
         color,
-        underlined
+        underlined,
+        alignment
     );
 
     if (success) {

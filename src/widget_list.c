@@ -721,7 +721,8 @@ bool add_label_widget(WidgetList* list,
                       int x, int y,
                       int text_size,
                       SDL_Color color,
-                      bool underlined) {
+                      bool underlined,
+                      LabelAlignment alignment) {
     if (!list || !id || !display_name) return false;
 
     WidgetNode* node = malloc(sizeof(WidgetNode));
@@ -730,7 +731,7 @@ bool add_label_widget(WidgetList* list,
     node->type = WIDGET_TYPE_LABEL;
     node->id = strdup(id);
     node->display_name = strdup(display_name);
-    node->widget.label_widget = create_label_widget(display_name, x, y, text_size, color, underlined);
+    node->widget.label_widget = create_label_widget(display_name, x, y, text_size, color, underlined, alignment);
 
     if (!node->widget.label_widget) {
         free((void*)node->id);

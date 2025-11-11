@@ -844,9 +844,25 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_LABEL:
                     if (node->widget.label_widget) {
                         LabelWidget* w = node->widget.label_widget;
-                        // Restaurer X (scalé) et Y (fixe - les titres ne bougent pas en Y)
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = w->base.base_y;  // Y fixe absolu, pas de scaling
+                        // Restaurer selon l'alignement défini dans le JSON
+                        // Y est toujours fixe (pas de scaling)
+                        w->base.y = w->base.base_y;
+
+                        // X dépend de l'alignement
+                        switch (w->alignment) {
+                            case LABEL_ALIGN_LEFT:
+                                // Pour left, restaurer la position scalée
+                                w->base.x = (int)(w->base.base_x * panel_ratio);
+                                break;
+                            case LABEL_ALIGN_CENTER:
+                                // Pour center, centrer dans le panneau
+                                w->base.x = (panel_width - w->base.width) / 2;
+                                break;
+                            case LABEL_ALIGN_RIGHT:
+                                // Pour right, aligner à droite avec marge
+                                w->base.x = panel_width - w->base.width - 20;
+                                break;
+                        }
                     }
                     break;
                 case WIDGET_TYPE_PREVIEW:
@@ -1069,17 +1085,19 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_LABEL:
                     if (r->node->widget.label_widget) {
                         LabelWidget* w = r->node->widget.label_widget;
-                        // Les titres gardent leur Y original
-                        // Si aligné à gauche dans JSON (base_x < 100), garder alignement gauche
-                        // Sinon, centrer
-                        if (w->base.base_x < 100) {
-                            // Aligné à gauche (ex: "Sessions")
-                            w->base.x = content_left_x;
-                        } else {
-                            // Centré (ex: "Configuration")
-                            w->base.x = center_x - (w->base.width / 2);
+                        // Les titres gardent leur Y fixe et appliquent leur alignement défini dans le JSON
+                        switch (w->alignment) {
+                            case LABEL_ALIGN_LEFT:
+                                w->base.x = content_left_x;
+                                break;
+                            case LABEL_ALIGN_CENTER:
+                                w->base.x = center_x - (w->base.width / 2);
+                                break;
+                            case LABEL_ALIGN_RIGHT:
+                                w->base.x = panel_width - w->base.width - 20;  // 20px marge droite
+                                break;
                         }
-                        // Ne PAS modifier base.y pour les labels (titres fixes)
+                        // Ne PAS modifier base.y pour les labels (Y fixe absolu)
                     }
                     break;
 

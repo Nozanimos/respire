@@ -108,7 +108,8 @@ bool add_label_widget(WidgetList* list,
                       int x, int y,
                       int text_size,
                       SDL_Color color,
-                      bool underlined);
+                      bool underlined,
+                      LabelAlignment alignment);
 
 // Ajoute un widget SEPARATOR (ligne de séparation)
 bool add_separator_widget(WidgetList* list,
