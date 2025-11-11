@@ -817,6 +817,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_LABEL:
                     if (node->widget.label_widget) {
                         LabelWidget* w = node->widget.label_widget;
+                        // Restaurer X et Y à leurs valeurs originales (scaled)
                         w->base.x = (int)(w->base.base_x * panel_ratio);
                         w->base.y = (int)(w->base.base_y * panel_ratio);
                     }
@@ -1034,10 +1035,9 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_LABEL:
                     if (r->node->widget.label_widget) {
                         LabelWidget* w = r->node->widget.label_widget;
-                        // Centrer le titre
+                        // Les titres gardent leur Y original, centrer seulement en X
                         w->base.x = center_x - (w->base.width / 2);
-                        w->base.y = current_y;
-                        current_y += r->height + COLLISION_SPACING;
+                        // Ne PAS modifier base.y pour les labels (titres fixes)
                     }
                     break;
 
