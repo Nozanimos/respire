@@ -1121,16 +1121,6 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                     }
                     break;
 
-                case WIDGET_TYPE_SELECTOR:
-                    if (r->node->widget.selector_widget) {
-                        SelectorWidget* w = r->node->widget.selector_widget;
-                        // Aligner à gauche depuis le centre
-                        w->base.x = content_left_x;
-                        w->base.y = current_y;
-                        current_y += r->height + COLLISION_SPACING;
-                    }
-                    break;
-
                 case WIDGET_TYPE_TOGGLE:
                     if (r->node->widget.toggle_widget) {
                         ToggleWidget* w = r->node->widget.toggle_widget;
