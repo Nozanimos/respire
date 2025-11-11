@@ -792,6 +792,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     const int PREVIEW_SPACING = 20;    // Espacement après le preview
     int panel_width = panel->rect.w;
     int center_x = panel_width / 2;
+    WidgetNode* node;
 
     // Utiliser le panel_ratio déjà calculé dans la structure
     float panel_ratio = panel->panel_ratio;
@@ -809,7 +810,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
 
     if (should_restore) {
         debug_printf("🔄 Restauration des positions JSON (panel_ratio = %.2f)\n", panel_ratio);
-        WidgetNode* node = panel->widget_list->first;
+        node = panel->widget_list->first;
         while (node) {
             switch (node->type) {
                 case WIDGET_TYPE_INCREMENT:
