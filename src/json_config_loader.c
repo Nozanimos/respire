@@ -567,7 +567,13 @@ bool parser_widget_selector(cJSON* json_obj, LoaderContext* ctx, WidgetList* lis
             }
         }
 
-        debug_printf("✅ Widget selector '%s' chargé avec %d options\n",
+        // ─────────────────────────────────────────────────────────────────────────
+        // INITIALISATION DU LAYOUT (créer flèches et zones cliquables)
+        // IMPORTANT: Doit être fait APRÈS l'ajout de toutes les options pour
+        // calculer correctement la largeur maximale des choix
+        // ─────────────────────────────────────────────────────────────────────────
+        rescale_selector_widget(selector, 1.0f);
+        debug_printf("✅ Widget selector '%s' chargé avec %d options (layout initialisé)\n",
                      id->valuestring, selector->num_options);
 
         return true;
