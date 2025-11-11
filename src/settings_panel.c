@@ -844,9 +844,9 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_LABEL:
                     if (node->widget.label_widget) {
                         LabelWidget* w = node->widget.label_widget;
-                        // Restaurer X et Y à leurs valeurs originales (scaled)
+                        // Restaurer X (scalé) et Y (fixe - les titres ne bougent pas en Y)
                         w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                        w->base.y = w->base.base_y;  // Y fixe absolu, pas de scaling
                     }
                     break;
                 case WIDGET_TYPE_PREVIEW:
