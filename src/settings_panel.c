@@ -679,10 +679,19 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
         if (hex_count > 0) {
             debug_printf("✅ %d hexagones du preview redimensionnés et frames recalculées (ratio: %.2f)\n",
                          hex_count, panel_ratio);
-        }if (hex_count > 0) {
-            debug_printf("✅ %d hexagones du preview redimensionnés et frames recalculées (ratio: %.2f)\n",
-                         hex_count, panel_ratio);
         }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // RESCALE DES WIDGETS QUI EN ONT BESOIN
+    // ═════════════════════════════════════════════════════════════════════════
+    // Le Selector doit être rescalé pour recréer ses flèches et recalculer son layout
+    WidgetNode* widget_node = panel->widget_list->first;
+    while (widget_node) {
+        if (widget_node->type == WIDGET_TYPE_SELECTOR && widget_node->widget.selector_widget) {
+            rescale_selector_widget(widget_node->widget.selector_widget, panel_ratio);
+        }
+        widget_node = widget_node->next;
     }
 
     // ═════════════════════════════════════════════════════════════════════════
