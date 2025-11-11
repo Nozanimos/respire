@@ -32,14 +32,6 @@ bool is_widget_list_empty(WidgetList* list) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  COMPTEUR DE WIDGETS DANS LA LISTE
-// ════════════════════════════════════════════════════════════════════════════
-int widget_list_count(WidgetList* list) {
-    if (is_widget_list_empty(list)) return 0;
-    return list->count;
-}
-
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET INCREMENT (avec flèches ↑↓)
 // ════════════════════════════════════════════════════════════════════════════
 // Crée un widget numérique et l'ajoute à la fin de la liste

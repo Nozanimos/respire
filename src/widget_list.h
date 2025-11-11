@@ -76,7 +76,6 @@ typedef struct WidgetList {
 WidgetList* create_widget_list(void);
 void free_widget_list(WidgetList* list);
 bool is_widget_list_empty(WidgetList* list);
-int widget_list_count(WidgetList* list);
 
 // ─────────────────────────────────────────────────────────────────────────
 // AJOUT DE WIDGETS
