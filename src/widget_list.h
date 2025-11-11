@@ -187,7 +187,8 @@ void debug_print_widget_list(WidgetList* list);
 // screen_width : largeur de l'écran
 // screen_height : hauteur de l'écran
 void rescale_and_layout_widgets(WidgetList* list, int panel_width,
-                                 int screen_width, int screen_height);
+                                 int screen_width, int screen_height,
+                                 bool widgets_stacked);
 
 // Calcule la largeur minimale requise pour le panneau
 // Retourne : MARGIN_LEFT + plus_grande_largeur_widget + MARGIN_RIGHT

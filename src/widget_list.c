@@ -1077,7 +1077,8 @@ void free_widget_list(WidgetList* list) {
 // ════════════════════════════════════════════════════════════════════════════
 
 void rescale_and_layout_widgets(WidgetList* list, int panel_width,
-                                 int screen_width, int screen_height) {
+                                 int screen_width, int screen_height,
+                                 bool widgets_stacked) {
     if (!list) return;
     (void)screen_width;   // Non utilisé dans la nouvelle logique
 
@@ -1086,8 +1087,8 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
     const int PANEL_WIDTH_BASE = 500;  // Largeur de base du panneau
     float panel_ratio = (float)panel_width / (float)PANEL_WIDTH_BASE;
 
-    debug_printf("🔄 Layout widgets - panel_width: %d, screen_height: %d, ratio: %.2f\n",
-                 panel_width, screen_height, panel_ratio);
+    debug_printf("🔄 Layout widgets - panel_width: %d, screen_height: %d, ratio: %.2f, stacked: %d\n",
+                 panel_width, screen_height, panel_ratio, widgets_stacked);
 
     // ═════════════════════════════════════════════════════════════════════════
     // PHASE 0 : RESCALER INDIVIDUELLEMENT CHAQUE WIDGET
@@ -1157,9 +1158,16 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
     // ═════════════════════════════════════════════════════════════════════════
     // PHASE 2 : REPOSITIONNER LES WIDGETS EN CAS DE COLLISION
     // ═════════════════════════════════════════════════════════════════════════
-    // Un widget est en collision si : base_x + width + MARGIN_RIGHT > panel_width
+    // ⚠️ IMPORTANT : Si les widgets sont empilés, on ne touche PAS aux positions !
+    // recalculate_widget_layout() s'en occupera. On évite ainsi d'écraser les
+    // positions empilées ou de restaurer prématurément les positions originales.
+    // ═════════════════════════════════════════════════════════════════════════
 
-    node = list->first;
+    if (widgets_stacked) {
+        debug_printf("⏭️  PHASE 2 SAUTÉE - widgets empilés, positions préservées\n");
+    } else {
+        // Un widget est en collision si : base_x + width + MARGIN_RIGHT > panel_width
+        node = list->first;
     while (node) {
         bool has_collision = false;
         int widget_x = 0;
@@ -1276,12 +1284,20 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
 
         node = node->next;
     }
+    }  // Fin du bloc if (!widgets_stacked)
 
     // ═════════════════════════════════════════════════════════════════════════
     // PHASE 3 : DÉTECTER ET RÉORGANISER LES BOUTONS QUI SE CHEVAUCHENT
     // ═════════════════════════════════════════════════════════════════════════
-    // Collecter les boutons ancrés en bas et vérifier s'ils se chevauchent
-    typedef struct {
+    // ⚠️ IMPORTANT : Si les widgets sont empilés, on saute aussi cette phase
+    // pour éviter d'interférer avec l'empilement géré par recalculate_widget_layout()
+    // ═════════════════════════════════════════════════════════════════════════
+
+    if (widgets_stacked) {
+        debug_printf("⏭️  PHASE 3 SAUTÉE - widgets empilés, boutons gérés par recalculate_widget_layout()\n");
+    } else {
+        // Collecter les boutons ancrés en bas et vérifier s'ils se chevauchent
+        typedef struct {
         WidgetNode* node;
         ButtonWidget* button;
         int abs_x1, abs_x2;  // Coordonnées horizontales absolues
@@ -1345,8 +1361,9 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
                         bottom_buttons[i].node->id, btn->base.x, btn->base.y);
         }
     }
+    }  // Fin du bloc if (!widgets_stacked) pour Phase 3
 
-    debug_printf("✅ %d widgets repositionnés\n", list->count);
+    debug_printf("✅ Layout terminé - %d widgets\n", list->count);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
