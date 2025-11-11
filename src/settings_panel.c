@@ -577,17 +577,44 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     int scaled_bottom_margin = scale_value(50, scale_factor);
 
     int total_buttons_width = scaled_button_width * 2 + scaled_spacing;
-    int buttons_start_x = (panel_width - total_buttons_width) / 2;
 
-    panel->apply_button.rect.x = buttons_start_x;
-    panel->apply_button.rect.y = screen_height - scaled_bottom_margin;
-    panel->apply_button.rect.w = scaled_button_width;
-    panel->apply_button.rect.h = scaled_button_height;
+    // Vérifier si les boutons entrent en collision (espacement < 20px) ou sortent du panneau
+    const int MIN_SPACING = 20;
+    const int BUTTON_MARGIN = 20;  // Marge pour éviter que les boutons touchent les bords
 
-    panel->cancel_button.rect.x = buttons_start_x + scaled_button_width + scaled_spacing;
-    panel->cancel_button.rect.y = screen_height - scaled_bottom_margin;
-    panel->cancel_button.rect.w = scaled_button_width;
-    panel->cancel_button.rect.h = scaled_button_height;
+    bool buttons_should_stack = (scaled_spacing < MIN_SPACING) ||
+                                 (total_buttons_width > panel_width - (2 * BUTTON_MARGIN));
+
+    if (buttons_should_stack) {
+        // Empiler verticalement : Appliquer au-dessus, Annuler en dessous
+        int button_center_x = (panel_width - scaled_button_width) / 2;
+        const int STACK_SPACING = 10;  // Espacement vertical entre boutons empilés
+
+        // Appliquer (au-dessus)
+        panel->apply_button.rect.x = button_center_x;
+        panel->apply_button.rect.y = screen_height - scaled_bottom_margin - scaled_button_height - STACK_SPACING;
+        panel->apply_button.rect.w = scaled_button_width;
+        panel->apply_button.rect.h = scaled_button_height;
+
+        // Annuler (en dessous)
+        panel->cancel_button.rect.x = button_center_x;
+        panel->cancel_button.rect.y = screen_height - scaled_bottom_margin;
+        panel->cancel_button.rect.w = scaled_button_width;
+        panel->cancel_button.rect.h = scaled_button_height;
+    } else {
+        // Côte à côte (comportement normal)
+        int buttons_start_x = (panel_width - total_buttons_width) / 2;
+
+        panel->apply_button.rect.x = buttons_start_x;
+        panel->apply_button.rect.y = screen_height - scaled_bottom_margin;
+        panel->apply_button.rect.w = scaled_button_width;
+        panel->apply_button.rect.h = scaled_button_height;
+
+        panel->cancel_button.rect.x = buttons_start_x + scaled_button_width + scaled_spacing;
+        panel->cancel_button.rect.y = screen_height - scaled_bottom_margin;
+        panel->cancel_button.rect.w = scaled_button_width;
+        panel->cancel_button.rect.h = scaled_button_height;
+    }
 
     // Mise à jour du preview (avec panel_ratio)
     const int BASE_PREVIEW_FRAME_X = 50;
@@ -853,8 +880,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_SEPARATOR:
                     if (node->widget.separator_widget) {
                         SeparatorWidget* w = node->widget.separator_widget;
-                        // Restaurer Y à la position originale (scalée)
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                        // Separator garde son Y fixe absolu (pas de scaling)
+                        w->base.y = w->base.base_y;
                     }
                     break;
                 default:
@@ -1042,8 +1069,16 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_LABEL:
                     if (r->node->widget.label_widget) {
                         LabelWidget* w = r->node->widget.label_widget;
-                        // Les titres gardent leur Y original, centrer seulement en X
-                        w->base.x = center_x - (w->base.width / 2);
+                        // Les titres gardent leur Y original
+                        // Si aligné à gauche dans JSON (base_x < 100), garder alignement gauche
+                        // Sinon, centrer
+                        if (w->base.base_x < 100) {
+                            // Aligné à gauche (ex: "Sessions")
+                            w->base.x = content_left_x;
+                        } else {
+                            // Centré (ex: "Configuration")
+                            w->base.x = center_x - (w->base.width / 2);
+                        }
                         // Ne PAS modifier base.y pour les labels (titres fixes)
                     }
                     break;

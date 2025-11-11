@@ -1093,21 +1093,29 @@ void rescale_and_layout_widgets(WidgetList* list, int panel_width,
     // ═════════════════════════════════════════════════════════════════════════
     // PHASE 0 : RESCALER INDIVIDUELLEMENT CHAQUE WIDGET
     // ═════════════════════════════════════════════════════════════════════════
-    WidgetNode* node = list->first;
-    while (node) {
-        switch (node->type) {
-            case WIDGET_TYPE_SELECTOR:
-                if (node->widget.selector_widget) {
-                    rescale_selector_widget(node->widget.selector_widget, panel_ratio);
-                }
-                break;
+    // ⚠️ IMPORTANT : Sauter si widgets empilés car rescale_selector_widget()
+    // appelle rescale_widget_base() qui écrase les positions empilées.
+    // ═════════════════════════════════════════════════════════════════════════
 
-            // Les autres widgets utilisent rescale_widget_base appelé dans leur propre fonction
-            // mais le selector a besoin d'un rescale complet pour recalculer le layout
-            default:
-                break;
+    if (!widgets_stacked) {
+        WidgetNode* node = list->first;
+        while (node) {
+            switch (node->type) {
+                case WIDGET_TYPE_SELECTOR:
+                    if (node->widget.selector_widget) {
+                        rescale_selector_widget(node->widget.selector_widget, panel_ratio);
+                    }
+                    break;
+
+                // Les autres widgets utilisent rescale_widget_base appelé dans leur propre fonction
+                // mais le selector a besoin d'un rescale complet pour recalculer le layout
+                default:
+                    break;
+            }
+            node = node->next;
         }
-        node = node->next;
+    } else {
+        debug_printf("⏭️  PHASE 0 SAUTÉE - widgets empilés, éviter d'écraser positions\n");
     }
 
     // ═════════════════════════════════════════════════════════════════════════
