@@ -182,15 +182,6 @@ void debug_print_widget_list(WidgetList* list);
 // ─────────────────────────────────────────────────────────────────────────
 // SCALING ET POSITIONNEMENT CENTRALISÉ
 // ─────────────────────────────────────────────────────────────────────────
-// Repositionne tous les widgets selon les dimensions du panneau
-// Gère les collisions et le centrage automatique (logique mobile)
-// panel_width : largeur actuelle du panneau
-// screen_width : largeur de l'écran
-// screen_height : hauteur de l'écran
-void rescale_and_layout_widgets(WidgetList* list, int panel_width,
-                                 int screen_width, int screen_height,
-                                 bool widgets_stacked);
-
 // Calcule la largeur minimale requise pour le panneau
 // Retourne : MARGIN_LEFT + plus_grande_largeur_widget + MARGIN_RIGHT
 int calculate_min_panel_width(WidgetList* list);

@@ -666,12 +666,10 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // RESCALE ET POSITIONNEMENT CENTRALISÉ DES WIDGETS
+    // RESCALE ET POSITIONNEMENT CENTRALISÉ DES WIDGETS - SUPPRIMÉ
     // ═════════════════════════════════════════════════════════════════════════
-    // Utilise la fonction centralisée qui gère tout le scaling et le positionnement
-    // Passe le flag widgets_stacked pour éviter d'écraser les positions empilées
-    rescale_and_layout_widgets(panel->widget_list, panel_width, screen_width, screen_height,
-                                panel->widgets_stacked);
+    // L'empilement est géré uniquement par recalculate_widget_layout() plus bas
+    // Plus besoin de rescale_and_layout_widgets() qui repositionnait automatiquement
 
     // Barre de séparation
 
