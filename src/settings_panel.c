@@ -914,6 +914,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                         SeparatorWidget* w = node->widget.separator_widget;
                         // Separator garde son Y fixe absolu (pas de scaling)
                         w->base.y = w->base.base_y;
+                        // Recalculer X et width selon les marges originales et panel_ratio
+                        rescale_separator_widget(w, panel_ratio, panel_width);
                     }
                     break;
                 default:
@@ -1140,6 +1142,16 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_TOGGLE:
                     if (r->node->widget.toggle_widget) {
                         ToggleWidget* w = r->node->widget.toggle_widget;
+                        // Aligner à gauche depuis le centre
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+                    break;
+
+                case WIDGET_TYPE_SELECTOR:
+                    if (r->node->widget.selector_widget) {
+                        SelectorWidget* w = r->node->widget.selector_widget;
                         // Aligner à gauche depuis le centre
                         w->base.x = content_left_x;
                         w->base.y = current_y;
