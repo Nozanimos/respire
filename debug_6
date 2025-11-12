@@ -1,0 +1,3414 @@
+GNU gdb (GDB) 16.3
+Copyright (C) 2024 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-pc-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./respire...
+Breakpoint 1 at 0x8622: file src/json_config_loader.c, line 579.
+Breakpoint 2 at 0x11b68: file src/settings_panel.c, line 988.
+Breakpoint 3 at 0x11d09: file src/settings_panel.c, line 1016.
+Breakpoint 4 at 0x12125: file src/settings_panel.c, line 1099.
+
+Script GDB charge - Breakpoints configures:
+  1. Apres chargement JSON (json_config_loader.c:577)
+  2. Calcul needs_reorganization (settings_panel.c:988)
+  3. Condition restauration (settings_panel.c:1016)
+  4. Condition empilement (settings_panel.c:1099)
+
+Lancement du programme...
+
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7fffde1ff6c0 (LWP 5715)]
+[New Thread 0x7fffdd9fe6c0 (LWP 5716)]
+
+====================================================================
+SNAPSHOT 1: APRES CHARGEMENT JSON
+====================================================================
+[0] INCREMENT: x=176, y=10 (base_x=176, base_y=10)
+[1] INCREMENT: x=40, y=70 (base_x=40, base_y=70)
+[2] TOGGLE '‚': x=40, y=95 (base_x=95, base_y=0)
+[3] LABEL 'n': x=40, y=108 (base_x=40, base_y=108) align=21845
+[4] SEPARATOR: x=165, y=110, width=110 (base_y=165, margins=256/1702127958)
+[5] SEPARATOR: x=165, y=140, width=140 (base_y=165, margins=-801570560/1937072464)
+[6] SEPARATOR: x=165, y=170, width=170 (base_y=165, margins=-1627389696/1651339086)
+[7] SEPARATOR: x=165, y=200, width=200 (base_y=165, margins=256/1651339086)
+[8] SELECTOR 'Type de rÃ©tention': x=165, y=230 (base_x=165, base_y=230)
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 5 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 5, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 6 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 6, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 7 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 7, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 8 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 8, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 9 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 9, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 10 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 10, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 11 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 11, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 12 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 12, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 13 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 13, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 14 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 14, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 15 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 15, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 16 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 16, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 17 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 17, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 18 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 18, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 19 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 19, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 20 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 20, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 21 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 21, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 22 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 22, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 23 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 23, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 24 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 24, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 25 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 25, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 26 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 26, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 27 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 27, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 28 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 28, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 29 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 29, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 30 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 30, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 31 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 31, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 32 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 32, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 33 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 33, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 476
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 34 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 34, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 476
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 35 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 35, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 460
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 36 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 36, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 460
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 37 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 37, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 434
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 38 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 38, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 434
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 39 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 39, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 422
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 40 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 40, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 422
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 41 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 41, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 412
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 42 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 42, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 412
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 43 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 43, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 398
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 44 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 44, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 398
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 45 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 45, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 388
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 46 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 46, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 388
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 47 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 47, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 385
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 48 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 48, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 385
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 49 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 49, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 381
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 50 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 50, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 381
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 51 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 51, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 368
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 52 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 52, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 368
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 53 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 53, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 358
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 54 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 54, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 358
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 55 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 55, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 0
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 0
+
+>>> EMPILEMENT NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 329
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 0
+Temporary breakpoint 56 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 56, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 0
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 0
+Temporary breakpoint 57 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=109, y=108
+[4] SEPARATOR: x=14, y=228, width=110
+[5] SEPARATOR: x=14, y=254, width=140
+[6] SEPARATOR: x=14, y=280, width=170
+[7] SEPARATOR: x=14, y=306, width=200
+[8] SELECTOR: x=14, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 329
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 58 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 58, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 59 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=109, y=108
+[4] SEPARATOR: x=14, y=228, width=110
+[5] SEPARATOR: x=14, y=254, width=140
+[6] SEPARATOR: x=14, y=280, width=170
+[7] SEPARATOR: x=14, y=306, width=200
+[8] SELECTOR: x=14, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 326
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 60 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 60, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 61 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=108, y=108
+[4] SEPARATOR: x=13, y=228, width=110
+[5] SEPARATOR: x=13, y=254, width=140
+[6] SEPARATOR: x=13, y=280, width=170
+[7] SEPARATOR: x=13, y=306, width=200
+[8] SELECTOR: x=13, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 326
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 62 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 62, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 63 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=108, y=108
+[4] SEPARATOR: x=13, y=228, width=110
+[5] SEPARATOR: x=13, y=254, width=140
+[6] SEPARATOR: x=13, y=280, width=170
+[7] SEPARATOR: x=13, y=306, width=200
+[8] SELECTOR: x=13, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 324
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 64 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 64, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 65 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=107, y=108
+[4] SEPARATOR: x=12, y=228, width=110
+[5] SEPARATOR: x=12, y=254, width=140
+[6] SEPARATOR: x=12, y=280, width=170
+[7] SEPARATOR: x=12, y=306, width=200
+[8] SELECTOR: x=12, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 324
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 66 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 66, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 67 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=107, y=108
+[4] SEPARATOR: x=12, y=228, width=110
+[5] SEPARATOR: x=12, y=254, width=140
+[6] SEPARATOR: x=12, y=280, width=170
+[7] SEPARATOR: x=12, y=306, width=200
+[8] SELECTOR: x=12, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 340
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 68 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 68, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 69 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=115, y=108
+[4] SEPARATOR: x=20, y=228, width=110
+[5] SEPARATOR: x=20, y=254, width=140
+[6] SEPARATOR: x=20, y=280, width=170
+[7] SEPARATOR: x=20, y=306, width=200
+[8] SELECTOR: x=20, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 340
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 70 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 70, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 71 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=115, y=108
+[4] SEPARATOR: x=20, y=228, width=110
+[5] SEPARATOR: x=20, y=254, width=140
+[6] SEPARATOR: x=20, y=280, width=170
+[7] SEPARATOR: x=20, y=306, width=200
+[8] SELECTOR: x=20, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 397
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 72 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 72, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 73 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=143, y=108
+[4] SEPARATOR: x=48, y=228, width=110
+[5] SEPARATOR: x=48, y=254, width=140
+[6] SEPARATOR: x=48, y=280, width=170
+[7] SEPARATOR: x=48, y=306, width=200
+[8] SELECTOR: x=48, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 397
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 74 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 74, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 75 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=143, y=108
+[4] SEPARATOR: x=48, y=228, width=110
+[5] SEPARATOR: x=48, y=254, width=140
+[6] SEPARATOR: x=48, y=280, width=170
+[7] SEPARATOR: x=48, y=306, width=200
+[8] SELECTOR: x=48, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 455
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 76 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 76, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 77 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=172, y=108
+[4] SEPARATOR: x=77, y=228, width=110
+[5] SEPARATOR: x=77, y=254, width=140
+[6] SEPARATOR: x=77, y=280, width=170
+[7] SEPARATOR: x=77, y=306, width=200
+[8] SELECTOR: x=77, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 455
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 78 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 78, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 79 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=172, y=108
+[4] SEPARATOR: x=77, y=228, width=110
+[5] SEPARATOR: x=77, y=254, width=140
+[6] SEPARATOR: x=77, y=280, width=170
+[7] SEPARATOR: x=77, y=306, width=200
+[8] SELECTOR: x=77, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 80 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 80, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 81 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 82 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 82, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 83 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 84 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 84, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 85 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 86 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 86, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 87 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 88 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 88, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 89 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 90 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 90, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 91 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 92 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 92, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 93 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 94 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 94, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 95 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 96 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 96, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 97 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 98 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 98, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 99 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 100 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 100, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 101 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 102 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 102, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 103 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 104 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 104, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 105 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 106 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 106, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 107 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 108 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 108, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 109 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 110 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 110, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 111 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 112 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 112, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 113 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 114 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 114, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 115 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 116 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 116, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 117 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 118 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 118, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 119 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 120 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 120, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 121 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 122 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 122, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 123 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 124 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 124, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 125 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 126 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 126, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 127 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 128 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 128, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 129 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 130 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 130, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 131 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 132 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 132, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 133 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 134 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 134, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 135 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 136 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 136, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 137 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 138 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 138, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 139 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 140 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 140, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 141 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 142 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 142, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 143 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 144 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 144, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 145 at 0x55555556657a: file src/settings_panel.c, line 1204.
+
+APRES EMPILEMENT:
+widgets_stacked (apres empilement) = 1
+
+Positions apres empilement:
+[3] LABEL: x=195, y=108
+[4] SEPARATOR: x=100, y=228, width=110
+[5] SEPARATOR: x=100, y=254, width=140
+[6] SEPARATOR: x=100, y=280, width=170
+[7] SEPARATOR: x=100, y=306, width=200
+[8] SELECTOR: x=100, y=332
+
+====================================================================
+SNAPSHOT 2: CALCUL DE needs_reorganization
+====================================================================
+panel_width = 500
+layout_threshold_width = 350
+widgets_stacked (AVANT calcul) = 1
+Temporary breakpoint 146 at 0x555555565d09: file src/settings_panel.c, line 1016.
+
+Thread 1 "respire" hit Temporary breakpoint 146, recalculate_widget_layout (panel=0x55555603e2f0) at src/settings_panel.c:1016
+1016	    if (panel->widgets_stacked && !needs_reorganization) {
+
+====================================================================
+SNAPSHOT 3: CONDITION DE RESTAURATION
+====================================================================
+widgets_stacked = 1
+needs_reorganization = 1
+Condition (widgets_stacked && !needs_reorganization) = 0
+
+>>> RESTAURATION NE SE DECLENCHE PAS <<<
+====================================================================
+
+====================================================================
+SNAPSHOT 4: CONDITION D'EMPILEMENT
+====================================================================
+needs_reorganization = 1
+
+>>> EMPILEMENT VA SE DECLENCHER <<<
+widgets_stacked (avant empilement) = 1
+Temporary breakpoint 147 at 0x55555556657a: file src/settings_panel.c, line 1204.
+[Thread 0x7fffdd9fe6c0 (LWP 5716) exited]
+[Thread 0x7fffde1ff6c0 (LWP 5715) exited]
+[Inferior 1 (process 5705) exited normally]
+
+APRES EMPILEMENT:
+[?2004h(gdb) quit
+[?2004l
