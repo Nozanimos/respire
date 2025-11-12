@@ -849,6 +849,74 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     // et on n'empile QUE s'il y a vraiment besoin.
     // ═══════════════════════════════════════════════════════════════════════════
 
+    if (panel->widgets_stacked) {
+        debug_printf("🔄 Restauration préliminaire (widgets empilés -> positions JSON)\n");
+        node = panel->widget_list->first;
+        while (node) {
+            switch (node->type) {
+                case WIDGET_TYPE_LABEL:
+                    if (node->widget.label_widget) {
+                        LabelWidget* w = node->widget.label_widget;
+                        w->base.y = w->base.base_y;
+                        switch (w->alignment) {
+                            case LABEL_ALIGN_LEFT:
+                                w->base.x = w->base.base_x;
+                                break;
+                            case LABEL_ALIGN_CENTER:
+                                w->base.x = (panel_width - w->base.width) / 2;
+                                break;
+                            case LABEL_ALIGN_RIGHT:
+                                w->base.x = panel_width - w->base.width - 20;
+                                break;
+                        }
+                    }
+                    break;
+                case WIDGET_TYPE_PREVIEW:
+                    if (node->widget.preview_widget) {
+                        PreviewWidget* w = node->widget.preview_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = w->base.base_y;
+                    }
+                    break;
+                case WIDGET_TYPE_INCREMENT:
+                    if (node->widget.increment_widget) {
+                        ConfigWidget* w = node->widget.increment_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_SELECTOR:
+                    if (node->widget.selector_widget) {
+                        SelectorWidget* w = node->widget.selector_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_TOGGLE:
+                    if (node->widget.toggle_widget) {
+                        ToggleWidget* w = node->widget.toggle_widget;
+                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                    }
+                    break;
+                case WIDGET_TYPE_SEPARATOR:
+                    if (node->widget.separator_widget) {
+                        SeparatorWidget* w = node->widget.separator_widget;
+                        w->base.y = w->base.base_y;
+                        w->base.x = w->base_start_margin;
+                        w->base.width = panel_width - w->base_start_margin - w->base_end_margin;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            node = node->next;
+        }
+        // Marquer temporairement comme non-empilé pour la détection
+        panel->widgets_stacked = false;
+        debug_printf("✅ Positions restaurées temporairement pour détection collision\n");
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 0bis: CALCULER LES GROUPES ET LARGEURS DES WIDGETS INCREMENT
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1007,94 +1075,9 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 2c: RESTAURER SI widgets_stacked ET pas de collision
+    // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE (empilement)
     // ═══════════════════════════════════════════════════════════════════════════
-    // Restaurer SEULEMENT si les widgets sont empilés ET il n'y a plus de collision
-    // Cela évite la boucle infinie: restauration → réempilement → restauration...
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    if (panel->widgets_stacked && !needs_reorganization) {
-        debug_printf("🔄 Restauration des positions JSON (widgets étaient empilés)\n");
-        node = panel->widget_list->first;
-        while (node) {
-            switch (node->type) {
-                case WIDGET_TYPE_LABEL:
-                    if (node->widget.label_widget) {
-                        LabelWidget* w = node->widget.label_widget;
-                        // Y est toujours fixe (pas de scaling)
-                        w->base.y = w->base.base_y;
-
-                        // X dépend de l'alignement
-                        switch (w->alignment) {
-                            case LABEL_ALIGN_LEFT:
-                                // Pour left, position FIXE (pas de scaling) pour rester aligné avec séparateur
-                                w->base.x = w->base.base_x;
-                                break;
-                            case LABEL_ALIGN_CENTER:
-                                // Pour center, centrer dans le panneau
-                                w->base.x = (panel_width - w->base.width) / 2;
-                                break;
-                            case LABEL_ALIGN_RIGHT:
-                                // Pour right, aligner à droite avec marge
-                                w->base.x = panel_width - w->base.width - 20;
-                                break;
-                        }
-                    }
-                    break;
-                case WIDGET_TYPE_PREVIEW:
-                    if (node->widget.preview_widget) {
-                        PreviewWidget* w = node->widget.preview_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        // Y reste fixe (pas de scaling), comme les Labels et Separators
-                        w->base.y = w->base.base_y;
-                    }
-                    break;
-                case WIDGET_TYPE_INCREMENT:
-                    if (node->widget.increment_widget) {
-                        ConfigWidget* w = node->widget.increment_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
-                    }
-                    break;
-                case WIDGET_TYPE_SELECTOR:
-                    if (node->widget.selector_widget) {
-                        SelectorWidget* w = node->widget.selector_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
-                    }
-                    break;
-                case WIDGET_TYPE_TOGGLE:
-                    if (node->widget.toggle_widget) {
-                        ToggleWidget* w = node->widget.toggle_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
-                    }
-                    break;
-                case WIDGET_TYPE_SEPARATOR:
-                    if (node->widget.separator_widget) {
-                        SeparatorWidget* w = node->widget.separator_widget;
-                        // Separator garde son Y fixe absolu (pas de scaling)
-                        w->base.y = w->base.base_y;
-                        // X fixe aussi (pas de scaling) pour rester aligné avec Labels LEFT
-                        w->base.x = w->base_start_margin;
-                        // Width : depuis X jusqu'au bout avec end_margin
-                        w->base.width = panel_width - w->base_start_margin - w->base_end_margin;
-                    }
-                    break;
-                default:
-                    // Button: pas de restauration (géré différemment)
-                    break;
-            }
-            node = node->next;
-        }
-
-        // Marquer que les widgets ne sont plus empilés (restaurés aux positions JSON)
-        panel->widgets_stacked = false;
-        debug_printf("✅ Widgets restaurés, widgets_stacked = FALSE\n");
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE
+    // Si needs_reorganization=true, empiler. Sinon, garder les positions restaurées.
     // ═══════════════════════════════════════════════════════════════════════════
     if (needs_reorganization) {
         debug_printf("🔧 Réorganisation des widgets pour éviter les collisions (empilement)\n");
