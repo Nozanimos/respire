@@ -810,12 +810,10 @@ static bool get_widget_rect(WidgetNode* node, WidgetRect* rect) {
             break;
 
         case WIDGET_TYPE_BUTTON:
-            // Ignorer les boutons ancrés au bas pour la détection de collision
             if (node->widget.button_widget) {
                 ButtonWidget* w = node->widget.button_widget;
-                if (w->y_anchor == BUTTON_ANCHOR_BOTTOM) {
-                    return false;  // Ne pas vérifier les collisions pour les boutons du bas
-                }
+                // Inclure TOUS les boutons dans la détection de collision (y compris BOTTOM)
+                // pour qu'ils puissent être empilés en mode réduit
                 rect->x = w->base.x;
                 rect->y = w->base.y;
                 rect->width = w->base.width;
@@ -885,7 +883,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                     if (node->widget.preview_widget) {
                         PreviewWidget* w = node->widget.preview_widget;
                         w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                        // Y reste fixe (pas de scaling), comme les Labels et Separators
+                        w->base.y = w->base.base_y;
                     }
                     break;
                 case WIDGET_TYPE_INCREMENT:
@@ -1122,10 +1121,9 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_PREVIEW:
                     if (r->node->widget.preview_widget) {
                         PreviewWidget* w = r->node->widget.preview_widget;
-                        // Centrer le preview
+                        // Centrer le preview en X, garder son Y fixe (comme les labels/separators)
                         w->base.x = center_x - (w->base_frame_size / 2);
-                        w->base.y = current_y;
-                        current_y += r->height + PREVIEW_SPACING;  // Plus d'espace après le preview
+                        // Ne PAS modifier w->base.y - le preview garde sa position Y originale
                     }
                     break;
 
@@ -1155,7 +1153,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                         // Aligner à gauche depuis le centre
                         w->base.x = content_left_x;
                         w->base.y = current_y;
-                        current_y += r->height + COLLISION_SPACING;
+                        // Ajouter 10px de plus après le Selector (a des callbacks)
+                        current_y += r->height + COLLISION_SPACING + 10;
                     }
                     break;
 
@@ -1166,6 +1165,16 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                         w->base.x = 20;  // Marge gauche fixe
                         // Ne PAS modifier base.y (doit rester à sa position originale)
                         w->base.width = panel_width - 40;  // Largeur = panneau - marges
+                    }
+                    break;
+
+                case WIDGET_TYPE_BUTTON:
+                    if (r->node->widget.button_widget) {
+                        ButtonWidget* w = r->node->widget.button_widget;
+                        // Empiler les boutons verticalement (y compris ceux ancrés en bas)
+                        w->base.x = content_left_x;
+                        w->base.y = current_y;
+                        current_y += r->height + COLLISION_SPACING;
                     }
                     break;
 
