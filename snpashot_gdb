@@ -1,0 +1,283 @@
+gdb -x ../debug_widgets.gdb ./respire
+GNU gdb (GDB) 16.3
+Copyright (C) 2024 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-pc-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./respire...
+Breakpoint 1 at 0x8622: file src/json_config_loader.c, line 579.
+Breakpoint 2 at 0x1211f: file src/settings_panel.c, line 1089.
+Breakpoint 3 at 0x112ed: file src/settings_panel.c, line 855.
+
+🔍 Script GDB chargé - Breakpoints configurés:
+  1. Après chargement JSON (json_config_loader.c:577)
+  2. Lors de l'empilement (settings_panel.c:1087)
+  3. Lors de la restauration (settings_panel.c:855)
+
+▶ Lancement du programme...
+
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7fffde1ff6c0 (LWP 28328)]
+[New Thread 0x7fffdd9fe6c0 (LWP 28329)]
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 1: APRÈS CHARGEMENT JSON
+═══════════════════════════════════════════════════════════════════
+
+[Widget 0] Type:
+[Widget 1] Type:
+[Widget 2] Type:
+[Widget 3] Type: LABEL 'n'
+  Position: x=40, y=108
+  Base: base_x=40, base_y=108
+  Alignment: RIGHT
+
+[Widget 4] Type: SEPARATOR
+  Position: x=165, y=110
+  Base Y: base_y=165
+  Width: 110
+
+[Widget 5] Type: SEPARATOR
+  Position: x=165, y=140
+  Base Y: base_y=165
+  Width: 140
+
+[Widget 6] Type: SEPARATOR
+  Position: x=165, y=170
+  Base Y: base_y=165
+  Width: 170
+
+[Widget 7] Type: SEPARATOR
+  Position: x=165, y=200
+  Base Y: base_y=165
+  Width: 200
+
+[Widget 8] Type: SELECTOR 'Type de rétention'
+  Position: x=165, y=230
+  Base: base_x=165, base_y=230
+
+═══════════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 328
+widgets_stacked avant: 0
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=328, screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 328
+panel_ratio: 0.656
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=109, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=14, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 328
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=328, screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 324
+panel_ratio: 0.648
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=109, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=14, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 324
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=324, screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 324
+panel_ratio: 0.648
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=107, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=12, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 324
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=324, screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+c
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 333
+panel_ratio: 0.666
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=107, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=12, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 333
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=333,
+    screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 333
+panel_ratio: 0.666
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=111, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=16, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 333
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=333,
+    screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 421
+panel_ratio: 0.842
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=111, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=16, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 421
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=421,
+    screen_height=720, scale_factor=0.328906238) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 421
+panel_ratio: 0.842
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=155, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=60, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 421
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=421,
+    screen_height=720, scale_factor=0.328906238) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 499
+panel_ratio: 0.998
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=155, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=60, y=284 (base_x=165, base_y=230)
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=499,
+    screen_height=720, scale_factor=0.389843762) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+c
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 336
+widgets_stacked avant: 0
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=336,
+    screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) c
+Continuing.
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 3: RESTAURATION (élargissement fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 336
+panel_ratio: 0.672
+
+--- AVANT RESTAURATION ---
+[3] LABEL 'n': x=113, y=50 (base_x=40, base_y=108)
+[8] SELECTOR 'Type de rétention': x=18, y=284 (base_x=165, base_y=230)
+
+═══════════════════════════════════════════════════════════════════
+📷 SNAPSHOT 2: EMPILEMENT (réduction fenêtre)
+═══════════════════════════════════════════════════════════════════
+Panel width: 336
+widgets_stacked avant: 1
+0x0000555555564e6c in update_panel_scale (panel=0x5555560770f0, screen_width=336,
+    screen_height=720, scale_factor=0.300000012) at src/settings_panel.c:706
+706         recalculate_widget_layout(panel);
+(gdb) quit
+A debugging session is active.
+
+        Inferior 1 [process 28320] will be killed.
+
+Quit anyway? (y or n) y
