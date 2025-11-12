@@ -31,7 +31,7 @@ define show_widget
 
     if ($node->type == 1)
         printf "TOGGLE '%s' : x=%d, y=%d (base_x=%d, base_y=%d)\n", \
-               $node->widget.toggle_widget->label, \
+               $node->widget.toggle_widget->option_name, \
                $node->widget.toggle_widget->base.x, \
                $node->widget.toggle_widget->base.y, \
                $node->widget.toggle_widget->base.base_x, \
