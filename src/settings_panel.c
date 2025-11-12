@@ -915,6 +915,23 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         // Marquer temporairement comme non-empilé pour la détection
         panel->widgets_stacked = false;
         debug_printf("✅ Positions restaurées temporairement pour détection collision\n");
+
+        // DEBUG: Afficher quelques positions restaurées
+        node = panel->widget_list->first;
+        int idx = 0;
+        while (node && idx < 5) {
+            if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+                ConfigWidget* w = node->widget.increment_widget;
+                debug_printf("  [%d] INCREMENT restauré: x=%d, y=%d (base_x=%d, base_y=%d)\n",
+                            idx, w->base.x, w->base.y, w->base.base_x, w->base.base_y);
+            } else if (node->type == WIDGET_TYPE_SELECTOR && node->widget.selector_widget) {
+                SelectorWidget* w = node->widget.selector_widget;
+                debug_printf("  [%d] SELECTOR restauré: x=%d, y=%d (base_x=%d, base_y=%d)\n",
+                            idx, w->base.x, w->base.y, w->base.base_x, w->base.base_y);
+            }
+            node = node->next;
+            idx++;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1066,7 +1083,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
             for (int j = i + 1; j < rect_count; j++) {
                 if (rects_collide(rects[i].x, rects[i].y, rects[i].width, rects[i].height,
                                 rects[j].x, rects[j].y, rects[j].width, rects[j].height)) {
-                    debug_printf("⚠️ Collision détectée entre widgets\n");
+                    debug_printf("⚠️ COLLISION entre widget[%d] (type=%d, x=%d, y=%d, w=%d, h=%d) "
+                                "et widget[%d] (type=%d, x=%d, y=%d, w=%d, h=%d)\n",
+                                i, rects[i].type, rects[i].x, rects[i].y, rects[i].width, rects[i].height,
+                                j, rects[j].type, rects[j].x, rects[j].y, rects[j].width, rects[j].height);
                     needs_reorganization = true;
                     break;
                 }
