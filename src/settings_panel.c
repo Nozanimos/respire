@@ -857,15 +857,14 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_LABEL:
                     if (node->widget.label_widget) {
                         LabelWidget* w = node->widget.label_widget;
-                        // Restaurer selon l'alignement défini dans le JSON
                         // Y est toujours fixe (pas de scaling)
                         w->base.y = w->base.base_y;
 
                         // X dépend de l'alignement
                         switch (w->alignment) {
                             case LABEL_ALIGN_LEFT:
-                                // Pour left, restaurer la position scalée
-                                w->base.x = (int)(w->base.base_x * panel_ratio);
+                                // Pour left, position FIXE (pas de scaling) pour rester aligné avec séparateur
+                                w->base.x = w->base.base_x;
                                 break;
                             case LABEL_ALIGN_CENTER:
                                 // Pour center, centrer dans le panneau
@@ -912,8 +911,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                         SeparatorWidget* w = node->widget.separator_widget;
                         // Separator garde son Y fixe absolu (pas de scaling)
                         w->base.y = w->base.base_y;
-                        // Recalculer X et width selon les marges originales et panel_ratio
-                        rescale_separator_widget(w, panel_ratio, panel_width);
+                        // X fixe aussi (pas de scaling) pour rester aligné avec Labels LEFT
+                        w->base.x = w->base_start_margin;
+                        // Width : depuis X jusqu'au bout avec end_margin
+                        w->base.width = panel_width - w->base_start_margin - w->base_end_margin;
                     }
                     break;
                 default:
@@ -1164,10 +1165,11 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_SEPARATOR:
                     if (r->node->widget.separator_widget) {
                         SeparatorWidget* w = r->node->widget.separator_widget;
-                        // Séparateurs : largeur avec marges, Y garde sa position originale
-                        w->base.x = 20;  // Marge gauche fixe
+                        // Séparateurs : aligner avec les widgets empilés (content_left_x)
+                        w->base.x = content_left_x;
                         // Ne PAS modifier base.y (doit rester à sa position originale)
-                        w->base.width = panel_width - 40;  // Largeur = panneau - marges
+                        // Largeur réduite pour rester dans le panneau
+                        w->base.width = panel_width - content_left_x - 20;  // 20px marge droite
                     }
                     break;
 
