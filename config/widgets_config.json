@@ -16,6 +16,7 @@
             "_fin_template": "═══════════════════════════════════════════════════════",
             "type": "titre",
             "texte": "Configuration",
+            "alignment": "center",
             "x": 176,
             "y": 10,
             "taille_texte": 24,
@@ -24,6 +25,7 @@
         {
             "type": "titre",
             "texte": "Sessions",
+            "alignment": "left",
             "x": 40,
             "y": 70,
             "taille_texte": 18,
