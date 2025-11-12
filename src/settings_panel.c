@@ -1122,7 +1122,11 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                         PreviewWidget* w = r->node->widget.preview_widget;
                         // Centrer le preview en X, garder son Y fixe (comme les labels/separators)
                         w->base.x = center_x - (w->base_frame_size / 2);
-                        // Ne PAS modifier w->base.y - le preview garde sa position Y originale
+                        // Ne PAS modifier w->base.y - le preview garde sa position Y originale (108)
+
+                        // IMPORTANT: Avancer current_y pour que les widgets SUIVANTS
+                        // s'empilent APRÈS le preview, pas au début (50)
+                        current_y = w->base.y + w->base_frame_size + COLLISION_SPACING;
                     }
                     break;
 
