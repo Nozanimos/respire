@@ -833,7 +833,6 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     if (!panel || !panel->widget_list) return;
 
     const int COLLISION_SPACING = 10;  // Espacement en cas de collision
-    const int PREVIEW_SPACING = 20;    // Espacement après le preview
     int panel_width = panel->rect.w;
     int center_x = panel_width / 2;
     WidgetNode* node;
