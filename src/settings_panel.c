@@ -327,6 +327,8 @@ void update_settings_panel(SettingsPanel* panel, float delta_time) {
             if (panel->animation_progress <= 0.0f) {
                 panel->animation_progress = 0.0f;
                 panel->state = PANEL_CLOSED;
+                // Réinitialiser la mémoire de l'empilement quand le panneau se ferme
+                panel->panel_width_when_stacked = 0;
             }
             break;
 
@@ -910,19 +912,23 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     float panel_ratio = panel->panel_ratio;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: DÉCISION DE DÉPILEMENT BASÉE SUR LA LARGEUR MINIMALE JSON
+    // ÉTAPE 0: DÉCISION DE DÉPILEMENT AVEC MÉMOIRE PERSISTANTE
     // ═══════════════════════════════════════════════════════════════════════════
     // FIX BOUCLE INFINIE :
-    // - Dépiler seulement si panel_width >= min_width_for_unstack
-    // - min_width_for_unstack = largeur minimale calculée depuis le JSON (garantit pas de collision)
-    // - Plus besoin de panel_width_when_stacked + MARGE (causait ré-empilements successifs)
+    // - Sauvegarder la largeur du panneau lors du PREMIER empilement (flag)
+    // - Ne JAMAIS réinitialiser cette valeur (mémoire persistante)
+    // - Dépiler seulement si panel_width >= saved_width + MARGE_CONFORTABLE
+    // - La marge évite les ré-empilements dûs aux imprécisions de scaling
     // ═══════════════════════════════════════════════════════════════════════════
 
-    if (panel->widgets_stacked &&
-        panel_width >= panel->min_width_for_unstack) {
+    const int UNSTACK_MARGIN = 80;  // Marge confortable pour éviter les oscillations
 
-        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= min_width_for_unstack=%dpx\n",
-                    panel_width, panel->min_width_for_unstack);
+    if (panel->widgets_stacked &&
+        panel->panel_width_when_stacked > 0 &&
+        panel_width >= panel->panel_width_when_stacked + UNSTACK_MARGIN) {
+
+        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= (saved_width=%dpx + marge=%dpx)\n",
+                    panel_width, panel->panel_width_when_stacked, UNSTACK_MARGIN);
         debug_printf("   Restauration des positions JSON...\n");
         node = panel->widget_list->first;
         while (node) {
@@ -989,8 +995,13 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         // ═════════════════════════════════════════════════════════════════════════
         // MARQUER LE DÉPILEMENT TERMINÉ
         // ═════════════════════════════════════════════════════════════════════════
+        // IMPORTANT : Ne PAS réinitialiser panel_width_when_stacked !
+        // Cette valeur doit persister pour garder la référence de la largeur minimale
+        // Si on la réinitialise, on re-rentrera dans la boucle infinie
+        // ═════════════════════════════════════════════════════════════════════════
         panel->widgets_stacked = false;
         debug_printf("✅ Widgets dépilés et restaurés aux positions JSON\n");
+        debug_printf("   📌 panel_width_when_stacked=%dpx (gardé en mémoire)\n", panel->panel_width_when_stacked);
 
         // Pas besoin d'aller plus loin! On évite toute la logique de collision
         // qui causait la boucle infinie
@@ -1167,8 +1178,22 @@ void recalculate_widget_layout(SettingsPanel* panel) {
 
         // Marquer que les widgets sont maintenant empilés
         panel->widgets_stacked = true;
-        debug_printf("   📐 min_width_for_unstack = %dpx (pour dépiler)\n",
-                    panel->min_width_for_unstack);
+
+        // ═════════════════════════════════════════════════════════════════════════
+        // SAUVEGARDER LA LARGEUR UNE SEULE FOIS (FLAG)
+        // ═════════════════════════════════════════════════════════════════════════
+        // Si panel_width_when_stacked == 0, c'est le PREMIER empilement
+        // → Sauvegarder la largeur actuelle comme référence
+        // Sinon, c'est un ré-empilement après dépilement → garder l'ancienne valeur
+        // ═════════════════════════════════════════════════════════════════════════
+        if (panel->panel_width_when_stacked == 0) {
+            panel->panel_width_when_stacked = panel_width;
+            debug_printf("   💾 SAUVEGARDE panel_width_when_stacked=%dpx (PREMIER empilement)\n",
+                        panel->panel_width_when_stacked);
+        } else {
+            debug_printf("   ♻️  panel_width_when_stacked=%dpx déjà sauvegardé (ré-empilement)\n",
+                        panel->panel_width_when_stacked);
+        }
 
         int current_y = 50;  // Marge du haut
         int content_left_x = center_x - 150;  // Point de départ à gauche du centre (alignement à gauche)
