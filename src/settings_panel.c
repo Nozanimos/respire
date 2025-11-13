@@ -952,37 +952,49 @@ static void precalculate_label_dimensions(SettingsPanel* panel) {
 }
 
 /**
- * Applique l'alignement d'un LABEL (LEFT/CENTER/RIGHT) selon sa configuration
- * Fonction helper pour éviter duplication de code et garantir cohérence
+ * Restaure la position d'origine d'un LABEL (depuis base.base_x stocké au chargement JSON)
+ * Utilisé pour le dépilage - pas de recalcul, juste restauration de la position mémorisée
  */
-static void apply_label_alignment(LabelWidget* label, int panel_width) {
+static void restore_label_position(LabelWidget* label) {
+    if (!label) return;
+
+    // Pour TOUS les alignements, restaurer simplement la position d'origine
+    // base.base_x contient la position correcte calculée au chargement JSON
+    label->base.x = label->base.base_x;
+    label->base.y = label->base.base_y;
+}
+
+/**
+ * Recalcule la position d'un LABEL selon son alignement et un nouveau panel_width
+ * Utilisé lors des resize/empilement avec nouvelle largeur de panneau
+ */
+static void recalculate_label_position(LabelWidget* label, int panel_width) {
     if (!label) return;
 
     label->base.y = label->base.base_y;  // Toujours restaurer Y
 
-    // Pour CENTER et RIGHT, recalculer la largeur avec la taille de police DE BASE
-    // IMPORTANT : Utiliser base_text_size (pas current_text_size) pour que la position
-    // calculée soit toujours la même, même si la police a été réduite par scaling
-    if (label->alignment == LABEL_ALIGN_CENTER || label->alignment == LABEL_ALIGN_RIGHT) {
-        TTF_Font* font = get_font_for_size(label->base_text_size);  // ← BASE, pas current
-        if (font) {
-            int text_width = 0;
-            if (TTF_SizeUTF8(font, label->text, &text_width, NULL) == 0) {
-                label->base.width = text_width;
-            }
-        }
-    }
-
     switch (label->alignment) {
         case LABEL_ALIGN_LEFT:
+            // LEFT : Restaurer position d'origine (pas de dépendance à panel_width)
             label->base.x = label->base.base_x;
             break;
+
         case LABEL_ALIGN_CENTER:
-            label->base.x = (panel_width - label->base.width) / 2;
+        case LABEL_ALIGN_RIGHT: {
+            // CENTER/RIGHT : Recalculer avec la taille de police DE BASE
+            TTF_Font* font = get_font_for_size(label->base_text_size);
+            if (font) {
+                int text_width = 0;
+                if (TTF_SizeUTF8(font, label->text, &text_width, NULL) == 0) {
+                    if (label->alignment == LABEL_ALIGN_CENTER) {
+                        label->base.x = (panel_width - text_width) / 2;
+                    } else {  // RIGHT
+                        label->base.x = panel_width - text_width - 20;
+                    }
+                }
+            }
             break;
-        case LABEL_ALIGN_RIGHT:
-            label->base.x = panel_width - label->base.width - 20;
-            break;
+        }
     }
 }
 
@@ -1001,7 +1013,7 @@ static void restore_json_positions(SettingsPanel* panel) {
         switch (node->type) {
             case WIDGET_TYPE_LABEL:
                 if (node->widget.label_widget) {
-                    apply_label_alignment(node->widget.label_widget, panel_width);
+                    restore_label_position(node->widget.label_widget);
                 }
                 break;
 
@@ -1136,7 +1148,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_LABEL:
                 if (r->node->widget.label_widget) {
                     LabelWidget* w = r->node->widget.label_widget;
-                    apply_label_alignment(w, panel_width);
+                    recalculate_label_position(w, panel_width);
                     const char* align_str = (w->alignment == LABEL_ALIGN_LEFT) ? "LEFT" :
                                            (w->alignment == LABEL_ALIGN_CENTER) ? "CENTER" : "RIGHT";
                     debug_printf("   📝 LABEL '%s' %s à x=%d\n", w->text, align_str, w->base.x);
