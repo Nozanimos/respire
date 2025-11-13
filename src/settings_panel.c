@@ -19,6 +19,9 @@ extern float calculate_scale_factor(int width, int height);
 extern int scale_value(int value, float scale);
 extern int calculate_panel_width(int screen_width, float scale);
 
+// Fonction utilitaire pour calculer largeur minimale
+static int calculate_required_width_for_json_layout(SettingsPanel* panel);
+
 // ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LES WIDGETS
 // ════════════════════════════════════════════════════════════════════════════
@@ -256,6 +259,10 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     }
 
     debug_print_widget_list(panel->widget_list);
+
+    // Calculer la largeur minimale nécessaire pour afficher le layout JSON
+    panel->min_width_for_unstack = calculate_required_width_for_json_layout(panel);
+    debug_printf("✅ Largeur minimale pour dépiler: %dpx\n", panel->min_width_for_unstack);
 
     // Synchroniser les widgets avec la config chargée (pour initialiser les valeurs)
     sync_config_to_widgets(&panel->temp_config, panel->widget_list);
@@ -829,6 +836,67 @@ static bool get_widget_rect(WidgetNode* node, WidgetRect* rect) {
     return false;
 }
 
+// Calculer la largeur minimale nécessaire basée sur la bbox des widgets aux positions JSON
+static int calculate_required_width_for_json_layout(SettingsPanel* panel) {
+    if (!panel || !panel->widget_list) return 400;
+
+    int max_right_edge = 0;  // Bord droit le plus à droite
+    WidgetNode* node = panel->widget_list->first;
+
+    while (node) {
+        int widget_right = 0;
+
+        switch (node->type) {
+            case WIDGET_TYPE_INCREMENT:
+                if (node->widget.increment_widget) {
+                    ConfigWidget* w = node->widget.increment_widget;
+                    // Position JSON + largeur
+                    widget_right = w->base.base_x + (w->base.width > 0 ? w->base.width : 300);
+                }
+                break;
+            case WIDGET_TYPE_SELECTOR:
+                if (node->widget.selector_widget) {
+                    SelectorWidget* w = node->widget.selector_widget;
+                    widget_right = w->base.base_x + w->base.width;
+                }
+                break;
+            case WIDGET_TYPE_SEPARATOR:
+                if (node->widget.separator_widget) {
+                    SeparatorWidget* w = node->widget.separator_widget;
+                    // Séparateur: start_margin + largeur définie dans JSON
+                    widget_right = w->base_start_margin + w->base_width;
+                }
+                break;
+            case WIDGET_TYPE_LABEL:
+                if (node->widget.label_widget) {
+                    LabelWidget* w = node->widget.label_widget;
+                    widget_right = w->base.base_x + w->base.width;
+                }
+                break;
+            case WIDGET_TYPE_PREVIEW:
+                if (node->widget.preview_widget) {
+                    PreviewWidget* w = node->widget.preview_widget;
+                    widget_right = w->base.base_x + w->base_frame_size;
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (widget_right > max_right_edge) {
+            max_right_edge = widget_right;
+        }
+
+        node = node->next;
+    }
+
+    // Ajouter une petite marge de sécurité (20px)
+    int required_width = max_right_edge + 20;
+
+    debug_printf("📐 Largeur minimale calculée pour layout JSON: %dpx\n", required_width);
+    return required_width;
+}
+
 void recalculate_widget_layout(SettingsPanel* panel) {
     if (!panel || !panel->widget_list) return;
 
@@ -841,15 +909,16 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     float panel_ratio = panel->panel_ratio;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: RESTAURER LES POSITIONS JSON ORIGINALES SI WIDGETS EMPILÉS
+    // ÉTAPE 0: DÉCISION SIMPLE BASÉE SUR LA LARGEUR MINIMALE
     // ═══════════════════════════════════════════════════════════════════════════
-    // ⚠️ LOGIQUE CORRIGÉE : Si les widgets sont empilés, on restaure TOUJOURS
-    // leurs positions originales avant de vérifier s'il faut les ré-empiler.
-    // Ainsi, la détection de collision se fait sur les positions originales,
-    // et on n'empile QUE s'il y a vraiment besoin.
+    // Nouvelle approche simple et robuste:
+    // - SI widgets empilés ET panel_width >= min_width_for_unstack: DÉPILER
+    // - Pas besoin de tester les collisions (c'est ça qui causait la boucle infinie!)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    if (panel->widgets_stacked) {
+    if (panel->widgets_stacked && panel_width >= panel->min_width_for_unstack) {
+        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= min_width=%dpx\n",
+                    panel_width, panel->min_width_for_unstack);
         debug_printf("🔄 Restauration préliminaire (widgets empilés -> positions JSON)\n");
         node = panel->widget_list->first;
         while (node) {
@@ -912,26 +981,12 @@ void recalculate_widget_layout(SettingsPanel* panel) {
             }
             node = node->next;
         }
-        // Marquer temporairement comme non-empilé pour la détection
         panel->widgets_stacked = false;
-        debug_printf("✅ Positions restaurées temporairement pour détection collision\n");
+        debug_printf("✅ Widgets dépilés et restaurés aux positions JSON\n");
 
-        // DEBUG: Afficher quelques positions restaurées
-        node = panel->widget_list->first;
-        int idx = 0;
-        while (node && idx < 5) {
-            if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
-                ConfigWidget* w = node->widget.increment_widget;
-                debug_printf("  [%d] INCREMENT restauré: x=%d, y=%d (base_x=%d, base_y=%d)\n",
-                            idx, w->base.x, w->base.y, w->base.base_x, w->base.base_y);
-            } else if (node->type == WIDGET_TYPE_SELECTOR && node->widget.selector_widget) {
-                SelectorWidget* w = node->widget.selector_widget;
-                debug_printf("  [%d] SELECTOR restauré: x=%d, y=%d (base_x=%d, base_y=%d)\n",
-                            idx, w->base.x, w->base.y, w->base.base_x, w->base.base_y);
-            }
-            node = node->next;
-            idx++;
-        }
+        // Pas besoin d'aller plus loin! On évite toute la logique de collision
+        // qui causait la boucle infinie
+        goto calculate_heights;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1207,6 +1262,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         panel->widgets_stacked = false;
     }
 
+calculate_heights:
+    ;  // Statement vide nécessaire pour le label
     // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 4: CALCULER LA HAUTEUR TOTALE DU CONTENU ET LE MAX_SCROLL
     // ═══════════════════════════════════════════════════════════════════════════

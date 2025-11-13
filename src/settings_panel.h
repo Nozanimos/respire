@@ -115,6 +115,7 @@ typedef struct {
     bool layout_mode_column;  // true = mode colonne (étroit), false = mode 2 colonnes (large)
     int layout_threshold_width; // Largeur en dessous de laquelle on passe en mode colonne
     bool widgets_stacked;     // true = widgets empilés (fenêtre réduite), false = positions originales
+    int min_width_for_unstack; // Largeur minimale calculée pour dépiler (bbox des widgets JSON)
 
     // Anciens éléments (à supprimer progressivement)
     SDL_Texture* apply_button_texture;
