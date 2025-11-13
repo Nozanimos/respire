@@ -23,6 +23,9 @@ typedef struct {
     TTF_Font* font_normal;
     TTF_Font* font_petit;
 
+    // Largeur du panneau pour calculs d'alignement CENTER/RIGHT
+    int panel_width;
+
     // Table de correspondance nom_callback → pointeur fonction
     // (on verra ça plus tard pour simplifier)
 } LoaderContext;

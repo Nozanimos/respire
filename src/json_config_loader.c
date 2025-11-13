@@ -9,13 +9,6 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 // ════════════════════════════════════════════════════════════════════════════
-// CONSTANTES
-// ════════════════════════════════════════════════════════════════════════════
-// Largeur de référence du panneau pour calculer les positions CENTER
-// (doit correspondre à PANEL_WIDTH dans settings_panel.c)
-#define PANEL_WIDTH_REF 500
-
-// ════════════════════════════════════════════════════════════════════════════
 //  TABLE DE CORRESPONDANCE : NOM CALLBACK → POINTEUR FONCTION
 // ════════════════════════════════════════════════════════════════════════════
 // PROBLÈME : Dans le JSON on a des strings comme "duration_value_changed"
@@ -254,14 +247,14 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     int x_final = x->valueint;  // Par défaut, utiliser la valeur du JSON
 
     if (alignment == LABEL_ALIGN_CENTER) {
-        // Pour CENTER, calculer la position pour centrer le texte dans PANEL_WIDTH_REF
+        // Pour CENTER, calculer la position pour centrer le texte dans la largeur du panneau
         TTF_Font* font = ctx->font_titre;  // Police pour les titres
         if (font) {
             int text_width = 0;
             if (TTF_SizeUTF8(font, texte->valuestring, &text_width, NULL) == 0) {
-                x_final = (PANEL_WIDTH_REF - text_width) / 2;
-                debug_printf("📐 LABEL CENTER '%s': largeur=%d, x_calculé=%d (pour panel=%d)\n",
-                            texte->valuestring, text_width, x_final, PANEL_WIDTH_REF);
+                x_final = (ctx->panel_width - text_width) / 2;
+                debug_printf("📐 LABEL CENTER '%s': largeur=%d, x_calculé=%d (panel_width=%d)\n",
+                            texte->valuestring, text_width, x_final, ctx->panel_width);
             } else {
                 debug_printf("⚠️ Impossible de mesurer '%s', x=%d par défaut\n",
                             texte->valuestring, x_final);
@@ -273,9 +266,9 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
         if (font) {
             int text_width = 0;
             if (TTF_SizeUTF8(font, texte->valuestring, &text_width, NULL) == 0) {
-                x_final = PANEL_WIDTH_REF - text_width - 20;  // 20px de marge
-                debug_printf("📐 LABEL RIGHT '%s': largeur=%d, x_calculé=%d\n",
-                            texte->valuestring, text_width, x_final);
+                x_final = ctx->panel_width - text_width - 20;  // 20px de marge
+                debug_printf("📐 LABEL RIGHT '%s': largeur=%d, x_calculé=%d (panel_width=%d)\n",
+                            texte->valuestring, text_width, x_final, ctx->panel_width);
             }
         }
     }

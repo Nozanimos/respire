@@ -251,7 +251,8 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
         .renderer = renderer,
         .font_titre = panel->font_title,
         .font_normal = panel->font,
-        .font_petit = panel->font_small
+        .font_petit = panel->font_small,
+        .panel_width = PANEL_WIDTH  // Passer la largeur de référence pour calculs CENTER/RIGHT
     };
 
     if (!charger_widgets_depuis_json(panel->json_config_path, &ctx, panel->widget_list)) {
@@ -1742,7 +1743,8 @@ void reload_widgets_from_json(SettingsPanel* panel, int screen_width, int screen
         .renderer = panel->renderer,
         .font_titre = panel->font_title,
         .font_normal = panel->font,
-        .font_petit = panel->font_small
+        .font_petit = panel->font_small,
+        .panel_width = PANEL_WIDTH  // Passer la largeur de référence pour calculs CENTER/RIGHT
     };
 
     if (!charger_widgets_depuis_json(panel->json_config_path, &ctx, panel->widget_list)) {
