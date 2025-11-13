@@ -7,13 +7,13 @@
 
 file ./respire
 
-# ─── Breakpoint dans check_and_stack_widgets_if_needed ───
-break settings_panel.c:check_and_stack_widgets_if_needed
+# ─── Breakpoint dans recalculate_widget_layout ───
+break settings_panel.c:recalculate_widget_layout
 
 commands
     printf "\n"
     printf "╔═══════════════════════════════════════════════════════════════════════════╗\n"
-    printf "║ ENTRÉE: check_and_stack_widgets_if_needed()                              ║\n"
+    printf "║ ENTRÉE: recalculate_widget_layout()                                      ║\n"
     printf "╚═══════════════════════════════════════════════════════════════════════════╝\n"
     printf "\n"
 
@@ -23,98 +23,88 @@ commands
     printf "   screen_height = %d\n", panel->screen_height
     printf "   widgets_stacked = %d\n", panel->widgets_stacked
     printf "   panel_width_when_stacked = %d\n", panel->panel_width_when_stacked
+    printf "   layout_dirty = %d\n", panel->layout_dirty
     printf "\n"
 
     continue
 end
 
-# ─── Breakpoint à la ligne de détection de collision des widgets ───
-break settings_panel.c:1072
+# ─── Breakpoint à la ligne de détection de collision (ligne 1388) ───
+break settings_panel.c:1388
 
 commands
     printf "\n"
     printf "╔═══════════════════════════════════════════════════════════════════════════╗\n"
-    printf "║ DÉTECTION COLLISION                                                       ║\n"
+    printf "║ DÉTECTION COLLISION - Liste des widgets                                  ║\n"
     printf "╚═══════════════════════════════════════════════════════════════════════════╝\n"
     printf "\n"
 
-    printf "🔍 RECHERCHE DE COLLISION AVEC BORD DROIT DU PANNEAU\n"
-    printf "   panel_width = %d\n", panel_width
-    printf "   Recherche dans widget_list...\n"
+    printf "📐 panel_width = %d\n", panel_width
+    printf "📦 rect_count = %d widgets\n", rect_count
     printf "\n"
 
-    # On va parcourir les widgets pour voir les positions
-    set $node = panel->widget_list->first
-    set $widget_num = 0
-
-    while $node != 0
-        set $widget_num = $widget_num + 1
-
-        printf "   Widget %d: type=%d", $widget_num, $node->type
+    # Afficher tous les widgets avec leurs positions
+    set $i = 0
+    while $i < rect_count
+        printf "   Widget %d: type=%d", $i, rects[$i].type
 
         # Afficher le type en clair
-        if $node->type == 0
+        if rects[$i].type == 0
             printf " (LABEL)"
         end
-        if $node->type == 1
+        if rects[$i].type == 1
             printf " (SEPARATOR)"
         end
-        if $node->type == 2
+        if rects[$i].type == 2
             printf " (PREVIEW)"
         end
-        if $node->type == 3
+        if rects[$i].type == 3
             printf " (INCREMENT)"
         end
-        if $node->type == 4
+        if rects[$i].type == 4
             printf " (TOGGLE)"
         end
-        if $node->type == 5
+        if rects[$i].type == 5
             printf " (SLIDER)"
         end
-        if $node->type == 6
+        if rects[$i].type == 6
             printf " (BUTTON)"
-
-            # Pour les boutons, afficher plus d'infos
-            if $node->widget.button_widget != 0
-                set $btn = $node->widget.button_widget
-                printf " - id='%s'", $btn->id
-                printf " base_x=%d base_y=%d", $btn->base.base_x, $btn->base.base_y
-                printf " x=%d y=%d w=%d h=%d", $btn->base.x, $btn->base.y, $btn->base.width, $btn->base.height
-                printf " y_anchor=%d", $btn->y_anchor
-
-                # Calculer si le bouton dépasse
-                set $right_edge = $btn->base.x + $btn->base.width
-                printf " right_edge=%d", $right_edge
-
-                if $right_edge > panel_width
-                    printf " ⚠️ DÉPASSE LE PANNEAU!"
-                end
-            end
         end
-        if $node->type == 7
+        if rects[$i].type == 7
             printf " (SELECTOR)"
+        end
+
+        printf " x=%d y=%d w=%d h=%d", rects[$i].x, rects[$i].y, rects[$i].width, rects[$i].height
+
+        # Calculer le bord droit
+        set $right_edge = rects[$i].x + rects[$i].width
+        printf " right_edge=%d", $right_edge
+
+        if $right_edge > panel_width
+            printf " ⚠️ DÉPASSE!"
         end
 
         printf "\n"
 
-        set $node = $node->next
+        set $i = $i + 1
     end
 
     printf "\n"
     continue
 end
 
-# ─── Breakpoint quand on détecte qu'il faut empiler ───
-break settings_panel.c:1120
+# ─── Breakpoint quand on détecte qu'il faut empiler (ligne 1408) ───
+break settings_panel.c:1408
 
 commands
     printf "\n"
     printf "╔═══════════════════════════════════════════════════════════════════════════╗\n"
-    printf "║ ⚠️  COLLISION DÉTECTÉE - EMPILEMENT DES WIDGETS                          ║\n"
+    printf "║ ⚠️  needs_reorganization = true - EMPILEMENT DES WIDGETS                 ║\n"
     printf "╚═══════════════════════════════════════════════════════════════════════════╝\n"
     printf "\n"
 
-    printf "📌 panel_width_when_stacked sera fixé à: %d\n", panel->rect.w
+    printf "📌 panel_width actuel = %d\n", panel_width
+    printf "📌 panel_width_when_stacked = %d\n", panel->panel_width_when_stacked
     printf "\n"
 
     continue
