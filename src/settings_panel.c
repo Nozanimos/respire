@@ -1004,17 +1004,25 @@ static void restore_json_positions(SettingsPanel* panel) {
 /**
  * Empile les widgets verticalement pour éviter les collisions (empilement)
  * Utilise la liste de rectangles déjà calculée pour déterminer l'ordre
+ *
+ * LOGIQUE SPÉCIALE POUR LES SÉPARATEURS :
+ * - Si widget au-dessus = LABEL (titre) → garder position Y fixe (base_y)
+ * - Si widget au-dessus = widget callback → empiler sous le widget (current_y + 5px)
  */
 static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, int rect_count) {
     if (!panel || !rects) return;
 
     const int COLLISION_SPACING = 10;
+    const int SEPARATOR_EXTRA_SPACING = 5;  // Espacement supplémentaire après widgets callback
     int panel_width = panel->rect.w;
     int center_x = panel_width / 2;
     int current_y = 50;  // Marge du haut
     int content_left_x = center_x - 150;  // Alignement à gauche
 
     debug_printf("🔧 Empilement vertical des widgets...\n");
+
+    // Variable pour tracker le type de widget précédent (pour logique séparateur)
+    WidgetType previous_widget_type = WIDGET_TYPE_LABEL;
 
     for (int i = 0; i < rect_count; i++) {
         WidgetRect* r = &rects[i];
@@ -1036,6 +1044,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                             break;
                     }
                 }
+                previous_widget_type = WIDGET_TYPE_LABEL;
                 break;
 
             case WIDGET_TYPE_PREVIEW:
@@ -1046,6 +1055,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     // Avancer current_y pour widgets suivants
                     current_y = w->base.y + w->base_frame_size + COLLISION_SPACING;
                 }
+                previous_widget_type = WIDGET_TYPE_PREVIEW;
                 break;
 
             case WIDGET_TYPE_INCREMENT:
@@ -1055,6 +1065,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.y = current_y;
                     current_y += r->height + COLLISION_SPACING;
                 }
+                previous_widget_type = WIDGET_TYPE_INCREMENT;
                 break;
 
             case WIDGET_TYPE_TOGGLE:
@@ -1064,6 +1075,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.y = current_y;
                     current_y += r->height + COLLISION_SPACING;
                 }
+                previous_widget_type = WIDGET_TYPE_TOGGLE;
                 break;
 
             case WIDGET_TYPE_SELECTOR:
@@ -1073,14 +1085,39 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.y = current_y;
                     current_y += r->height + COLLISION_SPACING + 10;  // +10 pour callbacks
                 }
+                previous_widget_type = WIDGET_TYPE_SELECTOR;
                 break;
 
             case WIDGET_TYPE_SEPARATOR:
                 if (r->node->widget.separator_widget) {
                     SeparatorWidget* w = r->node->widget.separator_widget;
+
+                    // ═════════════════════════════════════════════════════════════
+                    // LOGIQUE SÉPARATEUR SELON WIDGET PRÉCÉDENT
+                    // ═════════════════════════════════════════════════════════════
+                    // Si le widget au-dessus est un LABEL (titre) → Y fixe (base_y)
+                    // Si le widget au-dessus est un widget callback → empiler (current_y + spacing)
+
+                    if (previous_widget_type == WIDGET_TYPE_LABEL) {
+                        // Widget au-dessus = LABEL (titre) → Position Y fixe
+                        // Exemple : séparateur "Sessions"
+                        // Ne PAS modifier w->base.y, garder position JSON
+                        debug_printf("   📏 Séparateur après LABEL → Y fixe (base_y=%d)\n", w->base.base_y);
+                    } else {
+                        // Widget au-dessus = widget callback → Empiler
+                        // Ajouter espacement supplémentaire
+                        current_y += SEPARATOR_EXTRA_SPACING;
+                        w->base.y = current_y;
+                        debug_printf("   📏 Séparateur après widget callback → Y=%d (+%dpx)\n",
+                                    current_y, SEPARATOR_EXTRA_SPACING);
+                        current_y += r->height + COLLISION_SPACING;
+                    }
+
+                    // Position X et largeur
                     w->base.x = content_left_x;
                     w->base.width = panel_width - content_left_x - 20;
                 }
+                previous_widget_type = WIDGET_TYPE_SEPARATOR;
                 break;
 
             case WIDGET_TYPE_BUTTON:
@@ -1090,9 +1127,11 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.y = current_y;
                     current_y += r->height + COLLISION_SPACING;
                 }
+                previous_widget_type = WIDGET_TYPE_BUTTON;
                 break;
 
             default:
+                previous_widget_type = r->type;
                 break;
         }
     }
