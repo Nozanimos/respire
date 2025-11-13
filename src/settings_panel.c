@@ -919,7 +919,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     if (panel->widgets_stacked && panel_width >= panel->min_width_for_unstack) {
         debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= min_width=%dpx\n",
                     panel_width, panel->min_width_for_unstack);
-        debug_printf("🔄 Restauration préliminaire (widgets empilés -> positions JSON)\n");
+        debug_printf("   Restauration des positions JSON...\n");
         node = panel->widget_list->first;
         while (node) {
             switch (node->type) {
@@ -1159,6 +1159,12 @@ void recalculate_widget_layout(SettingsPanel* panel) {
 
         // Marquer que les widgets sont maintenant empilés
         panel->widgets_stacked = true;
+
+        // IMPORTANT: Recalculer min_width_for_unstack basé sur la largeur actuelle
+        // Pour dépiler, il faudra au moins cette largeur (avec petite marge)
+        panel->min_width_for_unstack = panel_width + 20;
+        debug_printf("   min_width_for_unstack mis à jour: %dpx (panel_width + 20)\n",
+                    panel->min_width_for_unstack);
 
         int current_y = 50;  // Marge du haut
         int content_left_x = center_x - 150;  // Point de départ à gauche du centre (alignement à gauche)
