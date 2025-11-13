@@ -1,6 +1,6 @@
-Breakpoint 1 at 0x11aa2: file src/settings_panel.c, line 1070.
-Breakpoint 2 at 0x11b6a: file src/settings_panel.c, line 1080.
-Breakpoint 3 at 0x11eab: file src/settings_panel.c, line 1176.
+Breakpoint 1 at 0x11aae: file src/settings_panel.c, line 1070.
+Breakpoint 2 at 0x11b89: file src/settings_panel.c, line 1079.
+Breakpoint 3 at 0x11f28: file src/settings_panel.c, line 1174.
 
 This GDB supports auto-downloading debuginfo from the following URLs:
   <https://debuginfod.archlinux.org>
@@ -9,8 +9,8 @@ Debuginfod has been disabled.
 To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
 [Thread debugging using libthread_db enabled]
 Using host libthread_db library "/usr/lib/libthread_db.so.1".
-[New Thread 0x7fffde1ff6c0 (LWP 45985)]
-[New Thread 0x7fffdd9fe6c0 (LWP 45986)]
+[New Thread 0x7fffde1ff6c0 (LWP 50722)]
+[New Thread 0x7fffdd9fe6c0 (LWP 50723)]
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[0] LABEL
@@ -22,10 +22,6 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base.base_x = 176
      base.base_y = 10
 
-   APRÈS traitement stack:
-     base.x = 176 (OK: inchangé)
-     base.y = 10
-
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[1] LABEL
 ╚═══════════════════════════════════════════════════════════════════╝
@@ -36,6 +32,10 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base.base_x = 40
      base.base_y = 70
 
+   APRÈS traitement stack:
+     base.x = 40 (OK: inchangé)
+     base.y = 70
+
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[2] SEPARATOR
 ╚═══════════════════════════════════════════════════════════════════╝
@@ -45,6 +45,11 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base.y = 95
      base.base_y = 95
      base_start_margin = 40
+     base.width = 0
+
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
      base.width = 0
 
 ╔═══════════════════════════════════════════════════════════════════╗
@@ -58,11 +63,6 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base_start_margin = 20
      base.width = 0
 
-   APRÈS traitement stack:
-     base.x = 20
-     base.y = 394
-     base.width = 0
-
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[0] LABEL
 ╚═══════════════════════════════════════════════════════════════════╝
@@ -73,19 +73,19 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base.base_x = 176
      base.base_y = 10
 
-   APRÈS traitement stack:
-     base.x = 92 (❌ MODIFIÉ! devrait être 176)
-     base.y = 10
-
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[1] LABEL
 ╚═══════════════════════════════════════════════════════════════════╝
 📝 LABEL 'Sessions'
    AVANT traitement stack:
-     base.x = 20
+     base.x = 40
      base.y = 70
      base.base_x = 40
      base.base_y = 70
+
+   APRÈS traitement stack:
+     base.x = 40 (OK: inchangé)
+     base.y = 70
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[2] SEPARATOR
@@ -98,21 +98,21 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base_start_margin = 40
      base.width = 0
 
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
+     base.width = 0
+
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[9] SEPARATOR
 ╚═══════════════════════════════════════════════════════════════════╝
 📏 SEPARATOR
    AVANT traitement stack:
-     base.x = 57
+     base.x = 20
      base.y = 394
      base.base_y = 320
      base_start_margin = 20
-     base.width = 210
-
-   APRÈS traitement stack:
-     base.x = 57
-     base.y = 394
-     base.width = 210
+     base.width = 0
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[0] LABEL
@@ -124,19 +124,19 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base.base_x = 176
      base.base_y = 10
 
-   APRÈS traitement stack:
-     base.x = 92 (❌ MODIFIÉ! devrait être 176)
-     base.y = 10
-
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[1] LABEL
 ╚═══════════════════════════════════════════════════════════════════╝
 📝 LABEL 'Sessions'
    AVANT traitement stack:
-     base.x = 20
+     base.x = 40
      base.y = 70
      base.base_x = 40
      base.base_y = 70
+
+   APRÈS traitement stack:
+     base.x = 40 (OK: inchangé)
+     base.y = 70
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[2] SEPARATOR
@@ -149,21 +149,123 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base_start_margin = 40
      base.width = 0
 
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
+     base.width = 0
+
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[9] SEPARATOR
 ╚═══════════════════════════════════════════════════════════════════╝
 📏 SEPARATOR
    AVANT traitement stack:
-     base.x = 57
+     base.x = 20
      base.y = 394
      base.base_y = 320
      base_start_margin = 20
-     base.width = 210
+     base.width = 0
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[0] LABEL
+╚═══════════════════════════════════════════════════════════════════╝
+📝 LABEL 'Configuration'
+   AVANT traitement stack:
+     base.x = 92
+     base.y = 10
+     base.base_x = 176
+     base.base_y = 10
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[1] LABEL
+╚═══════════════════════════════════════════════════════════════════╝
+📝 LABEL 'Sessions'
+   AVANT traitement stack:
+     base.x = 40
+     base.y = 70
+     base.base_x = 40
+     base.base_y = 70
 
    APRÈS traitement stack:
-     base.x = 57
+     base.x = 40 (OK: inchangé)
+     base.y = 70
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[2] SEPARATOR
+╚═══════════════════════════════════════════════════════════════════╝
+📏 SEPARATOR
+   AVANT traitement stack:
+     base.x = 40
+     base.y = 95
+     base.base_y = 95
+     base_start_margin = 40
+     base.width = 0
+
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
+     base.width = 0
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[9] SEPARATOR
+╚═══════════════════════════════════════════════════════════════════╝
+📏 SEPARATOR
+   AVANT traitement stack:
+     base.x = 20
      base.y = 394
-     base.width = 210
+     base.base_y = 320
+     base_start_margin = 20
+     base.width = 0
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[0] LABEL
+╚═══════════════════════════════════════════════════════════════════╝
+📝 LABEL 'Configuration'
+   AVANT traitement stack:
+     base.x = 92
+     base.y = 10
+     base.base_x = 176
+     base.base_y = 10
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[1] LABEL
+╚═══════════════════════════════════════════════════════════════════╝
+📝 LABEL 'Sessions'
+   AVANT traitement stack:
+     base.x = 40
+     base.y = 70
+     base.base_x = 40
+     base.base_y = 70
+
+   APRÈS traitement stack:
+     base.x = 40 (OK: inchangé)
+     base.y = 70
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[2] SEPARATOR
+╚═══════════════════════════════════════════════════════════════════╝
+📏 SEPARATOR
+   AVANT traitement stack:
+     base.x = 40
+     base.y = 95
+     base.base_y = 95
+     base_start_margin = 40
+     base.width = 0
+
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
+     base.width = 0
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[9] SEPARATOR
+╚═══════════════════════════════════════════════════════════════════╝
+📏 SEPARATOR
+   AVANT traitement stack:
+     base.x = 20
+     base.y = 394
+     base.base_y = 320
+     base_start_margin = 20
+     base.width = 0
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[0] LABEL
@@ -175,19 +277,19 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base.base_x = 176
      base.base_y = 10
 
-   APRÈS traitement stack:
-     base.x = 100 (❌ MODIFIÉ! devrait être 176)
-     base.y = 10
-
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[1] LABEL
 ╚═══════════════════════════════════════════════════════════════════╝
 📝 LABEL 'Sessions'
    AVANT traitement stack:
-     base.x = 20
+     base.x = 40
      base.y = 70
      base.base_x = 40
      base.base_y = 70
+
+   APRÈS traitement stack:
+     base.x = 40 (OK: inchangé)
+     base.y = 70
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[2] SEPARATOR
@@ -200,45 +302,45 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base_start_margin = 40
      base.width = 0
 
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
+     base.width = 0
+
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[9] SEPARATOR
 ╚═══════════════════════════════════════════════════════════════════╝
 📏 SEPARATOR
    AVANT traitement stack:
-     base.x = 65
+     base.x = 20
      base.y = 394
      base.base_y = 320
      base_start_margin = 20
-     base.width = 210
-
-   APRÈS traitement stack:
-     base.x = 65
-     base.y = 394
-     base.width = 210
+     base.width = 0
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[0] LABEL
 ╚═══════════════════════════════════════════════════════════════════╝
 📝 LABEL 'Configuration'
    AVANT traitement stack:
-     base.x = 106
+     base.x = 100
      base.y = 10
      base.base_x = 176
      base.base_y = 10
-
-   APRÈS traitement stack:
-     base.x = 106 (❌ MODIFIÉ! devrait être 176)
-     base.y = 10
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[1] LABEL
 ╚═══════════════════════════════════════════════════════════════════╝
 📝 LABEL 'Sessions'
    AVANT traitement stack:
-     base.x = 20
+     base.x = 40
      base.y = 70
      base.base_x = 40
      base.base_y = 70
+
+   APRÈS traitement stack:
+     base.x = 40 (OK: inchangé)
+     base.y = 70
 
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[2] SEPARATOR
@@ -251,21 +353,72 @@ Using host libthread_db library "/usr/lib/libthread_db.so.1".
      base_start_margin = 40
      base.width = 0
 
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
+     base.width = 0
+
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Widget[9] SEPARATOR
 ╚═══════════════════════════════════════════════════════════════════╝
 📏 SEPARATOR
    AVANT traitement stack:
-     base.x = 71
+     base.x = 20
      base.y = 394
      base.base_y = 320
      base_start_margin = 20
-     base.width = 210
+     base.width = 0
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[0] LABEL
+╚═══════════════════════════════════════════════════════════════════╝
+📝 LABEL 'Configuration'
+   AVANT traitement stack:
+     base.x = 112
+     base.y = 10
+     base.base_x = 176
+     base.base_y = 10
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[1] LABEL
+╚═══════════════════════════════════════════════════════════════════╝
+📝 LABEL 'Sessions'
+   AVANT traitement stack:
+     base.x = 40
+     base.y = 70
+     base.base_x = 40
+     base.base_y = 70
 
    APRÈS traitement stack:
-     base.x = 71
+     base.x = 40 (OK: inchangé)
+     base.y = 70
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[2] SEPARATOR
+╚═══════════════════════════════════════════════════════════════════╝
+📏 SEPARATOR
+   AVANT traitement stack:
+     base.x = 40
+     base.y = 95
+     base.base_y = 95
+     base_start_margin = 40
+     base.width = 0
+
+   APRÈS traitement stack:
+     base.x = 40
+     base.y = 95
+     base.width = 0
+
+╔═══════════════════════════════════════════════════════════════════╗
+║ Widget[9] SEPARATOR
+╚═══════════════════════════════════════════════════════════════════╝
+📏 SEPARATOR
+   AVANT traitement stack:
+     base.x = 20
      base.y = 394
-     base.width = 210
-[Thread 0x7fffdd9fe6c0 (LWP 45986) exited]
-[Thread 0x7fffde1ff6c0 (LWP 45985) exited]
-[Inferior 1 (process 45975) exited normally]
+     base.base_y = 320
+     base_start_margin = 20
+     base.width = 0
+[Thread 0x7fffdd9fe6c0 (LWP 50723) exited]
+[Thread 0x7fffde1ff6c0 (LWP 50722) exited]
+[Inferior 1 (process 50713) exited normally]
