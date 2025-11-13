@@ -1181,6 +1181,54 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         // Restaurer positions JSON originales (helper function)
         restore_json_positions(panel);
 
+        // ───────────────────────────────────────────────────────────────────────
+        // Repositionner les UIButton (apply_button, cancel_button)
+        // ───────────────────────────────────────────────────────────────────────
+        int scaled_button_width = scale_value(BUTTON_WIDTH, panel->scale_factor);
+        int scaled_button_height = scale_value(BUTTON_HEIGHT, panel->scale_factor);
+        int scaled_spacing = scale_value(10, panel->scale_factor);
+        int scaled_bottom_margin = scale_value(50, panel->scale_factor);
+
+        int total_buttons_width = scaled_button_width * 2 + scaled_spacing;
+        const int MIN_SPACING = 20;
+
+        bool buttons_should_stack = (scaled_spacing < MIN_SPACING) ||
+                                     (total_buttons_width > panel_width - (2 * BUTTON_MARGIN));
+
+        if (buttons_should_stack) {
+            // Empiler verticalement
+            int button_center_x = (panel_width - scaled_button_width) / 2;
+            const int STACK_SPACING = 10;
+
+            panel->apply_button.rect.x = button_center_x;
+            panel->apply_button.rect.y = panel->screen_height - scaled_bottom_margin - scaled_button_height - STACK_SPACING;
+            panel->apply_button.rect.w = scaled_button_width;
+            panel->apply_button.rect.h = scaled_button_height;
+
+            panel->cancel_button.rect.x = button_center_x;
+            panel->cancel_button.rect.y = panel->screen_height - scaled_bottom_margin;
+            panel->cancel_button.rect.w = scaled_button_width;
+            panel->cancel_button.rect.h = scaled_button_height;
+
+            debug_printf("   🔘 UIButton empilés verticalement (x=%d)\n", button_center_x);
+        } else {
+            // Côte à côte (comportement normal)
+            int buttons_start_x = (panel_width - total_buttons_width) / 2;
+
+            panel->apply_button.rect.x = buttons_start_x;
+            panel->apply_button.rect.y = panel->screen_height - scaled_bottom_margin;
+            panel->apply_button.rect.w = scaled_button_width;
+            panel->apply_button.rect.h = scaled_button_height;
+
+            panel->cancel_button.rect.x = buttons_start_x + scaled_button_width + scaled_spacing;
+            panel->cancel_button.rect.y = panel->screen_height - scaled_bottom_margin;
+            panel->cancel_button.rect.w = scaled_button_width;
+            panel->cancel_button.rect.h = scaled_button_height;
+
+            debug_printf("   🔘 UIButton côte à côte (apply_x=%d, cancel_x=%d)\n",
+                        buttons_start_x, buttons_start_x + scaled_button_width + scaled_spacing);
+        }
+
         // Marquer comme dépilé
         panel->widgets_stacked = false;
 
