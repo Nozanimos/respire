@@ -959,6 +959,18 @@ static void apply_label_alignment(LabelWidget* label, int panel_width) {
 
     label->base.y = label->base.base_y;  // Toujours restaurer Y
 
+    // Pour CENTER et RIGHT, on a besoin de la largeur actuelle du texte
+    // La recalculer à chaque fois car elle peut changer avec le scaling
+    if (label->alignment == LABEL_ALIGN_CENTER || label->alignment == LABEL_ALIGN_RIGHT) {
+        TTF_Font* font = get_font_for_size(label->current_text_size);
+        if (font) {
+            int text_width = 0;
+            if (TTF_SizeUTF8(font, label->text, &text_width, NULL) == 0) {
+                label->base.width = text_width;
+            }
+        }
+    }
+
     switch (label->alignment) {
         case LABEL_ALIGN_LEFT:
             label->base.x = label->base.base_x;
