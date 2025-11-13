@@ -1,0 +1,1629 @@
+GNU gdb (GDB) 16.3
+Copyright (C) 2024 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-pc-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./respire...
+Breakpoint 1 at 0x114ae: file src/settings_panel.c, line 901.
+Breakpoint 2 at 0x125c0: file src/settings_panel.c, line 1169.
+Breakpoint 3 at 0x1194f: file src/settings_panel.c, line 992.
+
+════════════════════════════════════════════════
+SCRIPT GDB SIMPLE V2 CHARGÉ
+════════════════════════════════════════════════
+Ce script trace :
+  - Chaque appel à recalculate_widget_layout
+  - Quand widgets_stacked passe à true
+  - Quand widgets_stacked passe à false
+
+FIX : Utilise min_width_for_unstack (calculé depuis JSON)
+      au lieu de panel_width_when_stacked + marge
+
+ÉTAPES :
+  1. Ouvrir le panneau (engrenage)
+  2. Réduire/élargir la fenêtre
+  3. Observer les traces
+════════════════════════════════════════════════
+
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7fffde1ff6c0 (LWP 21109)]
+[New Thread 0x7fffdd9fe6c0 (LWP 21110)]
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=491 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=491 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=471 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=471 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=457 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=457 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=440 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=440 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=419 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=419 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=406 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=406 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=392 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=392 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=386 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=386 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=383 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=383 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=379 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=379 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=374 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=374 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=372 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=372 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=368 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=368 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=361 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=361 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=326 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=326)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=326 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=326)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=324 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=324)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=324 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=324)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=340 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=340)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=340 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=340)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=367 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=367)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=367 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=367)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=407 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=407 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=407 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=407)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=436 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=436 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=436 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=436)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=440 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=440 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=440 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=440)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=444 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=444 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=444 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=444)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=449 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=449 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=449 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=449)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=463 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=463 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=463 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=463)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=1 min_width=393
+
+Thread 1 "respire" hit Breakpoint 3, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:992
+992	        panel->widgets_stacked = false;
+
+🔄 DÉPILEMENT widgets_stacked → false (panel_width=500 >= min_width=393)
+
+Thread 1 "respire" hit Breakpoint 1, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:901
+901	void recalculate_widget_layout(SettingsPanel* panel) {
+
+═══ recalculate_widget_layout ═══
+panel_width=500 stacked=0 min_width=393
+
+Thread 1 "respire" hit Breakpoint 2, recalculate_widget_layout (panel=0x5555556893f0)
+    at src/settings_panel.c:1169
+1169	        panel->widgets_stacked = true;
+
+🔧 EMPILEMENT widgets_stacked → true (panel_width=500)
+[Thread 0x7fffdd9fe6c0 (LWP 21110) exited]
+[Thread 0x7fffde1ff6c0 (LWP 21109) exited]
+[Inferior 1 (process 21099) exited normally]
+[?2004h(gdb) quit
+[?2004l
