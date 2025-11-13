@@ -1017,10 +1017,29 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
     int panel_width = panel->rect.w;
     int center_x = panel_width / 2;
     int current_y = 50;  // Marge du haut
-    int content_left_x = center_x - 150;  // Alignement à gauche
 
-    debug_printf("🔧 Empilement vertical des widgets...\n");
+    debug_printf("🔧 Empilement vertical des widgets (avec centrage)...\n");
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // ÉTAPE 1: Trouver le container_width maximum des widgets INCREMENT
+    // ─────────────────────────────────────────────────────────────────────────
+    int max_increment_width = 0;
+    for (int i = 0; i < rect_count; i++) {
+        if (rects[i].type == WIDGET_TYPE_INCREMENT) {
+            if (rects[i].width > max_increment_width) {
+                max_increment_width = rects[i].width;
+            }
+        }
+    }
+
+    // Calculer la position de départ pour centrer les INCREMENT
+    int increment_start_x = (panel_width - max_increment_width) / 2;
+    debug_printf("   📐 Max INCREMENT width=%d, centré à x=%d\n",
+                 max_increment_width, increment_start_x);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ÉTAPE 2: Empiler les widgets
+    // ─────────────────────────────────────────────────────────────────────────
     for (int i = 0; i < rect_count; i++) {
         WidgetRect* r = &rects[i];
 
@@ -1031,7 +1050,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     // Labels: appliquer alignement selon JSON, Y fixe
                     switch (w->alignment) {
                         case LABEL_ALIGN_LEFT:
-                            w->base.x = content_left_x;
+                            w->base.x = 20;  // Marge gauche
                             break;
                         case LABEL_ALIGN_CENTER:
                             w->base.x = center_x - (w->base.width / 2);
@@ -1050,14 +1069,18 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.x = center_x - (w->base_frame_size / 2);
                     // Avancer current_y pour widgets suivants
                     current_y = w->base.y + w->base_frame_size + COLLISION_SPACING;
+                    debug_printf("   📦 PREVIEW centré (x=%d)\n", w->base.x);
                 }
                 break;
 
             case WIDGET_TYPE_INCREMENT:
                 if (r->node->widget.increment_widget) {
                     ConfigWidget* w = r->node->widget.increment_widget;
-                    w->base.x = content_left_x;
+                    // Centrer l'INCREMENT (avec justification gardée grâce au container_width)
+                    w->base.x = increment_start_x;
                     w->base.y = current_y;
+                    debug_printf("   🔢 INCREMENT '%s' centré (x=%d, y=%d)\n",
+                                w->option_name, w->base.x, w->base.y);
                     current_y += r->height + COLLISION_SPACING;
                 }
                 break;
@@ -1065,8 +1088,13 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_TOGGLE:
                 if (r->node->widget.toggle_widget) {
                     ToggleWidget* w = r->node->widget.toggle_widget;
-                    w->base.x = content_left_x;
+                    // Aligner le toggle à DROITE avec les INCREMENT
+                    // Bord droit du toggle = bord droit des increment
+                    int toggle_width = w->base.base_width;  // Largeur totale (texte + switch)
+                    w->base.x = increment_start_x + max_increment_width - toggle_width;
                     w->base.y = current_y;
+                    debug_printf("   🎚️  TOGGLE aligné à droite (x=%d, y=%d, right=%d)\n",
+                                w->base.x, w->base.y, w->base.x + toggle_width);
                     current_y += r->height + COLLISION_SPACING;
                 }
                 break;
@@ -1074,8 +1102,10 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_SELECTOR:
                 if (r->node->widget.selector_widget) {
                     SelectorWidget* w = r->node->widget.selector_widget;
-                    w->base.x = content_left_x;
+                    // Centrer le SELECTOR
+                    w->base.x = increment_start_x;
                     w->base.y = current_y;
+                    debug_printf("   📋 SELECTOR centré (x=%d, y=%d)\n", w->base.x, w->base.y);
                     current_y += r->height + COLLISION_SPACING + 10;  // +10 pour callbacks
                 }
                 break;
@@ -1124,17 +1154,22 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                         current_y += r->height + COLLISION_SPACING;
                     }
 
-                    // Position X et largeur
-                    sep_w->base.x = content_left_x;
-                    sep_w->base.width = panel_width - content_left_x - 20;
+                    // Position X centrée, largeur adaptée
+                    sep_w->base.x = increment_start_x;
+                    sep_w->base.width = max_increment_width;
+                    debug_printf("   ➖ SEPARATOR centré (x=%d, w=%d)\n",
+                                sep_w->base.x, sep_w->base.width);
                 }
                 break;
 
             case WIDGET_TYPE_BUTTON:
                 if (r->node->widget.button_widget) {
                     ButtonWidget* w = r->node->widget.button_widget;
-                    w->base.x = content_left_x;
+                    // Centrer le BUTTON
+                    w->base.x = center_x - (w->base.width / 2);
                     w->base.y = current_y;
+                    debug_printf("   🔘 BUTTON '%s' centré (x=%d, y=%d)\n",
+                                w->text, w->base.x, w->base.y);
                     current_y += r->height + COLLISION_SPACING;
                 }
                 break;
