@@ -1071,9 +1071,10 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_LABEL:
                 if (r->node->widget.label_widget) {
                     LabelWidget* w = r->node->widget.label_widget;
-                    // Labels: NE PAS modifier X, garder position JSON
-                    // Le Y reste fixe aussi (pas d'empilement vertical pour les titres)
-                    debug_printf("   📝 LABEL '%s' garde position JSON (x=%d, y=%d)\n",
+                    // Labels: FORCER restauration position JSON (protection contre modifications accidentelles)
+                    w->base.x = w->base.base_x;
+                    w->base.y = w->base.base_y;
+                    debug_printf("   📝 LABEL '%s' restauré à position JSON (x=%d, y=%d)\n",
                                 w->text, w->base.x, w->base.y);
                 }
                 break;
@@ -1154,20 +1155,22 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     // ═════════════════════════════════════════════════════════════
 
                     if (widget_above_type == WIDGET_TYPE_LABEL) {
-                        // Widget au-dessus = LABEL (titre) → Position Y fixe, X fixe
+                        // Widget au-dessus = LABEL (titre) → FORCER restauration positions JSON
                         // Exemple : séparateur "Sessions"
-                        // NE PAS modifier sep_w->base.y ni sep_w->base.x, garder positions JSON
-                        debug_printf("   📏 Séparateur après LABEL → X et Y fixes (x=%d, base_y=%d)\n",
-                                    sep_w->base.x, sep_w->base.base_y);
+                        sep_w->base.x = sep_w->base_start_margin;
+                        sep_w->base.y = sep_w->base.base_y;
+                        debug_printf("   📏 Séparateur après LABEL → restauré à position JSON (x=%d, y=%d)\n",
+                                    sep_w->base.x, sep_w->base.y);
                     } else {
                         // Widget au-dessus = widget callback → Empiler juste en-dessous
-                        // SEULEMENT modifier Y, PAS X ni width (garder position/largeur JSON)
+                        // SAUVEGARDER X actuel, modifier SEULEMENT Y
+                        int saved_x = sep_w->base.x;
                         current_y += SEPARATOR_EXTRA_SPACING;
+                        sep_w->base.x = saved_x;  // FORCER préservation de X
                         sep_w->base.y = current_y;
 
-                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx), X et width gardés (x=%d w=%d)\n",
-                                    widget_above_type, current_y, SEPARATOR_EXTRA_SPACING,
-                                    sep_w->base.x, sep_w->base.width);
+                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx), X préservé à %d\n",
+                                    widget_above_type, current_y, SEPARATOR_EXTRA_SPACING, sep_w->base.x);
                         current_y += r->height + COLLISION_SPACING;
                     }
                 }
