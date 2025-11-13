@@ -1165,8 +1165,8 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                         // Widget au-dessus = LABEL (titre) → Position Y fixe, X fixe
                         // Exemple : séparateur "Sessions"
                         // NE PAS modifier sep_w->base.y ni sep_w->base.x, garder positions JSON
-                        debug_printf("   📏 Séparateur après LABEL → X et Y fixes (base_x=%d, base_y=%d)\n",
-                                    sep_w->base.base_x, sep_w->base.base_y);
+                        debug_printf("   📏 Séparateur après LABEL → X et Y fixes (x=%d, base_y=%d)\n",
+                                    sep_w->base.x, sep_w->base.base_y);
                     } else {
                         // Widget au-dessus = widget callback → Empiler juste en-dessous
                         current_y += SEPARATOR_EXTRA_SPACING;

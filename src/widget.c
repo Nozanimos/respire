@@ -245,6 +245,11 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     int widget_screen_y = offset_y + widget->base.y;
 
     // ─────────────────────────────────────────────────────────────────────────
+    // OBTENIR LA POLICE À LA BONNE TAILLE (pour tous les calculs)
+    // ─────────────────────────────────────────────────────────────────────────
+    TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
+
+    // ─────────────────────────────────────────────────────────────────────────
     // CALCUL DES POSITIONS POUR L'ALIGNEMENT EN COLONNES
     // ─────────────────────────────────────────────────────────────────────────
     // Si container_width > 0, on aligne les flèches+valeur à droite
@@ -308,9 +313,8 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // OBTENIR LA POLICE À LA BONNE TAILLE (celle utilisée pour mesurer)
+    // RENDU DU TEXTE
     // ─────────────────────────────────────────────────────────────────────────
-    TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
     if (correct_font) {
         SDL_Surface* text_surface = TTF_RenderUTF8_Blended(correct_font, widget->option_name, widget->color);
         if (text_surface) {
