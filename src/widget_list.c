@@ -445,9 +445,18 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
 //   - list : La liste de widgets
 //   - event : L'événement SDL à traiter
 //   - offset_x, offset_y : Offset du conteneur parent
+//   - scroll_offset : Décalage vertical du scroll (pour ajuster les collisions)
 void handle_widget_list_events(WidgetList* list, SDL_Event* event,
-                               int offset_x, int offset_y) {
+                               int offset_x, int offset_y, int scroll_offset) {
     if (is_widget_list_empty(list) || !event) return;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // APPLIQUER LE SCROLL À L'OFFSET VERTICAL
+    // ═════════════════════════════════════════════════════════════════════════
+    // IMPORTANT : Le rendu utilise (offset_y - scroll_offset), donc la détection
+    // de collision doit utiliser la MÊME formule pour que les zones cliquables
+    // correspondent exactement aux zones rendues à l'écran !
+    int adjusted_offset_y = offset_y - scroll_offset;
 
     WidgetNode* node = list->first;
     while (node) {
@@ -458,28 +467,28 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
                     handle_config_widget_events(node->widget.increment_widget,
-                                              event, offset_x, offset_y);
+                                              event, offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_TOGGLE:
                 if (node->widget.toggle_widget) {
                     handle_toggle_widget_events(node->widget.toggle_widget,
-                                              event, offset_x, offset_y);
+                                              event, offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_BUTTON:
                 if (node->widget.button_widget) {
                     handle_button_widget_events(node->widget.button_widget,
-                                              event, offset_x, offset_y);
+                                              event, offset_x, adjusted_offset_y);
                 }
                 break;
 
             case WIDGET_TYPE_SELECTOR:
                 if (node->widget.selector_widget) {
                     handle_selector_widget_events(node->widget.selector_widget,
-                                                 event, offset_x, offset_y);
+                                                 event, offset_x, adjusted_offset_y);
                 }
                 break;
 

@@ -494,8 +494,8 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
         // Gestion du scroll (molette souris)
         handle_panel_scroll(panel, event);
 
-        // Événements des widgets
-        handle_widget_list_events(panel->widget_list, event, panel_x, panel_y);
+        // Événements des widgets (avec scroll_offset pour alignement collision/rendu)
+        handle_widget_list_events(panel->widget_list, event, panel_x, panel_y, panel->scroll_offset);
     }
 
     if (event->type == SDL_MOUSEBUTTONUP) {
