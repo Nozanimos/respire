@@ -177,6 +177,11 @@ void cancel_button_clicked(void) {
     debug_printf("✅ Panneau fermé\n");
 }
 // ════════════════════════════════════════════════════════════════════════════
+//  FORWARD DECLARATIONS (fonctions définies plus bas)
+// ════════════════════════════════════════════════════════════════════════════
+static void precalculate_label_dimensions(SettingsPanel* panel);
+
+// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU PANNEAU
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -296,6 +301,15 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
         gear_size,
         gear_size
     };
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PRÉ-CALCUL DES DIMENSIONS DES LABEL (avant le layout)
+    // ════════════════════════════════════════════════════════════════════════
+    // IMPORTANT : Les LABEL avec alignment=CENTER ont besoin de connaître leur
+    // width pour être centrés correctement. Or width est normalement calculé au
+    // rendu. On le pré-calcule ici pour que le premier recalculate_widget_layout()
+    // puisse positionner correctement les LABEL CENTER.
+    precalculate_label_dimensions(panel);
 
     // ════════════════════════════════════════════════════════════════════════
     // CALCUL DES POSITIONS INITIALES (responsive)
@@ -907,6 +921,35 @@ static int calculate_required_width_for_json_layout(SettingsPanel* panel) {
 // ═══════════════════════════════════════════════════════════════════════════
 // FONCTIONS HELPER POUR LE LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════
+/**
+ * Pré-calcule les dimensions (width/height) de tous les LABEL
+ * Nécessaire pour que apply_label_alignment() fonctionne correctement au chargement
+ */
+static void precalculate_label_dimensions(SettingsPanel* panel) {
+    if (!panel || !panel->widget_list) return;
+
+    WidgetNode* node = panel->widget_list->first;
+    while (node) {
+        if (node->type == WIDGET_TYPE_LABEL && node->widget.label_widget) {
+            LabelWidget* label = node->widget.label_widget;
+
+            // Obtenir la police appropriée
+            TTF_Font* font = get_font_for_size(label->current_text_size);
+            if (font) {
+                // Calculer les dimensions du texte
+                int w = 0, h = 0;
+                if (TTF_SizeUTF8(font, label->text, &w, &h) == 0) {
+                    label->base.width = w;
+                    label->base.height = h;
+                    debug_printf("📐 Pré-calcul LABEL '%s': width=%d, height=%d\n",
+                                label->text, w, h);
+                }
+            }
+        }
+        node = node->next;
+    }
+}
+
 /**
  * Applique l'alignement d'un LABEL (LEFT/CENTER/RIGHT) selon sa configuration
  * Fonction helper pour éviter duplication de code et garantir cohérence
