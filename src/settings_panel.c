@@ -206,6 +206,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->layout_threshold_width = 350;  // Passer en mode colonne si largeur < 350px
     panel->widgets_stacked = false;       // Initialement, widgets aux positions originales
     panel->panel_width_when_stacked = 0;  // 0 = jamais empilé
+    panel->skip_collision_check = false;  // Tester les collisions normalement
 
     debug_printf("🎨 Création panneau avec scale: %.2f\n", scale_factor);
 
@@ -953,29 +954,29 @@ void recalculate_widget_layout(SettingsPanel* panel) {
                 case WIDGET_TYPE_PREVIEW:
                     if (node->widget.preview_widget) {
                         PreviewWidget* w = node->widget.preview_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
+                        w->base.x = w->base.base_x;  // Position JSON absolue
                         w->base.y = w->base.base_y;
                     }
                     break;
                 case WIDGET_TYPE_INCREMENT:
                     if (node->widget.increment_widget) {
                         ConfigWidget* w = node->widget.increment_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                        w->base.x = w->base.base_x;  // Position JSON absolue
+                        w->base.y = w->base.base_y;
                     }
                     break;
                 case WIDGET_TYPE_SELECTOR:
                     if (node->widget.selector_widget) {
                         SelectorWidget* w = node->widget.selector_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                        w->base.x = w->base.base_x;  // Position JSON absolue
+                        w->base.y = w->base.base_y;
                     }
                     break;
                 case WIDGET_TYPE_TOGGLE:
                     if (node->widget.toggle_widget) {
                         ToggleWidget* w = node->widget.toggle_widget;
-                        w->base.x = (int)(w->base.base_x * panel_ratio);
-                        w->base.y = (int)(w->base.base_y * panel_ratio);
+                        w->base.x = w->base.base_x;  // Position JSON absolue
+                        w->base.y = w->base.base_y;
                     }
                     break;
                 case WIDGET_TYPE_SEPARATOR:
@@ -1000,8 +1001,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         // Si on la réinitialise, on re-rentrera dans la boucle infinie
         // ═════════════════════════════════════════════════════════════════════════
         panel->widgets_stacked = false;
+        panel->skip_collision_check = true;  // Éviter test collision au prochain appel
         debug_printf("✅ Widgets dépilés et restaurés aux positions JSON\n");
         debug_printf("   📌 panel_width_when_stacked=%dpx (gardé en mémoire)\n", panel->panel_width_when_stacked);
+        debug_printf("   🚫 skip_collision_check=true (pour 1 frame)\n");
 
         // Pas besoin d'aller plus loin! On évite toute la logique de collision
         // qui causait la boucle infinie
@@ -1143,8 +1146,17 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     // ═══════════════════════════════════════════════════════════════════════════
     // Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
     // Critère 2: Détection de collision (si collision, réorganiser)
+    // Exception: skip_collision_check=true après dépilement (pour 1 frame)
 
     bool needs_reorganization = false;
+
+    // Si flag skip_collision_check, ne pas tester les collisions (vient de dépiler)
+    if (panel->skip_collision_check) {
+        debug_printf("🚫 skip_collision_check=true → pas de test collision (vient de dépiler)\n");
+        panel->skip_collision_check = false;  // Réinitialiser pour le prochain appel
+        needs_reorganization = false;
+        goto skip_collision_test;  // Sauter le test de collision
+    }
 
     // Vérifier si le panneau est trop étroit
     if (panel_width < panel->layout_threshold_width) {
@@ -1167,6 +1179,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
             }
         }
     }
+
+skip_collision_test:  // Label pour goto si skip_collision_check=true
 
     // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE (empilement)
