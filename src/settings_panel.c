@@ -1071,18 +1071,10 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_LABEL:
                 if (r->node->widget.label_widget) {
                     LabelWidget* w = r->node->widget.label_widget;
-                    // Labels: appliquer alignement selon JSON, Y fixe
-                    switch (w->alignment) {
-                        case LABEL_ALIGN_LEFT:
-                            w->base.x = 20;  // Marge gauche
-                            break;
-                        case LABEL_ALIGN_CENTER:
-                            w->base.x = center_x - (w->base.width / 2);
-                            break;
-                        case LABEL_ALIGN_RIGHT:
-                            w->base.x = panel_width - w->base.width - 20;
-                            break;
-                    }
+                    // Labels: NE PAS modifier X, garder position JSON
+                    // Le Y reste fixe aussi (pas d'empilement vertical pour les titres)
+                    debug_printf("   📝 LABEL '%s' garde position JSON (x=%d, y=%d)\n",
+                                w->text, w->base.x, w->base.y);
                 }
                 break;
 
@@ -1169,14 +1161,11 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                                     sep_w->base.x, sep_w->base.base_y);
                     } else {
                         // Widget au-dessus = widget callback → Empiler juste en-dessous
+                        // SEULEMENT modifier Y, PAS X ni width (garder position/largeur JSON)
                         current_y += SEPARATOR_EXTRA_SPACING;
                         sep_w->base.y = current_y;
 
-                        // Position X centrée, largeur adaptée
-                        sep_w->base.x = increment_start_x;
-                        sep_w->base.width = max_increment_width;
-
-                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx), centré X=%d w=%d\n",
+                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx), X et width gardés (x=%d w=%d)\n",
                                     widget_above_type, current_y, SEPARATOR_EXTRA_SPACING,
                                     sep_w->base.x, sep_w->base.width);
                         current_y += r->height + COLLISION_SPACING;
