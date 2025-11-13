@@ -907,6 +907,27 @@ static int calculate_required_width_for_json_layout(SettingsPanel* panel) {
 // ═══════════════════════════════════════════════════════════════════════════
 // FONCTIONS HELPER POUR LE LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════
+/**
+ * Applique l'alignement d'un LABEL (LEFT/CENTER/RIGHT) selon sa configuration
+ * Fonction helper pour éviter duplication de code et garantir cohérence
+ */
+static void apply_label_alignment(LabelWidget* label, int panel_width) {
+    if (!label) return;
+
+    label->base.y = label->base.base_y;  // Toujours restaurer Y
+
+    switch (label->alignment) {
+        case LABEL_ALIGN_LEFT:
+            label->base.x = label->base.base_x;
+            break;
+        case LABEL_ALIGN_CENTER:
+            label->base.x = (panel_width - label->base.width) / 2;
+            break;
+        case LABEL_ALIGN_RIGHT:
+            label->base.x = panel_width - label->base.width - 20;
+            break;
+    }
+}
 
 /**
  * Restaure les positions JSON originales de tous les widgets (dépilement)
@@ -923,20 +944,7 @@ static void restore_json_positions(SettingsPanel* panel) {
         switch (node->type) {
             case WIDGET_TYPE_LABEL:
                 if (node->widget.label_widget) {
-                    LabelWidget* w = node->widget.label_widget;
-                    w->base.y = w->base.base_y;
-                    // Appliquer l'alignement selon le JSON
-                    switch (w->alignment) {
-                        case LABEL_ALIGN_LEFT:
-                            w->base.x = w->base.base_x;
-                            break;
-                        case LABEL_ALIGN_CENTER:
-                            w->base.x = (panel_width - w->base.width) / 2;
-                            break;
-                        case LABEL_ALIGN_RIGHT:
-                            w->base.x = panel_width - w->base.width - 20;
-                            break;
-                    }
+                    apply_label_alignment(node->widget.label_widget, panel_width);
                 }
                 break;
 
@@ -1071,23 +1079,10 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_LABEL:
                 if (r->node->widget.label_widget) {
                     LabelWidget* w = r->node->widget.label_widget;
-                    // Labels: Appliquer l'alignement selon le JSON (même logique que restore_json_positions)
-                    w->base.y = w->base.base_y;
-                    switch (w->alignment) {
-                        case LABEL_ALIGN_LEFT:
-                            w->base.x = w->base.base_x;
-                            debug_printf("   📝 LABEL '%s' LEFT à x=%d\n", w->text, w->base.x);
-                            break;
-                        case LABEL_ALIGN_CENTER:
-                            w->base.x = (panel_width - w->base.width) / 2;
-                            debug_printf("   📝 LABEL '%s' CENTER à x=%d (panel_width=%d, width=%d)\n",
-                                        w->text, w->base.x, panel_width, w->base.width);
-                            break;
-                        case LABEL_ALIGN_RIGHT:
-                            w->base.x = panel_width - w->base.width - 20;
-                            debug_printf("   📝 LABEL '%s' RIGHT à x=%d\n", w->text, w->base.x);
-                            break;
-                    }
+                    apply_label_alignment(w, panel_width);
+                    const char* align_str = (w->alignment == LABEL_ALIGN_LEFT) ? "LEFT" :
+                                           (w->alignment == LABEL_ALIGN_CENTER) ? "CENTER" : "RIGHT";
+                    debug_printf("   📝 LABEL '%s' %s à x=%d\n", w->text, align_str, w->base.x);
                 }
                 break;
 
