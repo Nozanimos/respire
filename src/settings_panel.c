@@ -1071,11 +1071,23 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_LABEL:
                 if (r->node->widget.label_widget) {
                     LabelWidget* w = r->node->widget.label_widget;
-                    // Labels: FORCER restauration position JSON (protection contre modifications accidentelles)
-                    w->base.x = w->base.base_x;
+                    // Labels: Appliquer l'alignement selon le JSON (même logique que restore_json_positions)
                     w->base.y = w->base.base_y;
-                    debug_printf("   📝 LABEL '%s' restauré à position JSON (x=%d, y=%d)\n",
-                                w->text, w->base.x, w->base.y);
+                    switch (w->alignment) {
+                        case LABEL_ALIGN_LEFT:
+                            w->base.x = w->base.base_x;
+                            debug_printf("   📝 LABEL '%s' LEFT à x=%d\n", w->text, w->base.x);
+                            break;
+                        case LABEL_ALIGN_CENTER:
+                            w->base.x = (panel_width - w->base.width) / 2;
+                            debug_printf("   📝 LABEL '%s' CENTER à x=%d (panel_width=%d, width=%d)\n",
+                                        w->text, w->base.x, panel_width, w->base.width);
+                            break;
+                        case LABEL_ALIGN_RIGHT:
+                            w->base.x = panel_width - w->base.width - 20;
+                            debug_printf("   📝 LABEL '%s' RIGHT à x=%d\n", w->text, w->base.x);
+                            break;
+                    }
                 }
                 break;
 
