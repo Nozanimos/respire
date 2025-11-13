@@ -125,7 +125,7 @@ typedef struct {
     // Cela évite la boucle infinie de pile/dépile
     // ═══════════════════════════════════════════════════════════════════════════
     int panel_width_when_stacked;  // Largeur du panneau au moment de l'empilement (0 = jamais empilé)
-    bool skip_collision_check;     // Flag pour sauter test collision juste après dépilement
+    bool layout_dirty;             // Flag pour recalculer le layout (évite recalculs multiples par frame)
 
     // Anciens éléments (à supprimer progressivement)
     SDL_Texture* apply_button_texture;
