@@ -277,10 +277,14 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     // FOND AU SURVOL (rectangle arrondi)
     // ─────────────────────────────────────────────────────────────────────────
     if (widget->base.hovered) {
+        // Utiliser container_width si disponible, sinon widget->base.width
+        // container_width reflète la largeur réelle du groupe (incluant la valeur actuelle)
+        int hover_width = (container_width > 0) ? container_width : widget->base.width;
+
         roundedBoxRGBA(renderer,
                        widget_screen_x - 5,
                        widget_screen_y - 5,
-                       widget_screen_x + widget->base.width + 5,
+                       widget_screen_x + hover_width + 5,
                        widget_screen_y + widget->base.height + 5,
                        5,
                        widget->bg_hover_color.r,
