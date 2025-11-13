@@ -1264,8 +1264,9 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         }
     } else {
         debug_printf("✅ Aucune collision - pas besoin d'empiler\n");
-        // Les widgets ne sont pas empilés (positions originales ou restaurées conservées)
-        panel->widgets_stacked = false;
+        // NE PAS modifier widgets_stacked ici! Si widgets_stacked = 1, on doit
+        // le garder car le dépilement n'a pas eu lieu (panel_width < min_width).
+        // Ne faire widgets_stacked = false QUE lors du dépilement explicite.
     }
 
 calculate_heights:
