@@ -22,27 +22,30 @@ commands
   while $j < rect_count
     printf "   [%d] type=%d", $j, rects[$j].type
 
-    # Afficher le type en clair
+    # Afficher le type en clair (ORDRE CORRECT widget_types.h)
     if rects[$j].type == 0
       printf " (LABEL)"
     end
     if rects[$j].type == 1
-      printf " (PREVIEW)"
+      printf " (SEPARATOR)"
     end
     if rects[$j].type == 2
-      printf " (INCREMENT)"
+      printf " (PREVIEW)"
     end
     if rects[$j].type == 3
-      printf " (SELECTOR)"
+      printf " (INCREMENT)"
     end
     if rects[$j].type == 4
       printf " (TOGGLE)"
     end
     if rects[$j].type == 5
-      printf " (SEPARATOR)"
+      printf " (SLIDER)"
     end
     if rects[$j].type == 6
       printf " (BUTTON)"
+    end
+    if rects[$j].type == 7
+      printf " (SELECTOR)"
     end
 
     if $j == i
@@ -71,20 +74,30 @@ commands
   printf "   widget_above_index=%d\n", widget_above_index
   printf "   widget_above_type=%d", widget_above_type
 
+  # Mapping CORRECT selon widget_types.h
   if widget_above_type == 0
     printf " (LABEL)\n"
   end
+  if widget_above_type == 1
+    printf " (SEPARATOR)\n"
+  end
   if widget_above_type == 2
-    printf " (INCREMENT)\n"
+    printf " (PREVIEW)\n"
   end
   if widget_above_type == 3
-    printf " (SELECTOR)\n"
+    printf " (INCREMENT)\n"
   end
   if widget_above_type == 4
     printf " (TOGGLE)\n"
   end
+  if widget_above_type == 5
+    printf " (SLIDER)\n"
+  end
   if widget_above_type == 6
     printf " (BUTTON)\n"
+  end
+  if widget_above_type == 7
+    printf " (SELECTOR)\n"
   end
 
   continue
