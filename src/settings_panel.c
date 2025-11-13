@@ -1021,21 +1021,45 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
     debug_printf("🔧 Empilement vertical des widgets (avec centrage)...\n");
 
     // ─────────────────────────────────────────────────────────────────────────
-    // ÉTAPE 1: Trouver le container_width maximum des widgets INCREMENT
+    // ÉTAPE 1: Trouver la largeur RÉELLE maximum des widgets INCREMENT
     // ─────────────────────────────────────────────────────────────────────────
+    // Ne PAS utiliser rects[i].width qui contient container_width (pour alignement)
+    // Calculer la largeur réelle de chaque INCREMENT (nom + flèches + valeur)
     int max_increment_width = 0;
     for (int i = 0; i < rect_count; i++) {
-        if (rects[i].type == WIDGET_TYPE_INCREMENT) {
-            if (rects[i].width > max_increment_width) {
-                max_increment_width = rects[i].width;
+        if (rects[i].type == WIDGET_TYPE_INCREMENT &&
+            rects[i].node->widget.increment_widget) {
+
+            ConfigWidget* w = rects[i].node->widget.increment_widget;
+
+            // Mesurer la largeur de la valeur actuelle
+            char value_str[16];
+            snprintf(value_str, sizeof(value_str), "%d", w->value);
+            int value_width = 0;
+
+            TTF_Font* font = get_font_for_size(w->current_text_size);
+            if (font) {
+                TTF_SizeUTF8(font, value_str, &value_width, NULL);
+            } else {
+                value_width = strlen(value_str) * (w->current_text_size / 2);
+            }
+
+            // Largeur réelle = local_arrows_x + arrow_size + espace + value_width + marge
+            int real_width = w->local_arrows_x + w->arrow_size +
+                            w->base_espace_apres_fleches + value_width + 10;
+
+            if (real_width > max_increment_width) {
+                max_increment_width = real_width;
             }
         }
     }
 
     // Calculer la position de départ pour centrer les INCREMENT
     int increment_start_x = (panel_width - max_increment_width) / 2;
-    debug_printf("   📐 Max INCREMENT width=%d, centré à x=%d\n",
+    debug_printf("   📐 Max INCREMENT real width=%d, centré à x=%d\n",
                  max_increment_width, increment_start_x);
+    debug_printf("   📊 Marges: gauche=%d, droite=%d\n",
+                 increment_start_x, panel_width - increment_start_x - max_increment_width);
 
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAPE 2: Empiler les widgets
@@ -1138,25 +1162,25 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     // ═════════════════════════════════════════════════════════════
 
                     if (widget_above_type == WIDGET_TYPE_LABEL) {
-                        // Widget au-dessus = LABEL (titre) → Position Y fixe
+                        // Widget au-dessus = LABEL (titre) → Position Y fixe, X fixe
                         // Exemple : séparateur "Sessions"
-                        // Ne PAS modifier sep_w->base.y, garder position JSON
-                        debug_printf("   📏 Séparateur après LABEL → Y fixe (base_y=%d)\n",
-                                    sep_w->base.base_y);
+                        // NE PAS modifier sep_w->base.y ni sep_w->base.x, garder positions JSON
+                        debug_printf("   📏 Séparateur après LABEL → X et Y fixes (base_x=%d, base_y=%d)\n",
+                                    sep_w->base.base_x, sep_w->base.base_y);
                     } else {
                         // Widget au-dessus = widget callback → Empiler juste en-dessous
                         current_y += SEPARATOR_EXTRA_SPACING;
                         sep_w->base.y = current_y;
-                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx)\n",
-                                    widget_above_type, current_y, SEPARATOR_EXTRA_SPACING);
+
+                        // Position X centrée, largeur adaptée
+                        sep_w->base.x = increment_start_x;
+                        sep_w->base.width = max_increment_width;
+
+                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx), centré X=%d w=%d\n",
+                                    widget_above_type, current_y, SEPARATOR_EXTRA_SPACING,
+                                    sep_w->base.x, sep_w->base.width);
                         current_y += r->height + COLLISION_SPACING;
                     }
-
-                    // Position X centrée, largeur adaptée
-                    sep_w->base.x = increment_start_x;
-                    sep_w->base.width = max_increment_width;
-                    debug_printf("   ➖ SEPARATOR centré (x=%d, w=%d)\n",
-                                sep_w->base.x, sep_w->base.width);
                 }
                 break;
 

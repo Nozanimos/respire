@@ -277,14 +277,28 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     // FOND AU SURVOL (rectangle arrondi)
     // ─────────────────────────────────────────────────────────────────────────
     if (widget->base.hovered) {
-        // Utiliser container_width si disponible, sinon widget->base.width
-        // container_width reflète la largeur réelle du groupe (incluant la valeur actuelle)
-        int hover_width = (container_width > 0) ? container_width : widget->base.width;
+        // Calculer la largeur RÉELLE du widget (nom + flèches + valeur)
+        // Ne PAS utiliser container_width qui est pour l'alignement du groupe
+
+        // Mesurer la largeur de la valeur actuelle
+        char value_str[16];
+        snprintf(value_str, sizeof(value_str), "%d", widget->value);
+        int value_width = 0;
+
+        if (correct_font) {
+            TTF_SizeUTF8(correct_font, value_str, &value_width, NULL);
+        } else {
+            value_width = strlen(value_str) * (widget->current_text_size / 2);
+        }
+
+        // Largeur réelle = position des flèches + taille flèches + espace + largeur valeur
+        int real_width = widget->local_arrows_x + widget->arrow_size +
+                        widget->base_espace_apres_fleches + value_width + 10;
 
         roundedBoxRGBA(renderer,
                        widget_screen_x - 5,
                        widget_screen_y - 5,
-                       widget_screen_x + hover_width + 5,
+                       widget_screen_x + real_width + 5,
                        widget_screen_y + widget->base.height + 5,
                        5,
                        widget->bg_hover_color.r,
