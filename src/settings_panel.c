@@ -910,22 +910,19 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     float panel_ratio = panel->panel_ratio;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: DÉCISION DE DÉPILEMENT BASÉE SUR LA LARGEUR SAUVEGARDÉE
+    // ÉTAPE 0: DÉCISION DE DÉPILEMENT BASÉE SUR LA LARGEUR MINIMALE JSON
     // ═══════════════════════════════════════════════════════════════════════════
-    // Approche stable anti-boucle-infinie:
-    // - SI widgets empilés ET panel_width >= (largeur_au_moment_empilement + MARGE): DÉPILER
-    // - La marge (50px) évite les oscillations pile/dépile
-    // - On réinitialise panel_width_when_stacked à 0 après dépilement
+    // FIX BOUCLE INFINIE :
+    // - Dépiler seulement si panel_width >= min_width_for_unstack
+    // - min_width_for_unstack = largeur minimale calculée depuis le JSON (garantit pas de collision)
+    // - Plus besoin de panel_width_when_stacked + MARGE (causait ré-empilements successifs)
     // ═══════════════════════════════════════════════════════════════════════════
-
-    const int UNSTACK_MARGIN = 50;  // Marge pour éviter les oscillations (hystérésis)
 
     if (panel->widgets_stacked &&
-        panel->panel_width_when_stacked > 0 &&
-        panel_width >= panel->panel_width_when_stacked + UNSTACK_MARGIN) {
+        panel_width >= panel->min_width_for_unstack) {
 
-        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= (saved_width=%dpx + marge=%dpx)\n",
-                    panel_width, panel->panel_width_when_stacked, UNSTACK_MARGIN);
+        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= min_width_for_unstack=%dpx\n",
+                    panel_width, panel->min_width_for_unstack);
         debug_printf("   Restauration des positions JSON...\n");
         node = panel->widget_list->first;
         while (node) {
@@ -990,15 +987,10 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         }
 
         // ═════════════════════════════════════════════════════════════════════════
-        // RÉINITIALISER LA MÉMOIRE DE L'EMPILEMENT
+        // MARQUER LE DÉPILEMENT TERMINÉ
         // ═════════════════════════════════════════════════════════════════════════
-        // On remet panel_width_when_stacked à 0 pour permettre un nouvel empilement
-        // si la fenêtre est à nouveau réduite
-        // ═════════════════════════════════════════════════════════════════════════
-        panel->panel_width_when_stacked = 0;
         panel->widgets_stacked = false;
         debug_printf("✅ Widgets dépilés et restaurés aux positions JSON\n");
-        debug_printf("   🔓 panel_width_when_stacked réinitialisé à 0\n");
 
         // Pas besoin d'aller plus loin! On évite toute la logique de collision
         // qui causait la boucle infinie
@@ -1175,21 +1167,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
 
         // Marquer que les widgets sont maintenant empilés
         panel->widgets_stacked = true;
-
-        // ═════════════════════════════════════════════════════════════════════════
-        // SAUVEGARDER LA LARGEUR DU PANNEAU AU MOMENT DE L'EMPILEMENT
-        // ═════════════════════════════════════════════════════════════════════════
-        // On sauvegarde UNE SEULE FOIS (si == 0) pour éviter la boucle infinie
-        // Cette valeur servira de référence pour décider quand dépiler
-        // ═════════════════════════════════════════════════════════════════════════
-        if (panel->panel_width_when_stacked == 0) {
-            panel->panel_width_when_stacked = panel_width;
-            debug_printf("   💾 SAUVEGARDE panel_width_when_stacked = %dpx\n",
-                        panel->panel_width_when_stacked);
-        } else {
-            debug_printf("   ♻️  panel_width_when_stacked déjà sauvegardé = %dpx (pas de recalcul)\n",
-                        panel->panel_width_when_stacked);
-        }
+        debug_printf("   📐 min_width_for_unstack = %dpx (pour dépiler)\n",
+                    panel->min_width_for_unstack);
 
         int current_y = 50;  // Marge du haut
         int content_left_x = center_x - 150;  // Point de départ à gauche du centre (alignement à gauche)
