@@ -17,7 +17,7 @@
             "type": "titre",
             "texte": "Configuration",
             "alignment": "center",
-            "x": 176,
+            "x": 0,
             "y": 10,
             "taille_texte": 24,
             "souligne": true
