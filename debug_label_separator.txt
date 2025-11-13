@@ -1,0 +1,90 @@
+GNU gdb (GDB) 16.3
+Copyright (C) 2024 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-pc-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word".
+Breakpoint 1 at 0x11a76: file src/settings_panel.c, line 1067.
+Breakpoint 2 at 0x11b59: file src/settings_panel.c, line 1087.
+Breakpoint 3 at 0x11e61: file src/settings_panel.c, line 1164.
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7fffde1ff6c0 (LWP 42637)]
+[New Thread 0x7fffdd9fe6c0 (LWP 42638)]
+debug_label_separator.gdb:112: Error in sourced command file:
+No symbol "r" in current context.
+[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+No symbol "r" in current context.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+No symbol "r" in current context.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+No symbol "r" in current context.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+No symbol "r" in current context.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+No symbol "r" in current context.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+Value can't be converted to integer.
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+[Thread 0x7fffdd9fe6c0 (LWP 42638) exited]
+[Thread 0x7fffde1ff6c0 (LWP 42637) exited]
+[Inferior 1 (process 42627) exited normally]
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lThe program is not being run.
+[?2004h(gdb) quit
+[?2004l
