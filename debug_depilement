@@ -1,0 +1,3201 @@
+GNU gdb (GDB) 16.3
+Copyright (C) 2024 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-pc-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./respire...
+Breakpoint 1 at 0x114ae: file src/settings_panel.c, line 901.
+Breakpoint 2 at 0x1152f: file src/settings_panel.c, line 923.
+Breakpoint 3 at 0x1157b: file src/settings_panel.c, line 927.
+Breakpoint 4 at 0x11979: file src/settings_panel.c, line 998.
+Breakpoint 5 at 0x12457: file src/settings_panel.c, line 1157.
+Breakpoint 6 at 0x125ee: file src/settings_panel.c, line 1173.
+Breakpoint 7 at 0x1261d: file src/settings_panel.c, line 1185.
+
+════════════════════════════════════════════════════════════════════════
+  SCRIPT GDB CHARGÉ : Trace empilement/dépilement
+════════════════════════════════════════════════════════════════════════
+
+ÉTAPES :
+  1. (gdb) run
+  2. Ouvrir le panneau de configuration (icône engrenage)
+  3. CTRL+C pour interrompre
+  4. (gdb) watch panel->widgets_stacked
+  5. (gdb) continue
+  6. Réduire/élargir la fenêtre et observer les traces
+
+BREAKPOINTS ACTIFS :
+  - Entrée recalculate_widget_layout (affiche état)
+  - Condition dépilement (ligne 922)
+  - Entrée bloc dépilement (ligne 926)
+  - Réinitialisation après dépilement (ligne 991)
+  - Condition empilement (ligne 1157)
+  - Sauvegarde panel_width_when_stacked (ligne 1169)
+════════════════════════════════════════════════════════════════════════
+
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7fffde1ff6c0 (LWP 19165)]
+[New Thread 0x7fffdd9fe6c0 (LWP 19166)]
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 500
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 480
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 480
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 480 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 480
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 480
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 480
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 480 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 480
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 462
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 462
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 462 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 462
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 462
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 462
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 462 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 462
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 446
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 446
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 446 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 446
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 446
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 446
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 446 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 446
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 420
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 420
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 420 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 420
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 420
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 420
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 420 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 420
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 392
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 392
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 392 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 392
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 392
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 392
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 392 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 392
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 361
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 361
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 361 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 361
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 361
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 361
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 361 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 361
+  ✅ VA SAUVEGARDER (== 0)
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 327
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 327
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 327 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 327
+  ✅ VA SAUVEGARDER (== 0)
+
+  💾 panel_width_when_stacked (après) = 0
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 327
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 327
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 327 >= 377 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 327
+  panel_width (actuel)              = 327
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 327
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 324
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 324
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 324 >= 377 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 327
+  panel_width (actuel)              = 324
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 327
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 324
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 324
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 324 >= 377 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 327
+  panel_width (actuel)              = 324
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 327
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 340
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 340
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 340 >= 377 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 327
+  panel_width (actuel)              = 340
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 327
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 340
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 340
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 340 >= 377 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 327
+  panel_width (actuel)              = 340
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 327
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 352
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 352
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 352 >= 377 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 327
+  panel_width (actuel)              = 352
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 327
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 352
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 352
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 352 >= 377 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 327
+  panel_width (actuel)              = 352
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 327
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 382
+  widgets_stacked       = 1
+  panel_width_when_stacked = 327
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 327
+  panel_width               = 382
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 382 >= 377 ? ✅ OUI -> VA DÉPILER
+
+
+🔄🔄🔄 DÉPILEMENT EN COURS 🔄🔄🔄
+  panel_width = 382, saved_width = 327
+
+🔓 RÉINITIALISATION panel_width_when_stacked = 0
+   (widgets_stacked sera mis à false)
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 382
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 382
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 382 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 382
+  ✅ VA SAUVEGARDER (== 0)
+
+  💾 panel_width_when_stacked (après) = 0
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 437
+  widgets_stacked       = 1
+  panel_width_when_stacked = 382
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 382
+  panel_width               = 437
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 437 >= 432 ? ✅ OUI -> VA DÉPILER
+
+
+🔄🔄🔄 DÉPILEMENT EN COURS 🔄🔄🔄
+  panel_width = 437, saved_width = 382
+
+🔓 RÉINITIALISATION panel_width_when_stacked = 0
+   (widgets_stacked sera mis à false)
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 437
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 437
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 437 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 437
+  ✅ VA SAUVEGARDER (== 0)
+
+  💾 panel_width_when_stacked (après) = 0
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 488
+  widgets_stacked       = 1
+  panel_width_when_stacked = 437
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 437
+  panel_width               = 488
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 488 >= 487 ? ✅ OUI -> VA DÉPILER
+
+
+🔄🔄🔄 DÉPILEMENT EN COURS 🔄🔄🔄
+  panel_width = 488, saved_width = 437
+
+🔓 RÉINITIALISATION panel_width_when_stacked = 0
+   (widgets_stacked sera mis à false)
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 488
+  widgets_stacked       = 0
+  panel_width_when_stacked = 0
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 0
+  panel_width_when_stacked  = 0
+  panel_width               = 488
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 488 >= 50 ? ✅ OUI -> VA DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 0
+  panel_width (actuel)              = 488
+  ✅ VA SAUVEGARDER (== 0)
+
+  💾 panel_width_when_stacked (après) = 0
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+
+════════════════════════════════════════════════════════════════════════
+>>> APPEL recalculate_widget_layout()
+════════════════════════════════════════════════════════════════════════
+  panel_width           = 500
+  widgets_stacked       = 1
+  panel_width_when_stacked = 488
+════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION DÉPILEMENT (ligne 922)                               │
+└──────────────────────────────────────────────────────────────────────┘
+  widgets_stacked           = 1
+  panel_width_when_stacked  = 488
+  panel_width               = 500
+  UNSTACK_MARGIN            = 50
+  panel_width >= (saved + MARGIN) ? 500 >= 538 ? ❌ NON -> NE VA PAS DÉPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ TEST CONDITION EMPILEMENT (ligne 1157)                              │
+└──────────────────────────────────────────────────────────────────────┘
+  needs_reorganization = 0
+  ❌ NE VA PAS EMPILER
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ SAUVEGARDE panel_width_when_stacked (ligne 1169)                    │
+└──────────────────────────────────────────────────────────────────────┘
+  panel_width_when_stacked (avant) = 488
+  panel_width (actuel)              = 500
+  ⚠️  NE VA PAS SAUVEGARDER (déjà sauvegardé)
+
+  💾 panel_width_when_stacked (après) = 488
+
+[Thread 0x7fffdd9fe6c0 (LWP 19166) exited]
+[Thread 0x7fffde1ff6c0 (LWP 19165) exited]
+[Inferior 1 (process 19155) exited normally]
+[?2004h(gdb) quit
+[?2004l
