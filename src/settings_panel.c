@@ -1083,76 +1083,44 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_SEPARATOR:
                 if (r->node->widget.separator_widget) {
                     SeparatorWidget* sep_w = r->node->widget.separator_widget;
-                    int separator_base_y = sep_w->base.base_y;
 
                     // ═════════════════════════════════════════════════════════════
-                    // TROUVER LE WIDGET AU-DESSUS EN Y (pas dans l'ordre liste)
+                    // TROUVER LE WIDGET AU-DESSUS DANS LA LISTE (pas en Y)
                     // ═════════════════════════════════════════════════════════════
-                    // Parcourir tous les rects et trouver celui avec le Y le plus grand
-                    // mais inférieur au Y du séparateur (= juste au-dessus)
+                    // Parcourir vers le haut dans la liste (i-1, i-2, i-3...)
+                    // jusqu'à trouver un widget qui n'est PAS un séparateur
 
                     WidgetType widget_above_type = WIDGET_TYPE_LABEL;  // Par défaut
-                    int max_y_below_separator = -1;
+                    int widget_above_index = -1;
 
-                    for (int j = 0; j < rect_count; j++) {
-                        if (j == i) continue;  // Sauter le séparateur lui-même
-
-                        int widget_y = -1;
-
-                        // Obtenir la position Y de base (JSON) du widget
-                        switch (rects[j].type) {
-                            case WIDGET_TYPE_LABEL:
-                                if (rects[j].node->widget.label_widget)
-                                    widget_y = rects[j].node->widget.label_widget->base.base_y;
-                                break;
-                            case WIDGET_TYPE_INCREMENT:
-                                if (rects[j].node->widget.increment_widget)
-                                    widget_y = rects[j].node->widget.increment_widget->base.base_y;
-                                break;
-                            case WIDGET_TYPE_TOGGLE:
-                                if (rects[j].node->widget.toggle_widget)
-                                    widget_y = rects[j].node->widget.toggle_widget->base.base_y;
-                                break;
-                            case WIDGET_TYPE_SELECTOR:
-                                if (rects[j].node->widget.selector_widget)
-                                    widget_y = rects[j].node->widget.selector_widget->base.base_y;
-                                break;
-                            case WIDGET_TYPE_BUTTON:
-                                if (rects[j].node->widget.button_widget)
-                                    widget_y = rects[j].node->widget.button_widget->base_y;
-                                break;
-                            case WIDGET_TYPE_PREVIEW:
-                                if (rects[j].node->widget.preview_widget)
-                                    widget_y = rects[j].node->widget.preview_widget->base.base_y;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        // Si ce widget est au-dessus du séparateur (Y < separator_y)
-                        // ET plus proche que le précédent trouvé
-                        if (widget_y >= 0 && widget_y < separator_base_y && widget_y > max_y_below_separator) {
-                            max_y_below_separator = widget_y;
+                    // Remonter dans la liste jusqu'à trouver un widget non-separator
+                    for (int j = i - 1; j >= 0; j--) {
+                        if (rects[j].type != WIDGET_TYPE_SEPARATOR) {
                             widget_above_type = rects[j].type;
+                            widget_above_index = j;
+                            break;
                         }
                     }
 
+                    debug_printf("   🔎 Séparateur [%d] → widget au-dessus dans liste = [%d] type=%d\n",
+                                i, widget_above_index, widget_above_type);
+
                     // ═════════════════════════════════════════════════════════════
-                    // LOGIQUE SÉPARATEUR SELON WIDGET AU-DESSUS (en Y)
+                    // LOGIQUE SÉPARATEUR SELON WIDGET AU-DESSUS (dans la liste)
                     // ═════════════════════════════════════════════════════════════
 
                     if (widget_above_type == WIDGET_TYPE_LABEL) {
                         // Widget au-dessus = LABEL (titre) → Position Y fixe
                         // Exemple : séparateur "Sessions"
                         // Ne PAS modifier sep_w->base.y, garder position JSON
-                        debug_printf("   📏 Séparateur après LABEL (Y=%d) → Y fixe (base_y=%d)\n",
-                                    max_y_below_separator, separator_base_y);
+                        debug_printf("   📏 Séparateur après LABEL → Y fixe (base_y=%d)\n",
+                                    sep_w->base.base_y);
                     } else {
                         // Widget au-dessus = widget callback → Empiler juste en-dessous
                         current_y += SEPARATOR_EXTRA_SPACING;
                         sep_w->base.y = current_y;
-                        debug_printf("   📏 Séparateur après widget type=%d (Y=%d) → Y=%d (+%dpx)\n",
-                                    widget_above_type, max_y_below_separator, current_y, SEPARATOR_EXTRA_SPACING);
+                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx)\n",
+                                    widget_above_type, current_y, SEPARATOR_EXTRA_SPACING);
                         current_y += r->height + COLLISION_SPACING;
                     }
 
