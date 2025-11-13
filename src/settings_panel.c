@@ -909,8 +909,16 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     int center_x = panel_width / 2;
     WidgetNode* node;
 
-    // Utiliser le panel_ratio déjà calculé dans la structure
-    float panel_ratio = panel->panel_ratio;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE -1: TEST FLAG SKIP_COLLISION_CHECK (avant tout)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Si on vient de dépiler, sauter TOUT (dépilement + collision) pendant 1 frame
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (panel->skip_collision_check) {
+        debug_printf("🚫 skip_collision_check=true → sauter dépilement ET collision\n");
+        panel->skip_collision_check = false;  // Reset pour prochain appel
+        goto calculate_heights;  // Sauter toute la logique
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 0: DÉCISION DE DÉPILEMENT AVEC MÉMOIRE PERSISTANTE
@@ -1146,17 +1154,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     // ═══════════════════════════════════════════════════════════════════════════
     // Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
     // Critère 2: Détection de collision (si collision, réorganiser)
-    // Exception: skip_collision_check=true après dépilement (pour 1 frame)
 
     bool needs_reorganization = false;
-
-    // Si flag skip_collision_check, ne pas tester les collisions (vient de dépiler)
-    if (panel->skip_collision_check) {
-        debug_printf("🚫 skip_collision_check=true → pas de test collision (vient de dépiler)\n");
-        panel->skip_collision_check = false;  // Réinitialiser pour le prochain appel
-        needs_reorganization = false;
-        goto skip_collision_test;  // Sauter le test de collision
-    }
 
     // Vérifier si le panneau est trop étroit
     if (panel_width < panel->layout_threshold_width) {
@@ -1179,8 +1178,6 @@ void recalculate_widget_layout(SettingsPanel* panel) {
             }
         }
     }
-
-skip_collision_test:  // Label pour goto si skip_collision_check=true
 
     // ═══════════════════════════════════════════════════════════════════════════
     // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE (empilement)
