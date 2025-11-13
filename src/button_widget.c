@@ -19,9 +19,15 @@ ButtonWidget* create_button_widget(const char* text, int x, int y,
         return NULL;
     }
 
-    // Initialiser la base (x,y sont le CENTRE du bouton)
-    button->base.x = x - width / 2;
-    button->base.y = y - height / 2;
+    // ─────────────────────────────────────────────────────────────────────────
+    // INITIALISER LA BASE
+    // ─────────────────────────────────────────────────────────────────────────
+    // IMPORTANT : (x, y) représente le coin HAUT-GAUCHE du bouton, exactement
+    // comme pour tous les autres widgets (LabelWidget, IncrementWidget, etc.).
+    // Cela assure une cohérence totale dans le système de positionnement.
+    // ─────────────────────────────────────────────────────────────────────────
+    button->base.x = x;
+    button->base.y = y;
     button->base.width = width;
     button->base.height = height;
     button->base.is_hovered = false;
@@ -58,7 +64,7 @@ ButtonWidget* create_button_widget(const char* text, int x, int y,
     button->on_click = NULL;
 
     const char* anchor_str = (y_anchor == BUTTON_ANCHOR_TOP) ? "TOP" : "BOTTOM";
-    debug_printf("🔘 Bouton créé - Texte: \"%s\", Centre: (%d,%d), Taille: %dx%d, Anchor: %s\n",
+    debug_printf("🔘 Bouton créé - Texte: \"%s\", Coin HG: (%d,%d), Taille: %dx%d, Anchor: %s\n",
                  text, x, y, width, height, anchor_str);
 
     return button;

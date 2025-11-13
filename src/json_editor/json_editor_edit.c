@@ -63,7 +63,8 @@ void marquer_modification(JsonEditor* editor) {
 }
 
 void verifier_auto_save(JsonEditor* editor) {
-    if (!editor || !editor->modified) return;
+    // Ne rien faire si auto-save est désactivé
+    if (!editor || !editor->modified || !editor->auto_save_enabled) return;
 
     Uint32 now = SDL_GetTicks();
     float elapsed = (now - editor->last_modification_time) / 1000.0f;

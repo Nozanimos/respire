@@ -245,6 +245,11 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     int widget_screen_y = offset_y + widget->base.y;
 
     // ─────────────────────────────────────────────────────────────────────────
+    // OBTENIR LA POLICE À LA BONNE TAILLE (pour tous les calculs)
+    // ─────────────────────────────────────────────────────────────────────────
+    TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
+
+    // ─────────────────────────────────────────────────────────────────────────
     // CALCUL DES POSITIONS POUR L'ALIGNEMENT EN COLONNES
     // ─────────────────────────────────────────────────────────────────────────
     // Si container_width > 0, on aligne les flèches+valeur à droite
@@ -277,10 +282,28 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     // FOND AU SURVOL (rectangle arrondi)
     // ─────────────────────────────────────────────────────────────────────────
     if (widget->base.hovered) {
+        // Calculer la largeur RÉELLE du widget (nom + flèches + valeur)
+        // Ne PAS utiliser container_width qui est pour l'alignement du groupe
+
+        // Mesurer la largeur de la valeur actuelle
+        char value_str[16];
+        snprintf(value_str, sizeof(value_str), "%d", widget->value);
+        int value_width = 0;
+
+        if (correct_font) {
+            TTF_SizeUTF8(correct_font, value_str, &value_width, NULL);
+        } else {
+            value_width = strlen(value_str) * (widget->current_text_size / 2);
+        }
+
+        // Largeur réelle = position des flèches + taille flèches + espace + largeur valeur
+        int real_width = widget->local_arrows_x + widget->arrow_size +
+                        widget->base_espace_apres_fleches + value_width + 10;
+
         roundedBoxRGBA(renderer,
                        widget_screen_x - 5,
                        widget_screen_y - 5,
-                       widget_screen_x + widget->base.width + 5,
+                       widget_screen_x + real_width + 5,
                        widget_screen_y + widget->base.height + 5,
                        5,
                        widget->bg_hover_color.r,
@@ -290,9 +313,8 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // OBTENIR LA POLICE À LA BONNE TAILLE (celle utilisée pour mesurer)
+    // RENDU DU TEXTE
     // ─────────────────────────────────────────────────────────────────────────
-    TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
     if (correct_font) {
         SDL_Surface* text_surface = TTF_RenderUTF8_Blended(correct_font, widget->option_name, widget->color);
         if (text_surface) {

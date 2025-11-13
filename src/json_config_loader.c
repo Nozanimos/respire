@@ -215,6 +215,7 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     cJSON* y = cJSON_GetObjectItem(obj, "y");
     cJSON* taille = cJSON_GetObjectItem(obj, "taille_texte");
     cJSON* souligne = cJSON_GetObjectItem(obj, "souligne");
+    cJSON* alignement = cJSON_GetObjectItem(obj, "alignment");
 
     // Validation minimale
     if (!cJSON_IsString(texte) || !cJSON_IsNumber(x) || !cJSON_IsNumber(y)) {
@@ -227,6 +228,52 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     bool underlined = (cJSON_IsBool(souligne) && cJSON_IsTrue(souligne));
     SDL_Color color = {0, 0, 0, 255};  // Noir par défaut
 
+    // Parser l'alignement
+    LabelAlignment alignment = LABEL_ALIGN_CENTER;  // Par défaut centré
+    if (cJSON_IsString(alignement)) {
+        const char* align_str = alignement->valuestring;
+        if (strcmp(align_str, "left") == 0) {
+            alignment = LABEL_ALIGN_LEFT;
+        } else if (strcmp(align_str, "right") == 0) {
+            alignment = LABEL_ALIGN_RIGHT;
+        } else if (strcmp(align_str, "center") == 0) {
+            alignment = LABEL_ALIGN_CENTER;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // CALCULER LA POSITION X FINALE SELON L'ALIGNEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+    int x_final = x->valueint;  // Par défaut, utiliser la valeur du JSON
+
+    if (alignment == LABEL_ALIGN_CENTER) {
+        // Pour CENTER, calculer la position pour centrer le texte dans la largeur du panneau
+        TTF_Font* font = ctx->font_titre;  // Police pour les titres
+        if (font) {
+            int text_width = 0;
+            if (TTF_SizeUTF8(font, texte->valuestring, &text_width, NULL) == 0) {
+                x_final = (ctx->panel_width - text_width) / 2;
+                debug_printf("📐 LABEL CENTER '%s': largeur=%d, x_calculé=%d (panel_width=%d)\n",
+                            texte->valuestring, text_width, x_final, ctx->panel_width);
+            } else {
+                debug_printf("⚠️ Impossible de mesurer '%s', x=%d par défaut\n",
+                            texte->valuestring, x_final);
+            }
+        }
+    } else if (alignment == LABEL_ALIGN_RIGHT) {
+        // Pour RIGHT, calculer depuis le bord droit
+        TTF_Font* font = ctx->font_titre;
+        if (font) {
+            int text_width = 0;
+            if (TTF_SizeUTF8(font, texte->valuestring, &text_width, NULL) == 0) {
+                x_final = ctx->panel_width - text_width - 20;  // 20px de marge
+                debug_printf("📐 LABEL RIGHT '%s': largeur=%d, x_calculé=%d (panel_width=%d)\n",
+                            texte->valuestring, text_width, x_final, ctx->panel_width);
+            }
+        }
+    }
+    // Pour LEFT, garder x_final = x->valueint (pas de calcul)
+
     // ═══ AJOUTER À LA WIDGET LIST ═══
     // Générer un id unique pour le titre
     char id[50];
@@ -236,11 +283,12 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
         list,
         id,
         texte->valuestring,
-        x->valueint,
+        x_final,  // ← Utiliser x_final calculé au lieu de x->valueint
         y->valueint,
         text_size,
         color,
-        underlined
+        underlined,
+        alignment
     );
 
     if (success) {
@@ -552,7 +600,13 @@ bool parser_widget_selector(cJSON* json_obj, LoaderContext* ctx, WidgetList* lis
             }
         }
 
-        debug_printf("✅ Widget selector '%s' chargé avec %d options\n",
+        // ─────────────────────────────────────────────────────────────────────────
+        // INITIALISATION DU LAYOUT (créer flèches et zones cliquables)
+        // IMPORTANT: Doit être fait APRÈS l'ajout de toutes les options pour
+        // calculer correctement la largeur maximale des choix
+        // ─────────────────────────────────────────────────────────────────────────
+        rescale_selector_widget(selector, 1.0f);
+        debug_printf("✅ Widget selector '%s' chargé avec %d options (layout initialisé)\n",
                      id->valuestring, selector->num_options);
 
         return true;

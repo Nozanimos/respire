@@ -27,6 +27,29 @@ static void callback_sauvegarder(JsonEditor* editor) {
     }
 }
 
+static void callback_toggle_autosave(JsonEditor* editor) {
+    // Toggle l'état de la sauvegarde automatique
+    editor->auto_save_enabled = !editor->auto_save_enabled;
+
+    // Trouver le bouton "Auto-Save" et changer sa couleur
+    for (int i = 0; i < editor->nb_boutons; i++) {
+        if (strcmp(editor->boutons[i].label, "Auto-Save") == 0) {
+            if (editor->auto_save_enabled) {
+                // Activé: bleu
+                editor->boutons[i].couleur_normale = 0xFF2060E0;
+                editor->boutons[i].couleur_survol = 0xFF4080FF;
+                debug_printf("✅ Sauvegarde automatique ACTIVÉE\n");
+            } else {
+                // Désactivé: gris
+                editor->boutons[i].couleur_normale = 0xFF808080;
+                editor->boutons[i].couleur_survol = 0xFFA0A0A0;
+                debug_printf("❌ Sauvegarde automatique DÉSACTIVÉE\n");
+            }
+            break;
+        }
+    }
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES BOUTONS
 // ════════════════════════════════════════════════════════════════════════════
@@ -251,6 +274,15 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     );
     ajouter_bouton(editor, btn_sauvegarder);
 
+    EditorButton btn_autosave = creer_bouton(
+        "Auto-Save",                    // Label
+        130, 30,                        // Largeur, Hauteur
+        0xFF808080,                     // Couleur normale (gris - désactivé par défaut)
+        0xFFA0A0A0,                     // Couleur survol (gris clair)
+        callback_toggle_autosave        // Fonction à appeler
+    );
+    ajouter_bouton(editor, btn_autosave);
+
     // Calculer les positions initiales
     recalculer_tous_boutons(editor);
 
@@ -264,6 +296,7 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     // ─────────────────────────────────────────────────────────────────────────
     // INITIALISATION DU SYSTÈME AUTO-SAVE
     // ─────────────────────────────────────────────────────────────────────────
+    editor->auto_save_enabled = false;  // Désactivé par défaut (bouton gris)
     editor->last_modification_time = 0;
     editor->auto_save_delay = 0.3f;  // Sauvegarder 0.3s après la dernière modif
 

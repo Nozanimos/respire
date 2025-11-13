@@ -16,7 +16,8 @@
             "_fin_template": "═══════════════════════════════════════════════════════",
             "type": "titre",
             "texte": "Configuration",
-            "x": 176,
+            "alignment": "center",
+            "x": 0,
             "y": 10,
             "taille_texte": 24,
             "souligne": true
@@ -24,6 +25,7 @@
         {
             "type": "titre",
             "texte": "Sessions",
+            "alignment": "left",
             "x": 40,
             "y": 70,
             "taille_texte": 18,
@@ -164,6 +166,25 @@
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
+            "_description": "SEPARATEUR - Ligne horizontale de séparation",
+            "_template": {
+                "type": "separateur",
+                "x": 20,
+                "y": 210,
+                "largeur": 460,
+                "hauteur": 1,
+                "couleur": {"r": 200, "g": 200, "b": 200, "a": 255}
+            },
+            "_fin_template": "═══════════════════════════════════════════════════════",
+            "type": "separateur",
+            "x": 20,
+            "y": 320,
+            "largeur": 460,
+            "hauteur": 1,
+            "couleur": {"r": 0, "g": 0, "b": 0, "a": 255}
+        },
+        {
+            "_commentaire": "═══════════════════════════════════════════════════════",
             "_description": "WIDGET TOGGLE - Interrupteur ON/OFF",
             "_template": {
                 "type": "toggle",
@@ -193,25 +214,6 @@
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
-            "_description": "SEPARATEUR - Ligne horizontale de séparation",
-            "_template": {
-                "type": "separateur",
-                "x": 20,
-                "y": 210,
-                "largeur": 460,
-                "hauteur": 1,
-                "couleur": {"r": 200, "g": 200, "b": 200, "a": 255}
-            },
-            "_fin_template": "═══════════════════════════════════════════════════════",
-            "type": "separateur",
-            "x": 20,
-            "y": 320,
-            "largeur": 460,
-            "hauteur": 1,
-            "couleur": {"r": 0, "g": 0, "b": 0, "a": 255}
-        },
-        {
-            "_commentaire": "═══════════════════════════════════════════════════════",
             "_description": "BOUTON - Bouton cliquable avec callback",
             "_template": {
                 "type": "button",
@@ -231,7 +233,7 @@
             "type": "button",
             "id": "apply_button",
             "texte": "Appliquer",
-            "x": 170,
+            "x": 118,
             "y": 30,
             "largeur": 100,
             "hauteur": 25,
@@ -244,7 +246,7 @@
             "type": "button",
             "id": "cancel_button",
             "texte": "Annuler",
-            "x": 346,
+            "x": 300,
             "y": 30,
             "largeur": 100,
             "hauteur": 25,

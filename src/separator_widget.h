@@ -13,7 +13,8 @@ typedef struct {
     // BASE (position et dimensions relatives)
     // ─────────────────────────────────────────────────────────────────────────
     struct {
-        int x, y;              // Position relative au panneau (x = start_margin)
+        int x, y;              // Position actuelle (x = start_margin scalé, y fixe)
+        int base_y;            // Position Y originale (depuis JSON, ne change jamais)
         int width, height;     // Dimensions de la ligne
         bool is_hovered;       // Toujours false (non interactif)
     } base;

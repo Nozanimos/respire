@@ -76,7 +76,6 @@ typedef struct WidgetList {
 WidgetList* create_widget_list(void);
 void free_widget_list(WidgetList* list);
 bool is_widget_list_empty(WidgetList* list);
-int widget_list_count(WidgetList* list);
 
 // ─────────────────────────────────────────────────────────────────────────
 // AJOUT DE WIDGETS
@@ -108,7 +107,8 @@ bool add_label_widget(WidgetList* list,
                       int x, int y,
                       int text_size,
                       SDL_Color color,
-                      bool underlined);
+                      bool underlined,
+                      LabelAlignment alignment);
 
 // Ajoute un widget SEPARATOR (ligne de séparation)
 bool add_separator_widget(WidgetList* list,
@@ -181,14 +181,6 @@ void debug_print_widget_list(WidgetList* list);
 // ─────────────────────────────────────────────────────────────────────────
 // SCALING ET POSITIONNEMENT CENTRALISÉ
 // ─────────────────────────────────────────────────────────────────────────
-// Repositionne tous les widgets selon les dimensions du panneau
-// Gère les collisions et le centrage automatique (logique mobile)
-// panel_width : largeur actuelle du panneau
-// screen_width : largeur de l'écran
-// screen_height : hauteur de l'écran
-void rescale_and_layout_widgets(WidgetList* list, int panel_width,
-                                 int screen_width, int screen_height);
-
 // Calcule la largeur minimale requise pour le panneau
 // Retourne : MARGIN_LEFT + plus_grande_largeur_widget + MARGIN_RIGHT
 int calculate_min_panel_width(WidgetList* list);

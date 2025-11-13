@@ -148,6 +148,7 @@ struct JsonEditor_s {
     // ─────────────────────────────────────────────────────────────────────────
     // AUTO-SAVE POUR HOT RELOAD
     // ─────────────────────────────────────────────────────────────────────────
+    bool auto_save_enabled;             // true = sauvegarde auto activée, false = désactivée
     Uint32 last_modification_time;      // Timestamp de dernière modification
     float auto_save_delay;              // Délai avant auto-save (0.3 secondes)
 
