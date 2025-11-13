@@ -1088,13 +1088,11 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             case WIDGET_TYPE_TOGGLE:
                 if (r->node->widget.toggle_widget) {
                     ToggleWidget* w = r->node->widget.toggle_widget;
-                    // Aligner le toggle à DROITE avec les INCREMENT
-                    // Bord droit du toggle = bord droit des increment
-                    int toggle_width = w->base.base_width;  // Largeur totale (texte + switch)
-                    w->base.x = increment_start_x + max_increment_width - toggle_width;
+                    // Aligner le toggle à GAUCHE avec les INCREMENT
+                    w->base.x = increment_start_x;
                     w->base.y = current_y;
-                    debug_printf("   🎚️  TOGGLE aligné à droite (x=%d, y=%d, right=%d)\n",
-                                w->base.x, w->base.y, w->base.x + toggle_width);
+                    debug_printf("   🎚️  TOGGLE aligné à gauche (x=%d, y=%d)\n",
+                                w->base.x, w->base.y);
                     current_y += r->height + COLLISION_SPACING;
                 }
                 break;
