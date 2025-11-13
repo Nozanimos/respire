@@ -48,18 +48,6 @@
 			"index_depart":	0,
 			"taille_texte":	0
 		}, {
-			"type":	"toggle",
-			"id":	"a_modifier",
-			"nom_affichage":	"a_modifier",
-			"x":	0,
-			"y":	0,
-			"etat_depart":	false,
-			"largeur_toggle":	0,
-			"hauteur_toggle":	0,
-			"taille_curseur":	0,
-			"taille_texte":	0,
-			"callback":	"a_modifier"
-		}, {
 			"type":	"separateur",
 			"x":	0,
 			"y":	0,
@@ -71,6 +59,18 @@
 				"b":	0,
 				"a":	0
 			}
+		}, {
+			"type":	"toggle",
+			"id":	"a_modifier",
+			"nom_affichage":	"a_modifier",
+			"x":	0,
+			"y":	0,
+			"etat_depart":	false,
+			"largeur_toggle":	0,
+			"hauteur_toggle":	0,
+			"taille_curseur":	0,
+			"taille_texte":	0,
+			"callback":	"a_modifier"
 		}, {
 			"type":	"button",
 			"id":	"a_modifier",

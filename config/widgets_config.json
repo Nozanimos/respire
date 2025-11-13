@@ -166,6 +166,25 @@
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
+            "_description": "SEPARATEUR - Ligne horizontale de séparation",
+            "_template": {
+                "type": "separateur",
+                "x": 20,
+                "y": 210,
+                "largeur": 460,
+                "hauteur": 1,
+                "couleur": {"r": 200, "g": 200, "b": 200, "a": 255}
+            },
+            "_fin_template": "═══════════════════════════════════════════════════════",
+            "type": "separateur",
+            "x": 20,
+            "y": 320,
+            "largeur": 460,
+            "hauteur": 1,
+            "couleur": {"r": 0, "g": 0, "b": 0, "a": 255}
+        },
+        {
+            "_commentaire": "═══════════════════════════════════════════════════════",
             "_description": "WIDGET TOGGLE - Interrupteur ON/OFF",
             "_template": {
                 "type": "toggle",
@@ -192,25 +211,6 @@
             "taille_curseur": 14,
             "taille_texte": 14,
             "callback": "a modifier"
-        },
-        {
-            "_commentaire": "═══════════════════════════════════════════════════════",
-            "_description": "SEPARATEUR - Ligne horizontale de séparation",
-            "_template": {
-                "type": "separateur",
-                "x": 20,
-                "y": 210,
-                "largeur": 460,
-                "hauteur": 1,
-                "couleur": {"r": 200, "g": 200, "b": 200, "a": 255}
-            },
-            "_fin_template": "═══════════════════════════════════════════════════════",
-            "type": "separateur",
-            "x": 20,
-            "y": 320,
-            "largeur": 460,
-            "hauteur": 1,
-            "couleur": {"r": 0, "g": 0, "b": 0, "a": 255}
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
