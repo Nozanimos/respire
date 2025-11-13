@@ -233,7 +233,7 @@
             "type": "button",
             "id": "apply_button",
             "texte": "Appliquer",
-            "x": 170,
+            "x": 145,
             "y": 30,
             "largeur": 100,
             "hauteur": 25,
