@@ -117,6 +117,15 @@ typedef struct {
     bool widgets_stacked;     // true = widgets empilés (fenêtre réduite), false = positions originales
     int min_width_for_unstack; // Largeur minimale calculée pour dépiler (bbox des widgets JSON)
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MÉMOIRE DE LA LARGEUR AU MOMENT DE L'EMPILEMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Sauvegarde de panel_width AU MOMENT où on empile les widgets
+    // Pour dépiler, on vérifie si panel_width >= panel_width_when_stacked + MARGE
+    // Cela évite la boucle infinie de pile/dépile
+    // ═══════════════════════════════════════════════════════════════════════════
+    int panel_width_when_stacked;  // Largeur du panneau au moment de l'empilement (0 = jamais empilé)
+
     // Anciens éléments (à supprimer progressivement)
     SDL_Texture* apply_button_texture;
     SDL_Texture* cancel_button_texture;

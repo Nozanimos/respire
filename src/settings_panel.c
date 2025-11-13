@@ -205,6 +205,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->layout_mode_column = false;
     panel->layout_threshold_width = 350;  // Passer en mode colonne si largeur < 350px
     panel->widgets_stacked = false;       // Initialement, widgets aux positions originales
+    panel->panel_width_when_stacked = 0;  // 0 = jamais empilé
 
     debug_printf("🎨 Création panneau avec scale: %.2f\n", scale_factor);
 
@@ -909,16 +910,22 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     float panel_ratio = panel->panel_ratio;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: DÉCISION SIMPLE BASÉE SUR LA LARGEUR MINIMALE
+    // ÉTAPE 0: DÉCISION DE DÉPILEMENT BASÉE SUR LA LARGEUR SAUVEGARDÉE
     // ═══════════════════════════════════════════════════════════════════════════
-    // Nouvelle approche simple et robuste:
-    // - SI widgets empilés ET panel_width >= min_width_for_unstack: DÉPILER
-    // - Pas besoin de tester les collisions (c'est ça qui causait la boucle infinie!)
+    // Approche stable anti-boucle-infinie:
+    // - SI widgets empilés ET panel_width >= (largeur_au_moment_empilement + MARGE): DÉPILER
+    // - La marge (50px) évite les oscillations pile/dépile
+    // - On réinitialise panel_width_when_stacked à 0 après dépilement
     // ═══════════════════════════════════════════════════════════════════════════
 
-    if (panel->widgets_stacked && panel_width >= panel->min_width_for_unstack) {
-        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= min_width=%dpx\n",
-                    panel_width, panel->min_width_for_unstack);
+    const int UNSTACK_MARGIN = 50;  // Marge pour éviter les oscillations (hystérésis)
+
+    if (panel->widgets_stacked &&
+        panel->panel_width_when_stacked > 0 &&
+        panel_width >= panel->panel_width_when_stacked + UNSTACK_MARGIN) {
+
+        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= (saved_width=%dpx + marge=%dpx)\n",
+                    panel_width, panel->panel_width_when_stacked, UNSTACK_MARGIN);
         debug_printf("   Restauration des positions JSON...\n");
         node = panel->widget_list->first;
         while (node) {
@@ -981,8 +988,17 @@ void recalculate_widget_layout(SettingsPanel* panel) {
             }
             node = node->next;
         }
+
+        // ═════════════════════════════════════════════════════════════════════════
+        // RÉINITIALISER LA MÉMOIRE DE L'EMPILEMENT
+        // ═════════════════════════════════════════════════════════════════════════
+        // On remet panel_width_when_stacked à 0 pour permettre un nouvel empilement
+        // si la fenêtre est à nouveau réduite
+        // ═════════════════════════════════════════════════════════════════════════
+        panel->panel_width_when_stacked = 0;
         panel->widgets_stacked = false;
         debug_printf("✅ Widgets dépilés et restaurés aux positions JSON\n");
+        debug_printf("   🔓 panel_width_when_stacked réinitialisé à 0\n");
 
         // Pas besoin d'aller plus loin! On évite toute la logique de collision
         // qui causait la boucle infinie
@@ -1160,11 +1176,20 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         // Marquer que les widgets sont maintenant empilés
         panel->widgets_stacked = true;
 
-        // IMPORTANT: Recalculer min_width_for_unstack basé sur la largeur actuelle
-        // Pour dépiler, il faudra au moins cette largeur (avec petite marge)
-        panel->min_width_for_unstack = panel_width + 20;
-        debug_printf("   min_width_for_unstack mis à jour: %dpx (panel_width + 20)\n",
-                    panel->min_width_for_unstack);
+        // ═════════════════════════════════════════════════════════════════════════
+        // SAUVEGARDER LA LARGEUR DU PANNEAU AU MOMENT DE L'EMPILEMENT
+        // ═════════════════════════════════════════════════════════════════════════
+        // On sauvegarde UNE SEULE FOIS (si == 0) pour éviter la boucle infinie
+        // Cette valeur servira de référence pour décider quand dépiler
+        // ═════════════════════════════════════════════════════════════════════════
+        if (panel->panel_width_when_stacked == 0) {
+            panel->panel_width_when_stacked = panel_width;
+            debug_printf("   💾 SAUVEGARDE panel_width_when_stacked = %dpx\n",
+                        panel->panel_width_when_stacked);
+        } else {
+            debug_printf("   ♻️  panel_width_when_stacked déjà sauvegardé = %dpx (pas de recalcul)\n",
+                        panel->panel_width_when_stacked);
+        }
 
         int current_y = 50;  // Marge du haut
         int content_left_x = center_x - 150;  // Point de départ à gauche du centre (alignement à gauche)
