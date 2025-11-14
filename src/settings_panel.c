@@ -1141,8 +1141,6 @@ static void restore_json_positions(SettingsPanel* panel) {
 static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, int rect_count) {
     if (!panel || !rects) return;
 
-    const int COLLISION_SPACING = 10;
-    const int SEPARATOR_EXTRA_SPACING = 5;  // Espacement supplémentaire après widgets callback
     int panel_width = panel->rect.w;
     int center_x = panel_width / 2;
     int current_y = 50;  // Marge du haut
@@ -1213,7 +1211,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     // Centrer le preview, garder Y fixe
                     w->base.x = center_x - (w->base_frame_size / 2);
                     // Avancer current_y pour widgets suivants
-                    current_y = w->base.y + w->base_frame_size + COLLISION_SPACING;
+                    current_y = w->base.y + w->base_frame_size;
                     debug_printf("   📦 PREVIEW centré (x=%d)\n", w->base.x);
                 }
                 break;
@@ -1226,7 +1224,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.y = current_y;
                     debug_printf("   🔢 INCREMENT '%s' centré (x=%d, y=%d)\n",
                                 w->option_name, w->base.x, w->base.y);
-                    current_y += r->height + COLLISION_SPACING;
+                    current_y += r->height;
                 }
                 break;
 
@@ -1238,7 +1236,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.y = current_y;
                     debug_printf("   🎚️  TOGGLE aligné à gauche (x=%d, y=%d)\n",
                                 w->base.x, w->base.y);
-                    current_y += r->height + COLLISION_SPACING;
+                    current_y += r->height;
                 }
                 break;
 
@@ -1249,7 +1247,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.x = increment_start_x;
                     w->base.y = current_y;
                     debug_printf("   📋 SELECTOR centré (x=%d, y=%d)\n", w->base.x, w->base.y);
-                    current_y += r->height + COLLISION_SPACING + 10;  // +10 pour callbacks
+                    current_y += r->height;  // +10 pour callbacks
                 }
                 break;
 
@@ -1293,13 +1291,12 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                         // Widget au-dessus = widget callback → Empiler juste en-dessous
                         // SAUVEGARDER X actuel, modifier SEULEMENT Y
                         int saved_x = sep_w->base.x;
-                        current_y += SEPARATOR_EXTRA_SPACING;
                         sep_w->base.x = saved_x;  // FORCER préservation de X
                         sep_w->base.y = current_y;
 
-                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d (+%dpx), X préservé à %d\n",
-                                    widget_above_type, current_y, SEPARATOR_EXTRA_SPACING, sep_w->base.x);
-                        current_y += r->height + COLLISION_SPACING;
+                        debug_printf("   📏 Séparateur après widget callback type=%d → Y=%d, X préservé à %d\n",
+                                    widget_above_type, current_y, sep_w->base.x);
+                        current_y += r->height;
                     }
                 }
                 break;
@@ -1312,7 +1309,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
                     w->base.y = current_y;
                     debug_printf("   🔘 BUTTON '%s' centré (x=%d, y=%d)\n",
                                 w->text, w->base.x, w->base.y);
-                    current_y += r->height + COLLISION_SPACING;
+                    current_y += r->height;
                 }
                 break;
 
