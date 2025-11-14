@@ -1523,7 +1523,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     // ÉTAPE 2: DÉTERMINER SI ON DOIT RÉORGANISER
     // ═══════════════════════════════════════════════════════════════════════════
     // Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
-    // Critère 2: Détection de collision (si collision, réorganiser)
+    // Critère 2: Widget qui dépasse le bord droit du panneau (avec marge)
+    // Critère 3: Détection de collision entre widgets
 
     bool needs_reorganization = false;
 
@@ -1532,8 +1533,26 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         debug_printf("📱 Panneau étroit (%dpx < %dpx) - empilement forcé\n",
                      panel_width, panel->layout_threshold_width);
         needs_reorganization = true;
-    } else {
-        // Panneau large: vérifier les collisions
+    }
+
+    // Critère 2: Vérifier si un widget dépasse le bord droit du panneau
+    if (!needs_reorganization) {
+        const int RIGHT_MARGIN = 10;  // Marge de sécurité
+        for (int i = 0; i < rect_count && !needs_reorganization; i++) {
+            int widget_right_edge = rects[i].x + rects[i].width;
+            if (widget_right_edge > panel_width - RIGHT_MARGIN) {
+                debug_printf("⚠️ Widget[%d] (type=%d) DÉPASSE le panneau: "
+                            "x=%d, width=%d, bord_droit=%d > panel_width=%d\n",
+                            i, rects[i].type, rects[i].x, rects[i].width,
+                            widget_right_edge, panel_width - RIGHT_MARGIN);
+                needs_reorganization = true;
+                break;
+            }
+        }
+    }
+
+    // Critère 3: Vérifier les collisions entre widgets
+    if (!needs_reorganization) {
         for (int i = 0; i < rect_count && !needs_reorganization; i++) {
             for (int j = i + 1; j < rect_count; j++) {
                 if (rects_collide(rects[i].x, rects[i].y, rects[i].width, rects[i].height,
