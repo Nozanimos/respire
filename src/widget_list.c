@@ -349,6 +349,9 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
             if (increment_infos[i].group_id == g) {
                 increment_infos[i].max_text_width_in_group = max_text_width;
                 increment_infos[i].container_width_for_group = container_width;
+                // Mettre à jour base.width pour que la collision detection
+                // couvre toute la zone visuelle (nom + flèches + valeur alignée)
+                increment_infos[i].widget->base.width = container_width;
             }
         }
     }
