@@ -32,15 +32,15 @@ void duration_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // APPLIQUER IMMÉDIATEMENT À LA CONFIGURATION PRINCIPALE
+    // MISE À JOUR DE TEMP_CONFIG (SANS SAUVEGARDER)
     // ═══════════════════════════════════════════════════════════════════════════
-    current_main_config_for_callbacks->breath_duration = new_value;
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.breath_duration = new_value;
 
     // Sauvegarder immédiatement dans le fichier
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Durée respiration changée: %d secondes (sauvegardé)\n", new_value);
+    debug_printf("✅ Durée respiration changée: %d secondes (en attente de validation)\n", new_value);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // METTRE À JOUR LE PREVIEW DANS LA WIDGET LIST
@@ -63,53 +63,53 @@ void duration_value_changed(int new_value) {
 void cycles_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
-    current_main_config_for_callbacks->nb_session = new_value;
+    // Mise à jour temp_config (sans sauvegarder)
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.nb_session = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Cycles changés: %d (sauvegardé)\n", new_value);
+    debug_printf("✅ Cycles changés: %d (en attente de validation)\n", new_value);
 }
 
 void nb_breath(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
+    // Mise à jour temp_config (sans sauvegarder)
     current_main_config_for_callbacks->Nb_respiration = new_value;
     current_panel_for_callbacks->temp_config.Nb_respiration = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Nombre de respirations changé: %d (sauvegardé)\n", new_value);
+    debug_printf("✅ Nombre de respirations changé: %d (en attente de validation)\n", new_value);
 }
 
 void start_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
-    current_main_config_for_callbacks->start_duration = new_value;
+    // Mise à jour temp_config (sans sauvegarder)
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.start_duration = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Durée de démarrage changée: %d secondes (sauvegardé)\n", new_value);
+    debug_printf("✅ Durée de démarrage changée: %d secondes (en attente de validation)\n", new_value);
 }
 
 void alternate_cycles_changed(bool new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
-    current_main_config_for_callbacks->alternate_cycles = new_value;
+    // Mise à jour temp_config (sans sauvegarder)
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.alternate_cycles = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Cycles alternés changés: %s (sauvegardé)\n", new_value ? "ACTIF" : "INACTIF");
+    debug_printf("✅ Cycles alternés changés: %s (en attente de validation)\n", new_value ? "ACTIF" : "INACTIF");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -118,40 +118,40 @@ void alternate_cycles_changed(bool new_value) {
 void retention_full(void) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement : poumons pleins = 0
+    // Mise à jour temp_config (sans sauvegarder) : poumons pleins = 0
     current_main_config_for_callbacks->retention_type = 0;
     current_panel_for_callbacks->temp_config.retention_type = 0;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Type de rétention changé: POUMONS PLEINS (sauvegardé)\n");
+    debug_printf("✅ Type de rétention changé: POUMONS PLEINS (en attente de validation)\n");
 }
 
 void retention_empty(void) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement : poumons vides = 1
+    // Mise à jour temp_config (sans sauvegarder) : poumons vides = 1
     current_main_config_for_callbacks->retention_type = 1;
     current_panel_for_callbacks->temp_config.retention_type = 1;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Type de rétention changé: POUMONS VIDES (sauvegardé)\n");
+    debug_printf("✅ Type de rétention changé: POUMONS VIDES (en attente de validation)\n");
 }
 
 void retention_alternate(void) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement : alternée = 2
+    // Mise à jour temp_config (sans sauvegarder) : alternée = 2
     current_main_config_for_callbacks->retention_type = 2;
     current_panel_for_callbacks->temp_config.retention_type = 2;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Type de rétention changé: ALTERNÉE (sauvegardé)\n");
+    debug_printf("✅ Type de rétention changé: ALTERNÉE (en attente de validation)\n");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
