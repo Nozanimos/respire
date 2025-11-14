@@ -157,24 +157,52 @@ void retention_alternate(void) {
 // ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LES BOUTONS APPLIQUER/ANNULER
 // ════════════════════════════════════════════════════════════════════════════
-// NOTE : Les changements sont maintenant appliqués immédiatement lors de chaque
-// modification de widget. Ces boutons servent simplement à fermer le panneau.
-void apply_button_clicked(void) {
-    if (!current_panel_for_callbacks) return;
 
-    // Les changements sont déjà appliqués et sauvegardés
-    // On ferme simplement le panneau
+/**
+ * APPLIQUER : Sauvegarde les modifications dans respiration.conf
+ * - Synchronise widgets → temp_config
+ * - Sauvegarde temp_config dans respiration.conf
+ * - Copie temp_config → main_config
+ * - Ferme le panneau
+ */
+void apply_button_clicked(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    debug_printf("💾 APPLIQUER : Sauvegarde des modifications\n");
+
+    // Étape 1: Widgets → temp_config (+ sauvegarde dans respiration.conf)
+    sync_widgets_to_config(current_panel_for_callbacks->widget_list,
+                          &current_panel_for_callbacks->temp_config);
+
+    // Étape 2: temp_config → main_config (copie directe)
+    *current_main_config_for_callbacks = current_panel_for_callbacks->temp_config;
+
+    // Étape 3: Fermer le panneau
     current_panel_for_callbacks->state = PANEL_CLOSING;
-    debug_printf("✅ Panneau fermé (changements déjà appliqués)\n");
+    debug_printf("✅ Modifications sauvegardées et appliquées\n");
 }
 
+/**
+ * ANNULER : Annule les modifications et restaure les valeurs
+ * - Recharge la config depuis respiration.conf (ancienne valeur)
+ * - Synchronise config → widgets (restauration visuelle)
+ * - Ferme le panneau
+ */
 void cancel_button_clicked(void) {
-    if (!current_panel_for_callbacks) return;
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Les changements sont déjà appliqués et sauvegardés
-    // On ferme simplement le panneau
+    debug_printf("❌ ANNULER : Restauration des valeurs initiales\n");
+
+    // Étape 1: Recharger la config depuis le fichier (annule les modifs non sauvegardées)
+    load_config(&current_panel_for_callbacks->temp_config);
+
+    // Étape 2: Synchroniser config → widgets (restaurer visuellement)
+    sync_config_to_widgets(&current_panel_for_callbacks->temp_config,
+                          current_panel_for_callbacks->widget_list);
+
+    // Étape 3: Fermer le panneau
     current_panel_for_callbacks->state = PANEL_CLOSING;
-    debug_printf("✅ Panneau fermé\n");
+    debug_printf("✅ Modifications annulées\n");
 }
 // ════════════════════════════════════════════════════════════════════════════
 //  FORWARD DECLARATIONS (fonctions définies plus bas)
@@ -317,6 +345,14 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     // ════════════════════════════════════════════════════════════════════════
     update_panel_scale(panel, screen_width, screen_height, scale_factor);
 
+    // ════════════════════════════════════════════════════════════════════════
+    // INITIALISATION DES BOUTONS APPLIQUER/ANNULER
+    // ════════════════════════════════════════════════════════════════════════
+    // Les boutons UIButton sont positionnés dynamiquement dans update_panel_scale()
+    // Ici on initialise juste leurs textes
+    panel->apply_button = create_button("Appliquer", 0, 0, BUTTON_WIDTH, BUTTON_HEIGHT);
+    panel->cancel_button = create_button("Annuler", 0, 0, BUTTON_WIDTH, BUTTON_HEIGHT);
+
     debug_printf("✅ Panneau de configuration créé avec widgets\n");
     return panel;
 }
@@ -411,6 +447,10 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
 
         // Widgets (avec scroll)
         render_all_widgets(renderer, panel->widget_list, panel_x, panel_y, panel->rect.w, panel->scroll_offset);
+
+        // Boutons Appliquer/Annuler (toujours visibles, sans scroll)
+        render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
+        render_button(renderer, &panel->cancel_button, panel->font, panel_x, panel_y);
     }
 }
 
@@ -496,6 +536,40 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
         // Événements des widgets (avec scroll_offset pour alignement collision/rendu)
         handle_widget_list_events(panel->widget_list, event, panel_x, panel_y, panel->scroll_offset);
+
+        // ═════════════════════════════════════════════════════════════════════════
+        // GESTION DES CLICS SUR LES BOUTONS APPLIQUER/ANNULER
+        // ═════════════════════════════════════════════════════════════════════════
+        if (event->type == SDL_MOUSEBUTTONDOWN) {
+            int x = event->button.x;
+            int y = event->button.y;
+
+            // Créer les rectangles avec offset du panneau
+            SDL_Rect apply_rect = {
+                panel_x + panel->apply_button.rect.x,
+                panel_y + panel->apply_button.rect.y,
+                panel->apply_button.rect.w,
+                panel->apply_button.rect.h
+            };
+
+            SDL_Rect cancel_rect = {
+                panel_x + panel->cancel_button.rect.x,
+                panel_y + panel->cancel_button.rect.y,
+                panel->cancel_button.rect.w,
+                panel->cancel_button.rect.h
+            };
+
+            // Détection de clic sur Appliquer
+            if (is_point_in_rect(x, y, apply_rect)) {
+                debug_printf("🖱️ Clic sur Appliquer\n");
+                apply_button_clicked();
+            }
+            // Détection de clic sur Annuler
+            else if (is_point_in_rect(x, y, cancel_rect)) {
+                debug_printf("🖱️ Clic sur Annuler\n");
+                cancel_button_clicked();
+            }
+        }
     }
 
     if (event->type == SDL_MOUSEBUTTONUP) {
