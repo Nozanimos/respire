@@ -756,9 +756,33 @@ typedef struct {
 } WidgetRect;
 
 // ════════════════════════════════════════════════════════════════════════════
-//  DÉTECTION DE COLLISION ENTRE DEUX RECTANGLES
+//  DÉTECTION DE COLLISION ENTRE DEUX RECTANGLES (avec marge de tolérance)
+// ════════════════════════════════════════════════════════════════════════════
+// MARGE DE TOLÉRANCE : Les rectangles doivent se chevaucher de 10px minimum
+// pour déclencher une collision. Cela évite l'empilement prématuré quand les
+// widgets sont juste proches mais ne se touchent pas vraiment.
+//
+// Exemple : Widget1 à x=100 (largeur 50) et Widget2 à x=160
+//   - Sans marge : x1+w1=150, x2=160 → pas de collision (OK)
+//   - Avec marge -10px : x1+w1=140, x2=170 → pas de collision (OK)
+//   - Si Widget2 à x=145 : x1+w1=140, x2=155 → collision détectée ✅
 // ════════════════════════════════════════════════════════════════════════════
 static bool rects_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+    // Marge de tolérance : réduire les rectangles de 10px de chaque côté
+    const int MARGIN = 10;
+
+    // Appliquer la marge (réduction des rectangles)
+    x1 += MARGIN;
+    y1 += MARGIN;
+    w1 -= 2 * MARGIN;
+    h1 -= 2 * MARGIN;
+
+    x2 += MARGIN;
+    y2 += MARGIN;
+    w2 -= 2 * MARGIN;
+    h2 -= 2 * MARGIN;
+
+    // Test de collision après réduction
     return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
 }
 
