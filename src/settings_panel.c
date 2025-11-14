@@ -345,14 +345,6 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     // ════════════════════════════════════════════════════════════════════════
     update_panel_scale(panel, screen_width, screen_height, scale_factor);
 
-    // ════════════════════════════════════════════════════════════════════════
-    // INITIALISATION DES BOUTONS APPLIQUER/ANNULER
-    // ════════════════════════════════════════════════════════════════════════
-    // Les boutons UIButton sont positionnés dynamiquement dans update_panel_scale()
-    // Ici on initialise juste leurs textes
-    panel->apply_button = create_button("Appliquer", 0, 0, BUTTON_WIDTH, BUTTON_HEIGHT);
-    panel->cancel_button = create_button("Annuler", 0, 0, BUTTON_WIDTH, BUTTON_HEIGHT);
-
     debug_printf("✅ Panneau de configuration créé avec widgets\n");
     return panel;
 }
@@ -447,10 +439,6 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
 
         // Widgets (avec scroll)
         render_all_widgets(renderer, panel->widget_list, panel_x, panel_y, panel->rect.w, panel->scroll_offset);
-
-        // Boutons Appliquer/Annuler (toujours visibles, sans scroll)
-        render_button(renderer, &panel->apply_button, panel->font, panel_x, panel_y);
-        render_button(renderer, &panel->cancel_button, panel->font, panel_x, panel_y);
     }
 }
 
@@ -536,40 +524,6 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
 
         // Événements des widgets (avec scroll_offset pour alignement collision/rendu)
         handle_widget_list_events(panel->widget_list, event, panel_x, panel_y, panel->scroll_offset);
-
-        // ═════════════════════════════════════════════════════════════════════════
-        // GESTION DES CLICS SUR LES BOUTONS APPLIQUER/ANNULER
-        // ═════════════════════════════════════════════════════════════════════════
-        if (event->type == SDL_MOUSEBUTTONDOWN) {
-            int x = event->button.x;
-            int y = event->button.y;
-
-            // Créer les rectangles avec offset du panneau
-            SDL_Rect apply_rect = {
-                panel_x + panel->apply_button.rect.x,
-                panel_y + panel->apply_button.rect.y,
-                panel->apply_button.rect.w,
-                panel->apply_button.rect.h
-            };
-
-            SDL_Rect cancel_rect = {
-                panel_x + panel->cancel_button.rect.x,
-                panel_y + panel->cancel_button.rect.y,
-                panel->cancel_button.rect.w,
-                panel->cancel_button.rect.h
-            };
-
-            // Détection de clic sur Appliquer
-            if (is_point_in_rect(x, y, apply_rect)) {
-                debug_printf("🖱️ Clic sur Appliquer\n");
-                apply_button_clicked();
-            }
-            // Détection de clic sur Annuler
-            else if (is_point_in_rect(x, y, cancel_rect)) {
-                debug_printf("🖱️ Clic sur Annuler\n");
-                cancel_button_clicked();
-            }
-        }
     }
 
     if (event->type == SDL_MOUSEBUTTONUP) {
