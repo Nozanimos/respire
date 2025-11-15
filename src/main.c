@@ -552,6 +552,11 @@ int main(int argc, char **argv) {
                         app.breath_counter->waiting_for_scale_min = false;
                         app.breath_counter->was_at_max_last_frame = false;
                     }
+
+                    // Réinitialiser le timer de rétention pour la prochaine session
+                    if (app.retention_timer) {
+                        timer_reset(app.retention_timer);
+                    }
                 } else {
                     // Toutes les sessions terminées
                     debug_printf("🎉 Toutes les sessions terminées (%d/%d)\n",
