@@ -19,7 +19,7 @@
 #define CARD_HEIGHT_BASE 280    // Hauteur de base
 
 #define MARGIN_SIDES  10        // Marge gauche/droite
-#define MARGIN_TOP    5         // Marge du haut
+#define MARGIN_TOP    10        // Marge du haut
 #define MARGIN_BOTTOM 10        // Marge du bas
 
 // ════════════════════════════════════════════════════════════════════════
@@ -101,12 +101,11 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
     int title_x = (width - title_extents.width) / 2;
     int title_y = MARGIN_TOP + title_extents.height;
 
-    // Couleur du texte
-    cairo_set_source_rgba(cr,
-                          text_color.r / 255.0,
-                          text_color.g / 255.0,
-                          text_color.b / 255.0,
-                          text_color.a / 255.0);
+    // Couleur du texte (opaque, pas d'alpha)
+    cairo_set_source_rgb(cr,
+                         text_color.r / 255.0,
+                         text_color.g / 255.0,
+                         text_color.b / 255.0);
 
     cairo_move_to(cr, title_x, title_y);
     cairo_show_text(cr, title_text);
@@ -125,7 +124,8 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
     cairo_text_extents(cr, number_text, &number_extents);
 
     // Centrer horizontalement et verticalement dans l'espace restant
-    int number_x = (width - number_extents.width) / 2;
+    // Tenir compte du x_bearing pour un centrage correct (surtout pour le chiffre "1")
+    int number_x = (width - number_extents.width) / 2 - number_extents.x_bearing;
     int number_y = title_y + 10 + (available_height + number_extents.height) / 2;
 
     cairo_move_to(cr, number_x, number_y);
@@ -166,9 +166,9 @@ SessionCardState* session_card_create(int session_number, int screen_width,
     card->elapsed_time = 0.0f;
 
     // Timings
-    card->enter_duration = 1.0f;  // 1 seconde pour entrer
+    card->enter_duration = 0.5f;  // 0.5 seconde pour entrer
     card->pause_duration = 3.0f;  // 3 secondes au centre
-    card->exit_duration = 1.0f;   // 1 seconde pour sortir
+    card->exit_duration = 0.5f;   // 0.5 seconde pour sortir
 
     // Dimensions de la carte
     card->card_width = CARD_WIDTH_BASE;
