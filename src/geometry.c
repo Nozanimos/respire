@@ -20,18 +20,6 @@
 /* FONCTIONS UTILITAIRES CAIRO */
 /*----------------------------------------------------*/
 
-// Crée une surface Cairo à partir d'une surface SDL
-static cairo_surface_t* cairo_surface_from_sdl(SDL_Surface* sdl_surface) {
-    cairo_surface_t* cairo_surface = cairo_image_surface_create_for_data(
-        (unsigned char*)sdl_surface->pixels,
-        CAIRO_FORMAT_ARGB32,
-        sdl_surface->w,
-        sdl_surface->h,
-        sdl_surface->pitch
-    );
-    return cairo_surface;
-}
-
 // Crée une texture SDL depuis une surface Cairo
 static SDL_Texture* texture_from_cairo(SDL_Renderer* renderer, cairo_surface_t* surface) {
     int width = cairo_image_surface_get_width(surface);
