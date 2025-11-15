@@ -689,6 +689,11 @@ void render_app(AppState* app) {
         }
     }
 
+    // 🆕 Dessine la carte de session SI on est en phase carte
+    if (app->session_card_phase && app->session_card) {
+        session_card_render(app->session_card, app->renderer);
+    }
+
     // 3. Dessine le panneau settings (par dessus)
     if (app->settings_panel) {
         render_settings_panel(app->renderer, app->settings_panel);

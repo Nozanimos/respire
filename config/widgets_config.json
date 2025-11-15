@@ -107,7 +107,7 @@
         },
         {
             "type": "increment",
-            "id": "nb_sessions",
+            "id": "nb_session",
             "nom_affichage": "Nombre de session(s)",
             "x": 165,
             "y": 170,

@@ -15,6 +15,7 @@
 #include "timer.h"
 #include "counter.h"
 #include "chronometre.h"
+#include "session_card.h"
 
 
 
@@ -204,6 +205,27 @@ int main(int argc, char **argv) {
         debug_printf("✅ Timer de rétention créé: 15 secondes (taille police: %d)\n", timer_font_size);
     }
 
+    // === CRÉATION CARTE DE SESSION ===
+    // Carte animée affichant le numéro de session entre le timer et le compteur
+    app.current_session = 1;  // Commencer à la session 1
+    app.total_sessions = config.nb_session;  // Nombre total depuis la config
+
+    app.session_card = session_card_create(
+        app.current_session,
+        app.screen_width,
+        app.screen_height,
+        "../fonts/arial/ARIALBD.TTF"
+    );
+
+    if (!app.session_card) {
+        fprintf(stderr, "⚠️ Échec création carte de session\n");
+        app.session_card_phase = false;
+    } else {
+        app.session_card_phase = false;  // Sera activée après le timer
+        debug_printf("✅ Carte de session créée: session %d/%d\n",
+                     app.current_session, app.total_sessions);
+    }
+
     /*------------------------------------------------------------*/
 
     const int FRAME_DELAY = 1000 / TARGET_FPS;
@@ -237,11 +259,31 @@ int main(int argc, char **argv) {
             bool timer_running = timer_update(app.session_timer);
 
             if (!timer_running) {
-                // Timer terminé → démarrer l'animation et le compteur
+                // Timer terminé → lancer la carte de session
                 app.timer_phase = false;
+                app.session_card_phase = true;
+
+                // Démarrer l'animation de la carte
+                if (app.session_card) {
+                    session_card_start(app.session_card);
+                    debug_printf("🎬 Timer terminé → Carte de session (session %d/%d)\n",
+                                 app.current_session, app.total_sessions);
+                }
+            }
+        }
+
+        // === GESTION CARTE DE SESSION ===
+        if (app.session_card_phase && app.session_card) {
+            // Mettre à jour l'animation (delta_time en secondes)
+            // Utiliser un delta_time fixe basé sur TARGET_FPS (1/60 = ~0.0167s)
+            float delta_time = 1.0f / TARGET_FPS;
+            bool card_running = session_card_update(app.session_card, delta_time);
+
+            if (!card_running) {
+                // Carte terminée → démarrer l'animation et le compteur
+                app.session_card_phase = false;
 
                 // 🆕 POSITIONNER LA "TÊTE DE LECTURE" SUR SCALE_MIN (poumons vides)
-                // Chercher la première frame où is_at_scale_min = true
                 HexagoneNode* node = hex_list->first;
                 while (node) {
                     // Chercher la première frame avec scale_min
@@ -262,14 +304,14 @@ int main(int argc, char **argv) {
                     node = node->next;
                 }
 
-                // 🆕 DÉMARRER LE COMPTEUR (activer simplement - données dans le précomputing)
+                // 🆕 DÉMARRER LE COMPTEUR
                 if (app.breath_counter) {
                     app.breath_counter->is_active = true;
                     app.counter_phase = true;
                     debug_printf("🫁 Compteur activé - lecture depuis précomputing (démarre sur scale_min)\n");
                 }
 
-                debug_printf("🎬 Timer terminé - animation positionnée sur scale_min (poumons vides)\n");
+                debug_printf("🎬 Carte terminée → Animation respiratoire (session %d)\n", app.current_session);
             }
         }
 
@@ -487,7 +529,35 @@ int main(int argc, char **argv) {
                 app.retention_phase = false;
                 debug_printf("✅ Phase RÉTENTION terminée\n");
 
-                // TODO: Ajouter la suite (expiration ? nouveau cycle ?)
+                // 🆕 GESTION BOUCLE DE SESSIONS
+                // Vérifier si on doit continuer avec une nouvelle session
+                if (app.current_session < app.total_sessions) {
+                    // Incrémenter le numéro de session
+                    app.current_session++;
+
+                    // Réinitialiser la carte avec le nouveau numéro
+                    if (app.session_card) {
+                        session_card_reset(app.session_card, app.current_session, app.renderer);
+                        session_card_start(app.session_card);
+                        app.session_card_phase = true;
+
+                        debug_printf("🔄 Nouvelle session: %d/%d\n",
+                                     app.current_session, app.total_sessions);
+                    }
+
+                    // Réinitialiser le compteur de respirations
+                    if (app.breath_counter) {
+                        app.breath_counter->current_breath = 0;
+                        app.breath_counter->was_at_min_last_frame = false;
+                        app.breath_counter->waiting_for_scale_min = false;
+                        app.breath_counter->was_at_max_last_frame = false;
+                    }
+                } else {
+                    // Toutes les sessions terminées
+                    debug_printf("🎉 Toutes les sessions terminées (%d/%d)\n",
+                                 app.current_session, app.total_sessions);
+                    // L'application continue de tourner, l'utilisateur peut interagir avec le panneau
+                }
             }
         }
 

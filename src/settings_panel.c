@@ -99,6 +99,15 @@ void start_value_changed(int new_value) {
     debug_printf("✅ Durée de démarrage changée: %d secondes (en attente de validation)\n", new_value);
 }
 
+void session_value_changed(int new_value) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    // Mise à jour temp_config (sans sauvegarder)
+    current_panel_for_callbacks->temp_config.nb_session = new_value;
+
+    debug_printf("✅ Nombre de sessions changé: %d (en attente de validation)\n", new_value);
+}
+
 void alternate_cycles_changed(bool new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 

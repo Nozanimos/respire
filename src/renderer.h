@@ -13,6 +13,7 @@
 #include "timer.h"
 #include "counter.h"
 #include "chronometre.h"
+#include "session_card.h"
 
 // Structure qui contient TOUT l'état de l'application graphique
 typedef struct {
@@ -55,6 +56,14 @@ typedef struct {
     bool inspiration_phase;         // Phase d'inspiration (scale_min → scale_max)
     TimerState* retention_timer;    // Timer de rétention (15 secondes poumons pleins)
     bool retention_phase;           // Phase de rétention (poumons pleins, timer actif)
+
+    // 🆕 Carte de session animée (entre timer_phase et counter_phase)
+    SessionCardState* session_card;  // Carte affichant le numéro de session
+    bool session_card_phase;         // Phase carte de session active
+
+    // 🆕 Gestion des sessions multiples
+    int current_session;             // Numéro de session en cours (1, 2, 3...)
+    int total_sessions;              // Nombre total de sessions configurées
 
     // 🆕 Stockage des temps de session (pour statistiques futures)
     float* session_times;           // Tableau dynamique des temps de chaque session (en secondes)
