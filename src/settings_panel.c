@@ -32,15 +32,15 @@ void duration_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // APPLIQUER IMMÉDIATEMENT À LA CONFIGURATION PRINCIPALE
+    // MISE À JOUR DE TEMP_CONFIG (SANS SAUVEGARDER)
     // ═══════════════════════════════════════════════════════════════════════════
-    current_main_config_for_callbacks->breath_duration = new_value;
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.breath_duration = new_value;
 
     // Sauvegarder immédiatement dans le fichier
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Durée respiration changée: %d secondes (sauvegardé)\n", new_value);
+    debug_printf("✅ Durée respiration changée: %d secondes (en attente de validation)\n", new_value);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // METTRE À JOUR LE PREVIEW DANS LA WIDGET LIST
@@ -63,53 +63,53 @@ void duration_value_changed(int new_value) {
 void cycles_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
-    current_main_config_for_callbacks->nb_session = new_value;
+    // Mise à jour temp_config (sans sauvegarder)
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.nb_session = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Cycles changés: %d (sauvegardé)\n", new_value);
+    debug_printf("✅ Cycles changés: %d (en attente de validation)\n", new_value);
 }
 
 void nb_breath(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
+    // Mise à jour temp_config (sans sauvegarder)
     current_main_config_for_callbacks->Nb_respiration = new_value;
     current_panel_for_callbacks->temp_config.Nb_respiration = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Nombre de respirations changé: %d (sauvegardé)\n", new_value);
+    debug_printf("✅ Nombre de respirations changé: %d (en attente de validation)\n", new_value);
 }
 
 void start_value_changed(int new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
-    current_main_config_for_callbacks->start_duration = new_value;
+    // Mise à jour temp_config (sans sauvegarder)
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.start_duration = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Durée de démarrage changée: %d secondes (sauvegardé)\n", new_value);
+    debug_printf("✅ Durée de démarrage changée: %d secondes (en attente de validation)\n", new_value);
 }
 
 void alternate_cycles_changed(bool new_value) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement
-    current_main_config_for_callbacks->alternate_cycles = new_value;
+    // Mise à jour temp_config (sans sauvegarder)
+    // Modification stockée dans temp_config uniquement
     current_panel_for_callbacks->temp_config.alternate_cycles = new_value;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Cycles alternés changés: %s (sauvegardé)\n", new_value ? "ACTIF" : "INACTIF");
+    debug_printf("✅ Cycles alternés changés: %s (en attente de validation)\n", new_value ? "ACTIF" : "INACTIF");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -118,63 +118,91 @@ void alternate_cycles_changed(bool new_value) {
 void retention_full(void) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement : poumons pleins = 0
+    // Mise à jour temp_config (sans sauvegarder) : poumons pleins = 0
     current_main_config_for_callbacks->retention_type = 0;
     current_panel_for_callbacks->temp_config.retention_type = 0;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Type de rétention changé: POUMONS PLEINS (sauvegardé)\n");
+    debug_printf("✅ Type de rétention changé: POUMONS PLEINS (en attente de validation)\n");
 }
 
 void retention_empty(void) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement : poumons vides = 1
+    // Mise à jour temp_config (sans sauvegarder) : poumons vides = 1
     current_main_config_for_callbacks->retention_type = 1;
     current_panel_for_callbacks->temp_config.retention_type = 1;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Type de rétention changé: POUMONS VIDES (sauvegardé)\n");
+    debug_printf("✅ Type de rétention changé: POUMONS VIDES (en attente de validation)\n");
 }
 
 void retention_alternate(void) {
     if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Appliquer immédiatement : alternée = 2
+    // Mise à jour temp_config (sans sauvegarder) : alternée = 2
     current_main_config_for_callbacks->retention_type = 2;
     current_panel_for_callbacks->temp_config.retention_type = 2;
 
     // Sauvegarder immédiatement
-    save_config(current_main_config_for_callbacks);
+    // Sauvegarde uniquement lors du clic sur "Appliquer"
 
-    debug_printf("✅ Type de rétention changé: ALTERNÉE (sauvegardé)\n");
+    debug_printf("✅ Type de rétention changé: ALTERNÉE (en attente de validation)\n");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LES BOUTONS APPLIQUER/ANNULER
 // ════════════════════════════════════════════════════════════════════════════
-// NOTE : Les changements sont maintenant appliqués immédiatement lors de chaque
-// modification de widget. Ces boutons servent simplement à fermer le panneau.
-void apply_button_clicked(void) {
-    if (!current_panel_for_callbacks) return;
 
-    // Les changements sont déjà appliqués et sauvegardés
-    // On ferme simplement le panneau
+/**
+ * APPLIQUER : Sauvegarde les modifications dans respiration.conf
+ * - Synchronise widgets → temp_config
+ * - Sauvegarde temp_config dans respiration.conf
+ * - Copie temp_config → main_config
+ * - Ferme le panneau
+ */
+void apply_button_clicked(void) {
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+
+    debug_printf("💾 APPLIQUER : Sauvegarde des modifications\n");
+
+    // Étape 1: Widgets → temp_config (+ sauvegarde dans respiration.conf)
+    sync_widgets_to_config(current_panel_for_callbacks->widget_list,
+                          &current_panel_for_callbacks->temp_config);
+
+    // Étape 2: temp_config → main_config (copie directe)
+    *current_main_config_for_callbacks = current_panel_for_callbacks->temp_config;
+
+    // Étape 3: Fermer le panneau
     current_panel_for_callbacks->state = PANEL_CLOSING;
-    debug_printf("✅ Panneau fermé (changements déjà appliqués)\n");
+    debug_printf("✅ Modifications sauvegardées et appliquées\n");
 }
 
+/**
+ * ANNULER : Annule les modifications et restaure les valeurs
+ * - Recharge la config depuis respiration.conf (ancienne valeur)
+ * - Synchronise config → widgets (restauration visuelle)
+ * - Ferme le panneau
+ */
 void cancel_button_clicked(void) {
-    if (!current_panel_for_callbacks) return;
+    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
 
-    // Les changements sont déjà appliqués et sauvegardés
-    // On ferme simplement le panneau
+    debug_printf("❌ ANNULER : Restauration des valeurs initiales\n");
+
+    // Étape 1: Recharger la config depuis le fichier (annule les modifs non sauvegardées)
+    load_config(&current_panel_for_callbacks->temp_config);
+
+    // Étape 2: Synchroniser config → widgets (restaurer visuellement)
+    sync_config_to_widgets(&current_panel_for_callbacks->temp_config,
+                          current_panel_for_callbacks->widget_list);
+
+    // Étape 3: Fermer le panneau
     current_panel_for_callbacks->state = PANEL_CLOSING;
-    debug_printf("✅ Panneau fermé\n");
+    debug_printf("✅ Modifications annulées\n");
 }
 // ════════════════════════════════════════════════════════════════════════════
 //  FORWARD DECLARATIONS (fonctions définies plus bas)
@@ -494,8 +522,8 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
         // Gestion du scroll (molette souris)
         handle_panel_scroll(panel, event);
 
-        // Événements des widgets
-        handle_widget_list_events(panel->widget_list, event, panel_x, panel_y);
+        // Événements des widgets (avec scroll_offset pour alignement collision/rendu)
+        handle_widget_list_events(panel->widget_list, event, panel_x, panel_y, panel->scroll_offset);
     }
 
     if (event->type == SDL_MOUSEBUTTONUP) {
@@ -756,9 +784,33 @@ typedef struct {
 } WidgetRect;
 
 // ════════════════════════════════════════════════════════════════════════════
-//  DÉTECTION DE COLLISION ENTRE DEUX RECTANGLES
+//  DÉTECTION DE COLLISION ENTRE DEUX RECTANGLES (avec marge de tolérance)
+// ════════════════════════════════════════════════════════════════════════════
+// MARGE DE TOLÉRANCE : Les rectangles doivent se chevaucher de 10px minimum
+// pour déclencher une collision. Cela évite l'empilement prématuré quand les
+// widgets sont juste proches mais ne se touchent pas vraiment.
+//
+// Exemple : Widget1 à x=100 (largeur 50) et Widget2 à x=160
+//   - Sans marge : x1+w1=150, x2=160 → pas de collision (OK)
+//   - Avec marge -10px : x1+w1=140, x2=170 → pas de collision (OK)
+//   - Si Widget2 à x=145 : x1+w1=140, x2=155 → collision détectée ✅
 // ════════════════════════════════════════════════════════════════════════════
 static bool rects_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+    // Marge de tolérance : réduire les rectangles de 10px de chaque côté
+    const int MARGIN = 10;
+
+    // Appliquer la marge (réduction des rectangles)
+    x1 += MARGIN;
+    y1 += MARGIN;
+    w1 -= 2 * MARGIN;
+    h1 -= 2 * MARGIN;
+
+    x2 += MARGIN;
+    y2 += MARGIN;
+    w2 -= 2 * MARGIN;
+    h2 -= 2 * MARGIN;
+
+    // Test de collision après réduction
     return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
 }
 
@@ -1499,7 +1551,8 @@ void recalculate_widget_layout(SettingsPanel* panel) {
     // ÉTAPE 2: DÉTERMINER SI ON DOIT RÉORGANISER
     // ═══════════════════════════════════════════════════════════════════════════
     // Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
-    // Critère 2: Détection de collision (si collision, réorganiser)
+    // Critère 2: Widget qui dépasse le bord droit du panneau (avec marge)
+    // Critère 3: Détection de collision entre widgets
 
     bool needs_reorganization = false;
 
@@ -1508,8 +1561,26 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         debug_printf("📱 Panneau étroit (%dpx < %dpx) - empilement forcé\n",
                      panel_width, panel->layout_threshold_width);
         needs_reorganization = true;
-    } else {
-        // Panneau large: vérifier les collisions
+    }
+
+    // Critère 2: Vérifier si un widget dépasse le bord droit du panneau
+    if (!needs_reorganization) {
+        const int RIGHT_MARGIN = 10;  // Marge de sécurité
+        for (int i = 0; i < rect_count && !needs_reorganization; i++) {
+            int widget_right_edge = rects[i].x + rects[i].width;
+            if (widget_right_edge > panel_width - RIGHT_MARGIN) {
+                debug_printf("⚠️ Widget[%d] (type=%d) DÉPASSE le panneau: "
+                            "x=%d, width=%d, bord_droit=%d > panel_width=%d\n",
+                            i, rects[i].type, rects[i].x, rects[i].width,
+                            widget_right_edge, panel_width - RIGHT_MARGIN);
+                needs_reorganization = true;
+                break;
+            }
+        }
+    }
+
+    // Critère 3: Vérifier les collisions entre widgets
+    if (!needs_reorganization) {
         for (int i = 0; i < rect_count && !needs_reorganization; i++) {
             for (int j = i + 1; j < rect_count; j++) {
                 if (rects_collide(rects[i].x, rects[i].y, rects[i].width, rects[i].height,

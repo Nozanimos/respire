@@ -157,7 +157,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
                         int offset_x, int offset_y, int panel_width, int scroll_offset);
 
 void handle_widget_list_events(WidgetList* list, SDL_Event* event,
-                               int offset_x, int offset_y);
+                               int offset_x, int offset_y, int scroll_offset);
 
 void update_widget_list_animations(WidgetList* list, float delta_time);
 
