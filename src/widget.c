@@ -279,26 +279,27 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // MESURE DE LA VALEUR (pour calcul de largeur)
+    // ─────────────────────────────────────────────────────────────────────────
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "%d", widget->value);
+    int value_width = 0;
+
+    if (correct_font) {
+        TTF_SizeUTF8(correct_font, value_str, &value_width, NULL);
+    } else {
+        value_width = strlen(value_str) * (widget->current_text_size / 2);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // FOND AU SURVOL (rectangle arrondi)
     // ─────────────────────────────────────────────────────────────────────────
     if (widget->base.hovered) {
         // Calculer la largeur RÉELLE du widget (nom + flèches + valeur)
-        // Ne PAS utiliser container_width qui est pour l'alignement du groupe
+        // Utiliser value_x_offset qui tient compte de l'alignement
 
-        // Mesurer la largeur de la valeur actuelle
-        char value_str[16];
-        snprintf(value_str, sizeof(value_str), "%d", widget->value);
-        int value_width = 0;
-
-        if (correct_font) {
-            TTF_SizeUTF8(correct_font, value_str, &value_width, NULL);
-        } else {
-            value_width = strlen(value_str) * (widget->current_text_size / 2);
-        }
-
-        // Largeur réelle = position des flèches + taille flèches + espace + largeur valeur
-        int real_width = widget->local_arrows_x + widget->arrow_size +
-                        widget->base_espace_apres_fleches + value_width + 10;
+        // Largeur réelle = position de la valeur + largeur de la valeur
+        int real_width = value_x_offset + value_width + 10;
 
         roundedBoxRGBA(renderer,
                        widget_screen_x - 5,
@@ -357,11 +358,8 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // RENDU DE LA VALEUR
+    // RENDU DE LA VALEUR (utilise value_str déjà calculé plus haut)
     // ─────────────────────────────────────────────────────────────────────────
-    char value_str[16];
-    snprintf(value_str, sizeof(value_str), "%d", widget->value);
-
     if (correct_font) {
         SDL_Surface* value_surface = TTF_RenderUTF8_Blended(correct_font, value_str, widget->color);
         if (value_surface) {
@@ -385,7 +383,7 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
 //  GESTION DES ÉVÉNEMENTS
 // ════════════════════════════════════════════════════════════════════════════
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
-                                 int offset_x, int offset_y) {
+                                 int offset_x, int offset_y, int container_width) {
     if (!widget || !event) return;
 
     int widget_screen_x = offset_x + widget->base.x;
@@ -395,7 +393,44 @@ void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
         int mx = event->motion.x;
         int my = event->motion.y;
 
-        widget->base.hovered = widget_contains_point(&widget->base, mx, my, offset_x, offset_y);
+        // ─────────────────────────────────────────────────────────────────────
+        // CALCUL DE LA LARGEUR RÉELLE DU WIDGET (comme dans render)
+        // ─────────────────────────────────────────────────────────────────────
+        // Mesurer la largeur de la valeur actuelle
+        char value_str[16];
+        snprintf(value_str, sizeof(value_str), "%d", widget->value);
+        int value_width = 0;
+
+        TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
+        if (correct_font) {
+            TTF_SizeUTF8(correct_font, value_str, &value_width, NULL);
+        } else {
+            value_width = strlen(value_str) * (widget->current_text_size / 2);
+        }
+
+        // Calculer value_x_offset (même logique que dans render_config_widget)
+        int value_x_offset = widget->local_value_x;  // Position par défaut
+
+        if (container_width > 0) {
+            const int RIGHT_MARGIN = 10;
+            const int ESTIMATED_VALUE_WIDTH = 40;
+            int arrows_value_width = widget->arrow_size + widget->base_espace_apres_fleches + ESTIMATED_VALUE_WIDTH;
+            int arrows_x_offset = container_width - arrows_value_width - RIGHT_MARGIN;
+
+            int min_arrows_x = widget->local_arrows_x;
+            if (arrows_x_offset < min_arrows_x) {
+                arrows_x_offset = min_arrows_x;
+            }
+
+            value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
+        }
+
+        // Largeur réelle = position de la valeur + largeur de la valeur + marge
+        int real_width = value_x_offset + value_width + 10;
+
+        // Test de survol avec la largeur réelle calculée
+        widget->base.hovered = (mx >= widget_screen_x && mx < widget_screen_x + real_width &&
+                                my >= widget_screen_y && my < widget_screen_y + widget->base.height);
 
         int arrows_screen_x = widget_screen_x + widget->local_arrows_x;
         int arrows_screen_y = widget_screen_y + widget->local_arrows_y;

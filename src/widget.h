@@ -113,8 +113,9 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
                           int offset_x, int offset_y, int container_width);
 
 // Gère les événements souris du widget
+// Si container_width > 0, utilise la même logique d'alignement que le rendu
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
-                                 int offset_x, int offset_y);
+                                 int offset_x, int offset_y, int container_width);
 
 // Définit le callback appelé quand la valeur change
 void set_config_value_changed_callback(ConfigWidget* widget,

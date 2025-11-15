@@ -458,7 +458,108 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
     // correspondent exactement aux zones rendues à l'écran !
     int adjusted_offset_y = offset_y - scroll_offset;
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1 : PRÉ-CALCUL DES GROUPES DE WIDGETS INCREMENT (même logique que render)
+    // ═════════════════════════════════════════════════════════════════════════
+    const int GROUP_SPACING_THRESHOLD = 30;
+
+    typedef struct {
+        ConfigWidget* widget;
+        int y_position;
+        int text_width;
+        int group_id;
+        int max_text_width_in_group;
+        int container_width_for_group;
+    } IncrementInfo;
+
+    IncrementInfo increment_infos[50];
+    int increment_count = 0;
+
+    // Premier passage : collecter tous les widgets INCREMENT
     WidgetNode* node = list->first;
+    while (node && increment_count < 50) {
+        if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
+            ConfigWidget* w = node->widget.increment_widget;
+
+            TTF_Font* font = get_font_for_size(w->current_text_size);
+            int text_width = 0;
+            if (font) {
+                TTF_SizeUTF8(font, w->option_name, &text_width, NULL);
+            }
+
+            increment_infos[increment_count].widget = w;
+            increment_infos[increment_count].y_position = w->base.y;
+            increment_infos[increment_count].text_width = text_width;
+            increment_infos[increment_count].group_id = -1;
+            increment_infos[increment_count].max_text_width_in_group = 0;
+            increment_infos[increment_count].container_width_for_group = 0;
+            increment_count++;
+        }
+        node = node->next;
+    }
+
+    // Deuxième passage : trier par position Y
+    for (int i = 0; i < increment_count - 1; i++) {
+        for (int j = i + 1; j < increment_count; j++) {
+            if (increment_infos[j].y_position < increment_infos[i].y_position) {
+                IncrementInfo temp = increment_infos[i];
+                increment_infos[i] = increment_infos[j];
+                increment_infos[j] = temp;
+            }
+        }
+    }
+
+    // Troisième passage : regrouper par proximité verticale
+    int current_group = 0;
+    for (int i = 0; i < increment_count; i++) {
+        if (increment_infos[i].group_id == -1) {
+            increment_infos[i].group_id = current_group;
+            int last_y = increment_infos[i].y_position;
+
+            for (int j = i + 1; j < increment_count; j++) {
+                int y_diff = increment_infos[j].y_position - last_y;
+                if (y_diff > 0 && y_diff <= GROUP_SPACING_THRESHOLD &&
+                    increment_infos[j].group_id == -1) {
+                    increment_infos[j].group_id = current_group;
+                    last_y = increment_infos[j].y_position;
+                }
+            }
+            current_group++;
+        }
+    }
+
+    // Quatrième passage : calculer container_width pour chaque groupe
+    for (int g = 0; g < current_group; g++) {
+        int max_text_width = 0;
+        ConfigWidget* longest_widget = NULL;
+
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g && increment_infos[i].text_width > max_text_width) {
+                max_text_width = increment_infos[i].text_width;
+                longest_widget = increment_infos[i].widget;
+            }
+        }
+
+        int container_width = 0;
+        if (longest_widget) {
+            container_width = longest_widget->local_arrows_x +
+                            longest_widget->arrow_size +
+                            60;
+        }
+
+        for (int i = 0; i < increment_count; i++) {
+            if (increment_infos[i].group_id == g) {
+                increment_infos[i].max_text_width_in_group = max_text_width;
+                increment_infos[i].container_width_for_group = container_width;
+            }
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 2 : TRAITEMENT DES ÉVÉNEMENTS
+    // ═════════════════════════════════════════════════════════════════════════
+
+    node = list->first;
     while (node) {
         // ─────────────────────────────────────────────────────────────────────
         // SWITCH sur le type de widget
@@ -466,8 +567,17 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
         switch (node->type) {
             case WIDGET_TYPE_INCREMENT:
                 if (node->widget.increment_widget) {
+                    // Trouver le container_width pour ce widget (basé sur son groupe)
+                    int container_width = 0;
+                    for (int i = 0; i < increment_count; i++) {
+                        if (increment_infos[i].widget == node->widget.increment_widget) {
+                            container_width = increment_infos[i].container_width_for_group;
+                            break;
+                        }
+                    }
+
                     handle_config_widget_events(node->widget.increment_widget,
-                                              event, offset_x, adjusted_offset_y);
+                                              event, offset_x, adjusted_offset_y, container_width);
                 }
                 break;
 
