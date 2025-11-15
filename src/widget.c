@@ -235,6 +235,36 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  CALCUL DE LA POSITION X DES FLÈCHES (avec alignement optionnel)
+// ════════════════════════════════════════════════════════════════════════════
+// Fonction utilitaire pour calculer où positionner les flèches en X.
+// Si container_width > 0, aligne à droite. Sinon, utilise la position par défaut.
+// Cette fonction est utilisée à la fois par le rendu ET la détection de hovering
+// pour garantir la cohérence entre l'affichage et les zones cliquables.
+static int calculate_arrows_x_offset(ConfigWidget* widget, int container_width) {
+    int arrows_x_offset = widget->local_arrows_x;  // Position par défaut
+
+    if (container_width > 0) {
+        // Alignement à droite des flèches+valeur
+        const int RIGHT_MARGIN = 10;
+        const int ESTIMATED_VALUE_WIDTH = 40;
+
+        int arrows_value_width = widget->arrow_size +
+                                widget->base_espace_apres_fleches +
+                                ESTIMATED_VALUE_WIDTH;
+
+        arrows_x_offset = container_width - arrows_value_width - RIGHT_MARGIN;
+
+        // Sécurité : ne pas superposer le texte
+        if (arrows_x_offset < widget->local_arrows_x) {
+            arrows_x_offset = widget->local_arrows_x;
+        }
+    }
+
+    return arrows_x_offset;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU WIDGET
 // ════════════════════════════════════════════════════════════════════════════
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
@@ -252,31 +282,8 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     // ─────────────────────────────────────────────────────────────────────────
     // CALCUL DES POSITIONS POUR L'ALIGNEMENT EN COLONNES
     // ─────────────────────────────────────────────────────────────────────────
-    // Si container_width > 0, on aligne les flèches+valeur à droite
-    // Sinon, on utilise le layout normal (séquentiel)
-    int arrows_x_offset = widget->local_arrows_x;  // Position par défaut
-    int value_x_offset = widget->local_value_x;    // Position par défaut
-
-    if (container_width > 0) {
-        // Distance depuis le bord droit pour les flèches+valeur
-        // On réserve: arrow_size + espace + largeur_valeur (estimée à 40px)
-        const int RIGHT_MARGIN = 10;  // Marge depuis le bord droit
-        const int ESTIMATED_VALUE_WIDTH = 40;  // Largeur estimée pour la valeur
-
-        int arrows_value_width = widget->arrow_size + widget->base_espace_apres_fleches + ESTIMATED_VALUE_WIDTH;
-
-        // Positionner les flèches à partir de la droite
-        arrows_x_offset = container_width - arrows_value_width - RIGHT_MARGIN;
-        value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
-
-        // S'assurer que les flèches ne se superposent pas au texte
-        // Laisser au moins un petit espace après le texte
-        int min_arrows_x = widget->local_arrows_x;
-        if (arrows_x_offset < min_arrows_x) {
-            arrows_x_offset = min_arrows_x;
-            value_x_offset = widget->local_value_x;
-        }
-    }
+    int arrows_x_offset = calculate_arrows_x_offset(widget, container_width);
+    int value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
 
     // ─────────────────────────────────────────────────────────────────────────
     // MESURE DE LA VALEUR (pour calcul de largeur)
@@ -408,44 +415,32 @@ void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
             value_width = strlen(value_str) * (widget->current_text_size / 2);
         }
 
-        // Calculer value_x_offset (même logique que dans render_config_widget)
-        int value_x_offset = widget->local_value_x;  // Position par défaut
-
-        if (container_width > 0) {
-            const int RIGHT_MARGIN = 10;
-            const int ESTIMATED_VALUE_WIDTH = 40;
-            int arrows_value_width = widget->arrow_size + widget->base_espace_apres_fleches + ESTIMATED_VALUE_WIDTH;
-            int arrows_x_offset = container_width - arrows_value_width - RIGHT_MARGIN;
-
-            int min_arrows_x = widget->local_arrows_x;
-            if (arrows_x_offset < min_arrows_x) {
-                arrows_x_offset = min_arrows_x;
-            }
-
-            value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
-        }
-
-        // Largeur réelle = position de la valeur + largeur de la valeur + marge
+        // Calculer les positions (identique au rendu)
+        int arrows_x_offset = calculate_arrows_x_offset(widget, container_width);
+        int value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
         int real_width = value_x_offset + value_width + 10;
 
-        // Test de survol avec la largeur réelle calculée
+        // Test de survol global du widget
         widget->base.hovered = (mx >= widget_screen_x && mx < widget_screen_x + real_width &&
                                 my >= widget_screen_y && my < widget_screen_y + widget->base.height);
 
-        int arrows_screen_x = widget_screen_x + widget->local_arrows_x;
+        // Calcul des zones de hovering des flèches (cohérent avec le rendu)
+        int arrows_screen_x = widget_screen_x + arrows_x_offset;
         int arrows_screen_y = widget_screen_y + widget->local_arrows_y;
 
-        int up_y = arrows_screen_y - widget->arrow_size / 2;
+        // Zone flèche UP (arrows_screen_y est déjà le centre de la flèche)
+        int up_y = arrows_screen_y;
         widget->up_arrow_hovered = (mx >= arrows_screen_x - widget->arrow_size / 2 &&
                                     mx <= arrows_screen_x + widget->arrow_size / 2 &&
-                                    my >= up_y &&
-                                    my <= up_y + widget->arrow_size);
+                                    my >= up_y - widget->arrow_size / 2 &&
+                                    my <= up_y + widget->arrow_size / 2);
 
-        int down_y = arrows_screen_y + widget->arrow_size / 2 + widget->base_espace_entre_fleches;
+        // Zone flèche DOWN
+        int down_y = arrows_screen_y + widget->arrow_size + widget->base_espace_entre_fleches;
         widget->down_arrow_hovered = (mx >= arrows_screen_x - widget->arrow_size / 2 &&
                                       mx <= arrows_screen_x + widget->arrow_size / 2 &&
-                                      my >= down_y &&
-                                      my <= down_y + widget->arrow_size);
+                                      my >= down_y - widget->arrow_size / 2 &&
+                                      my <= down_y + widget->arrow_size / 2);
     }
     else if (event->type == SDL_MOUSEWHEEL) {
         // Support de la molette
