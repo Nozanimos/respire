@@ -160,10 +160,10 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
     }
 
     SDL_Color colors[] = {
-        {137, 36, 144, 150},   // Violet foncé
-        {217, 61, 228, 150},   // Violet
-        {228, 129, 235, 150},  // Violet pâle
-        {255, 255, 255, 130}   // Blanc
+        {160, 50, 170, 180},   // Violet foncé (plus lumineux, plus opaque)
+        {235, 80, 245, 180},   // Violet (plus vif, plus opaque)
+        {245, 150, 250, 180},  // Violet pâle (plus lumineux, plus opaque)
+        {255, 255, 255, 200}   // Blanc (plus opaque pour rester blanc)
     };
     hex->color = colors[element_id % 4];
 

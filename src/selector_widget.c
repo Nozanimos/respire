@@ -61,7 +61,7 @@ SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
     // Couleurs
     widget->text_color = (SDL_Color){0, 0, 0, 255};
     widget->arrow_color = (SDL_Color){100, 100, 100, 255};
-    widget->arrow_hover_color = (SDL_Color){50, 50, 50, 255};
+    widget->arrow_hover_color = (SDL_Color){255, 255, 200, 255};  // Jaune pâle
 
     // État
     widget->left_arrow_hovered = false;
