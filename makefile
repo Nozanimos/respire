@@ -2,6 +2,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -g
 SDL_FLAGS = `sdl2-config --cflags --libs`
+CAIRO_FLAGS = `pkg-config --cflags --libs cairo freetype2`
 LIBS = -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lm -lcjson
 
 # Dossiers
@@ -23,14 +24,14 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	@echo "🔗 Édition des liens..."
 	@mkdir -p $(BIN_DIR)  # Crée le dossier bin si inexistant
-	$(CC) $(OBJS) -o $(TARGET) $(LIBS) $(SDL_FLAGS)
+	$(CC) $(OBJS) -o $(TARGET) $(LIBS) $(SDL_FLAGS) $(CAIRO_FLAGS)
 	@echo "✅ Compilation terminée : $(TARGET)"
 
 # Compilation : .c → .o
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "📦 Compilation de $<..."
 	@mkdir -p $(dir $@)  # Crée le dossier si inexistant
-	$(CC) $(CFLAGS) `sdl2-config --cflags` -c $< -o $@
+	$(CC) $(CFLAGS) `sdl2-config --cflags` `pkg-config --cflags cairo freetype2` -c $< -o $@
 
 # Nettoyage
 clean:

@@ -26,9 +26,13 @@ https://www.gnu.org/licenses/gpl-3.0.html
 **Licence zlib** (compatible GPL)
 - **SDL2** - Bibliothèque graphique principale
 - **SDL2_image** - Gestion des images
-- **SDL2_gfx** - Effets graphiques avancés
-- **SDL2_ttf** - Rendu de texte
+- **SDL2_gfx** - Rendu graphique pour l'UI (widgets)
+- **SDL2_ttf** - Rendu de texte pour l'UI (widgets)
 - **SDL2_mixer** - Audio et musique *(à venir)*
+
+**Licence LGPL/MIT** (compatible GPL)
+- **Cairo** - Bibliothèque de rendu 2D avec antialiasing (animations)
+- **FreeType** - Rendu de polices TrueType (animations)
 
 **Licence MIT** (compatible GPL)
 - **cJSON** - Manipulation de données JSON
@@ -43,10 +47,10 @@ Ce programme est une implémentation de la méthode de respiration guidée Wim H
 
 ```bash
 # Sur Ubuntu/Debian
-sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-gfx-dev libsdl2-ttf-dev libsdl2-mixer-dev
+sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-gfx-dev libsdl2-ttf-dev libsdl2-mixer-dev libcairo2-dev libfreetype6-dev
 
 # Sur Archlinux
-sudo pacman -S sdl2 sdl2_image sdl2_gfx sdl2_ttf sdl2_mixer
+sudo pacman -S sdl2 sdl2_image sdl2_gfx sdl2_ttf sdl2_mixer cairo freetype2
 
 
 # Compilation avec le Makefile

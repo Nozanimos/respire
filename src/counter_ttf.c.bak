@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// counter.c - VERSION CAIRO (avec antialiasing)
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <cairo/cairo.h>
-#include <cairo/cairo-ft.h>
-#include <ft2build.h>
-#include FT_FREETYPE_H
+//#include <string.h>
+//#include <math.h>
 #include "counter.h"
 #include "debug.h"
 
@@ -52,7 +48,7 @@ CounterState* counter_create(int total_breaths, int retention_type, const char* 
 
 
 // ════════════════════════════════════════════════════════════════════════
-// RENDU DU COMPTEUR AVEC EFFET FISH-EYE (DONNÉES PRÉCOMPUTÉES) - VERSION CAIRO
+// RENDU DU COMPTEUR AVEC EFFET FISH-EYE (DONNÉES PRÉCOMPUTÉES)
 // ════════════════════════════════════════════════════════════════════════
 // Le chiffre "respire" avec l'hexagone : sa taille vient du précomputing
 // Scale max (inspire) = texte agrandi (poumons pleins)
@@ -65,29 +61,6 @@ CounterState* counter_create(int total_breaths, int retention_type, const char* 
 // 4. Continuer à afficher le dernier chiffre jusqu'au prochain scale_min
 // 5. Au scale_min, signaler que la session est terminée (poumons vides)
 // ════════════════════════════════════════════════════════════════════════
-
-// Fonction utilitaire pour créer une texture SDL depuis une surface Cairo
-static SDL_Texture* texture_from_cairo_surface(SDL_Renderer* renderer, cairo_surface_t* surface) {
-    int width = cairo_image_surface_get_width(surface);
-    int height = cairo_image_surface_get_height(surface);
-
-    SDL_Surface* sdl_surface = SDL_CreateRGBSurfaceWithFormat(
-        0, width, height, 32, SDL_PIXELFORMAT_ARGB8888
-    );
-
-    if (!sdl_surface) return NULL;
-
-    // Copier les données de Cairo vers SDL
-    memcpy(sdl_surface->pixels,
-           cairo_image_surface_get_data(surface),
-           height * cairo_image_surface_get_stride(surface));
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, sdl_surface);
-    SDL_FreeSurface(sdl_surface);
-
-    return texture;
-}
-
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
                     int center_x, int center_y, int hex_radius, HexagoneNode* hex_node) {
     if (!counter || !renderer || !hex_node) return;
@@ -167,94 +140,54 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     snprintf(count_text, sizeof(count_text), "%d", counter->current_breath);
 
     // 🎨 EFFET FISH-EYE : Calculer la taille de police avec le scale précomputé
-    double font_size = counter->base_font_size * text_scale;
-    if (font_size < 12.0) font_size = 12.0;  // Minimum lisible
+    int font_size = (int)(counter->base_font_size * text_scale);
+    if (font_size < 12) font_size = 12;  // Minimum lisible
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // RENDU AVEC CAIRO pour bénéficier de l'antialiasing
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    // Initialiser FreeType
-    FT_Library ft_library;
-    FT_Face ft_face;
-
-    if (FT_Init_FreeType(&ft_library)) {
-        fprintf(stderr, "❌ Erreur initialisation FreeType\n");
+    // Ouvrir la police à la taille calculée
+    TTF_Font* render_font = TTF_OpenFont(counter->font_path, font_size);
+    if (!render_font) {
+        fprintf(stderr, "❌ Erreur chargement police taille %d: %s\n", font_size, TTF_GetError());
         return;
     }
 
-    if (FT_New_Face(ft_library, counter->font_path, 0, &ft_face)) {
-        fprintf(stderr, "❌ Erreur chargement police: %s\n", counter->font_path);
-        FT_Done_FreeType(ft_library);
+    // Générer la surface avec le texte (rendu haute qualité)
+    SDL_Surface* text_surface = TTF_RenderUTF8_Blended(
+        render_font,
+        count_text,
+        counter->text_color
+    );
+
+    if (!text_surface) {
+        fprintf(stderr, "❌ Erreur rendu texte: %s\n", TTF_GetError());
+        TTF_CloseFont(render_font);
         return;
     }
 
-    // Créer une surface Cairo temporaire pour mesurer le texte
-    cairo_surface_t* temp_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
-    cairo_t* temp_cr = cairo_create(temp_surface);
-
-    // Créer une fonte Cairo depuis FreeType
-    cairo_font_face_t* cairo_face = cairo_ft_font_face_create_for_ft_face(ft_face, 0);
-    cairo_set_font_face(temp_cr, cairo_face);
-    cairo_set_font_size(temp_cr, font_size);
-
-    // Mesurer le texte
-    cairo_text_extents_t extents;
-    cairo_text_extents(temp_cr, count_text, &extents);
-
-    int text_width = (int)(extents.width + 10);  // +10 pour marge
-    int text_height = (int)(extents.height + 10);
-
-    cairo_destroy(temp_cr);
-    cairo_surface_destroy(temp_surface);
-
-    // Créer la surface finale pour le rendu
-    cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, text_width, text_height);
-    cairo_t* cr = cairo_create(surface);
-
-    // Activer l'antialiasing de haute qualité
-    cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
-
-    // Configurer la police
-    cairo_set_font_face(cr, cairo_face);
-    cairo_set_font_size(cr, font_size);
-
-    // Dessiner le texte avec la couleur
-    cairo_set_source_rgba(cr,
-                          counter->text_color.r / 255.0,
-                          counter->text_color.g / 255.0,
-                          counter->text_color.b / 255.0,
-                          counter->text_color.a / 255.0);
-
-    // Positionner le texte (centré dans la surface)
-    cairo_move_to(cr, 5 - extents.x_bearing, 5 - extents.y_bearing);
-    cairo_show_text(cr, count_text);
-
-    cairo_surface_flush(surface);
-
-    // Convertir en texture SDL
-    SDL_Texture* text_texture = texture_from_cairo_surface(renderer, surface);
-
-    if (text_texture) {
-        SDL_SetTextureBlendMode(text_texture, SDL_BLENDMODE_BLEND);
-
-        // Calculer la position centrée
-        int text_x = center_x - (text_width / 2);
-        int text_y = center_y - (text_height / 2);
-
-        SDL_Rect dest_rect = {text_x, text_y, text_width, text_height};
-
-        // Dessiner le texte
-        SDL_RenderCopy(renderer, text_texture, NULL, &dest_rect);
-        SDL_DestroyTexture(text_texture);
+    // Créer texture depuis la surface
+    SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+    if (!text_texture) {
+        fprintf(stderr, "❌ Erreur création texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(text_surface);
+        TTF_CloseFont(render_font);
+        return;
     }
+
+    // Calculer la position centrée
+    int text_width = text_surface->w;
+    int text_height = text_surface->h;
+    int text_x = center_x - (text_width / 2);
+    int text_y = center_y - (text_height / 2);
+
+    // Rectangle de destination
+    SDL_Rect dest_rect = {text_x, text_y, text_width, text_height};
+
+    // Dessiner le texte
+    SDL_RenderCopy(renderer, text_texture, NULL, &dest_rect);
 
     // Nettoyage
-    cairo_destroy(cr);
-    cairo_surface_destroy(surface);
-    cairo_font_face_destroy(cairo_face);
-    FT_Done_Face(ft_face);
-    FT_Done_FreeType(ft_library);
+    SDL_DestroyTexture(text_texture);
+    SDL_FreeSurface(text_surface);
+    TTF_CloseFont(render_font);
 }
 
 // ════════════════════════════════════════════════════════════════════════

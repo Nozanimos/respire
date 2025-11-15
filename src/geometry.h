@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// geometry.h
+// geometry.h - VERSION CAIRO
 #ifndef __GEOMETRY_H__
 #define __GEOMETRY_H__
 
-#include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL.h>
 #include <stdbool.h>
 
 // Déclaration anticipée
