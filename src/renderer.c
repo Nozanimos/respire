@@ -514,8 +514,11 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             // ═════════════════════════════════════════════════════════════════
         case SDL_MOUSEMOTION:
         case SDL_MOUSEWHEEL:
-            // Transmettre ces événements au panneau quand il existe
-            if (app->settings_panel) {
+            // Transmettre ces événements aux panneaux quand ils existent
+            if (app->stats_panel) {
+                handle_stats_panel_event(app->stats_panel, event);
+            }
+            else if (app->settings_panel) {
                 handle_settings_panel_event(app->settings_panel, event, &app->config);
             }
             break;
@@ -559,7 +562,10 @@ void handle_app_events(AppState* app, SDL_Event* event) {
                 debug_printf("⏹️  Chronomètre arrêté par CLIC GAUCHE\n");
                 debug_printf("🫁 Phase INSPIRATION activée - animation scale_min → scale_max\n");
             }
-            // Sinon, transmettre l'événement au panneau
+            // Sinon, transmettre l'événement aux panneaux
+            else if (app->stats_panel) {
+                handle_stats_panel_event(app->stats_panel, event);
+            }
             else if (app->settings_panel) {
                 handle_settings_panel_event(app->settings_panel, event, &app->config);
             }
@@ -697,6 +703,11 @@ void render_app(AppState* app) {
     // 3. Dessine le panneau settings (par dessus)
     if (app->settings_panel) {
         render_settings_panel(app->renderer, app->settings_panel);
+    }
+
+    // 3.5. Dessine le panneau stats (par dessus tout)
+    if (app->stats_panel) {
+        render_stats_panel(app->renderer, app->stats_panel);
     }
 
     // 4. Présentation fenêtre principale

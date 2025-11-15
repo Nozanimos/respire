@@ -14,6 +14,7 @@
 #include "counter.h"
 #include "chronometre.h"
 #include "session_card.h"
+#include "stats_panel.h"
 
 // Structure qui contient TOUT l'état de l'application graphique
 typedef struct {
@@ -39,6 +40,7 @@ typedef struct {
     // État de l'application
     HexagoneList* hexagones;
     SettingsPanel* settings_panel;
+    StatsPanel* stats_panel;
     JsonEditor* json_editor;
     TimerState* session_timer;      // Timer avant démarrage session
 

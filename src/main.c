@@ -561,14 +561,33 @@ int main(int argc, char **argv) {
                     // Toutes les sessions terminées
                     debug_printf("🎉 Toutes les sessions terminées (%d/%d)\n",
                                  app.current_session, app.total_sessions);
-                    // L'application continue de tourner, l'utilisateur peut interagir avec le panneau
+
+                    // 🆕 CRÉER ET OUVRIR LE PANNEAU DE STATISTIQUES
+                    if (!app.stats_panel && app.session_times && app.session_count > 0) {
+                        app.stats_panel = create_stats_panel(
+                            app.screen_width,
+                            app.screen_height,
+                            app.session_times,
+                            app.session_count
+                        );
+
+                        if (app.stats_panel) {
+                            open_stats_panel(app.stats_panel);
+                            debug_printf("📊 Panneau de statistiques ouvert\n");
+                        }
+                    }
                 }
             }
         }
 
-        // Mise à jour animation panneau
+        // Mise à jour animation panneau settings
         if (app.settings_panel) {
             update_settings_panel(app.settings_panel, (float)FRAME_DELAY / 1000.0f);
+        }
+
+        // Mise à jour animation panneau stats
+        if (app.stats_panel) {
+            update_stats_panel(app.stats_panel, (float)FRAME_DELAY / 1000.0f);
         }
 
         // RENDU COMPLET
