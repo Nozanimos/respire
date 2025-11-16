@@ -3,6 +3,7 @@
 #include "stats_panel.h"
 #include "debug.h"
 #include "button_widget.h"
+#include "widget_base.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 #include <sys/stat.h>
 #include <cairo/cairo.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL_ttf.h>
 
 // ════════════════════════════════════════════════════════════════════════
 // CONSTANTES
@@ -19,8 +21,8 @@
 #define ANIMATION_SPEED 3.0f    // Vitesse d'animation (unités par seconde)
 #define GRAPH_MARGIN 60         // Marge pour les axes et labels
 #define GRAPH_DAYS 5            // Nombre de jours affichés
-#define BUTTON_HEIGHT 40
-#define BUTTON_MARGIN 10
+#define BUTTON_HEIGHT 30        // Plus petits
+#define BUTTON_MARGIN 8
 
 // Couleurs arc-en-ciel (RGB)
 static const SDL_Color RAINBOW_COLORS[] = {
@@ -226,8 +228,10 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     int graph_width = width - 2 * GRAPH_MARGIN;
     int graph_height = height - 2 * GRAPH_MARGIN - 80; // Espace pour la date et boutons
 
-    // Trouver le temps maximum pour l'échelle Y
+    // Trouver le temps maximum pour l'échelle Y (historique + exercice actuel)
     float max_time = 60.0f; // Minimum 1 minute
+
+    // Chercher dans l'historique sauvegardé
     for (int i = 0; i < panel->history.count; i++) {
         for (int j = 0; j < panel->history.entries[i].session_count; j++) {
             if (panel->history.entries[i].session_times[j] > max_time) {
@@ -236,11 +240,18 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
         }
     }
 
+    // Chercher dans l'exercice actuel (non sauvegardé)
+    for (int j = 0; j < panel->current_session_count; j++) {
+        if (panel->current_session_times[j] > max_time) {
+            max_time = panel->current_session_times[j];
+        }
+    }
+
     // Arrondir max_time à la minute supérieure
     int max_minutes = (int)ceil(max_time / 60.0f);
 
     // ═══ GRILLE HORIZONTALE (minutes) ═══
-    cairo_set_source_rgb(cr, 0.8, 0.8, 0.8); // Gris clair
+    cairo_set_source_rgb(cr, 0.5, 0.5, 0.5); // Gris moyen (plus visible)
     cairo_set_line_width(cr, 1.0);
     double dash[] = {5.0, 5.0};
     cairo_set_dash(cr, dash, 2, 0);
@@ -251,16 +262,16 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
         cairo_line_to(cr, graph_x + graph_width, y);
         cairo_stroke(cr);
 
-        // Label (minutes)
+        // Label (mm:ss format)
         char label[16];
-        snprintf(label, sizeof(label), "%d min", m);
+        snprintf(label, sizeof(label), "%d:00", m);
         cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
         cairo_set_font_size(cr, 12);
         cairo_text_extents_t extents;
         cairo_text_extents(cr, label, &extents);
         cairo_move_to(cr, graph_x - extents.width - 5, y + 4);
         cairo_show_text(cr, label);
-        cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
+        cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
     }
 
     // ═══ GRILLE VERTICALE (jours) ═══
@@ -275,7 +286,7 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     // ═══ AXES PRINCIPAUX ═══
     cairo_set_dash(cr, NULL, 0, 0); // Ligne continue
     cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-    cairo_set_line_width(cr, 2.0);
+    cairo_set_line_width(cr, 1.0); // Plus fin
 
     // Axe X
     cairo_move_to(cr, graph_x, graph_y + graph_height);
@@ -312,6 +323,36 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
             double rect_height = (session_time / 60.0) * (graph_height / (double)max_minutes);
             double rect_width = day_width * 0.6; // 60% de la largeur du jour
             double rect_x = day_x + day_width * 0.2; // Centré
+
+            // Couleur arc-en-ciel
+            SDL_Color color = RAINBOW_COLORS[j % RAINBOW_COUNT];
+            cairo_set_source_rgb(cr, color.r / 255.0, color.g / 255.0, color.b / 255.0);
+
+            // Dessiner rectangle arrondi
+            double radius = 5.0;
+            double rect_y = graph_y + graph_height - rect_height;
+
+            cairo_new_sub_path(cr);
+            cairo_arc(cr, rect_x + radius, rect_y + radius, radius, M_PI, 3 * M_PI / 2);
+            cairo_arc(cr, rect_x + rect_width - radius, rect_y + radius, radius, 3 * M_PI / 2, 0);
+            cairo_arc(cr, rect_x + rect_width - radius, rect_y + rect_height - radius, radius, 0, M_PI / 2);
+            cairo_arc(cr, rect_x + radius, rect_y + rect_height - radius, radius, M_PI / 2, M_PI);
+            cairo_close_path(cr);
+            cairo_fill(cr);
+        }
+    }
+
+    // ═══ DESSINER L'EXERCICE EN COURS (aujourd'hui, non sauvegardé) ═══
+    if (panel->current_session_count > 0 && panel->current_session_times) {
+        // L'exercice actuel est aujourd'hui (day_offset = 0)
+        double day_x = graph_x + (GRAPH_DAYS - 1) * day_width;
+
+        // Dessiner les rectangles (du plus grand au plus petit)
+        for (int j = panel->current_session_count - 1; j >= 0; j--) {
+            float session_time = panel->current_session_times[j];
+            double rect_height = (session_time / 60.0) * (graph_height / (double)max_minutes);
+            double rect_width = day_width * 0.6;
+            double rect_x = day_x + day_width * 0.2;
 
             // Couleur arc-en-ciel
             SDL_Color color = RAINBOW_COLORS[j % RAINBOW_COUNT];
@@ -480,6 +521,7 @@ void destroy_stats_panel(StatsPanel* panel) {
 void open_stats_panel(StatsPanel* panel) {
     if (!panel) return;
     panel->state = STATS_OPENING;
+    panel->needs_redraw = true; // Créer le graphique immédiatement
     debug_printf("📊 Ouverture panneau stats\n");
 }
 
@@ -541,22 +583,77 @@ void render_stats_panel(SDL_Renderer* renderer, StatsPanel* panel) {
     SDL_Rect reset_btn = {panel->current_x + panel->reset_button.x, panel->reset_button.y,
                           panel->reset_button.w, panel->reset_button.h};
 
-    // Enregistrer (vert ou vert clair si survolé)
-    SDL_Color save_color = panel->save_hovered ? (SDL_Color){100, 255, 100, 255} : (SDL_Color){50, 200, 50, 255};
+    // Enregistrer (vert foncé ou vert clair si survolé)
+    SDL_Color save_color = panel->save_hovered ? (SDL_Color){80, 180, 80, 255} : (SDL_Color){30, 140, 30, 255};
     roundedBoxRGBA(renderer, save_btn.x, save_btn.y, save_btn.x + save_btn.w, save_btn.y + save_btn.h,
                    8, save_color.r, save_color.g, save_color.b, save_color.a);
 
-    // Annuler (gris ou gris clair si survolé)
-    SDL_Color cancel_color = panel->cancel_hovered ? (SDL_Color){180, 180, 180, 255} : (SDL_Color){120, 120, 120, 255};
+    // Annuler (gris foncé ou gris clair si survolé)
+    SDL_Color cancel_color = panel->cancel_hovered ? (SDL_Color){140, 140, 140, 255} : (SDL_Color){80, 80, 80, 255};
     roundedBoxRGBA(renderer, cancel_btn.x, cancel_btn.y, cancel_btn.x + cancel_btn.w, cancel_btn.y + cancel_btn.h,
                    8, cancel_color.r, cancel_color.g, cancel_color.b, cancel_color.a);
 
-    // Réinitialiser (rouge ou rouge clair si survolé)
-    SDL_Color reset_color = panel->reset_hovered ? (SDL_Color){255, 100, 100, 255} : (SDL_Color){200, 50, 50, 255};
+    // Réinitialiser (rouge foncé ou rouge clair si survolé)
+    SDL_Color reset_color = panel->reset_hovered ? (SDL_Color){220, 80, 80, 255} : (SDL_Color){150, 30, 30, 255};
     roundedBoxRGBA(renderer, reset_btn.x, reset_btn.y, reset_btn.x + reset_btn.w, reset_btn.y + reset_btn.h,
                    8, reset_color.r, reset_color.g, reset_color.b, reset_color.a);
 
-    // TODO: Ajouter les labels des boutons avec TTF
+    // Texte des boutons (blanc, centré)
+    TTF_Font* button_font = get_font_for_size(14);  // Taille de police pour les boutons
+    if (button_font) {
+        SDL_Color text_color = {255, 255, 255, 255};  // Blanc
+
+        // Label "Enregistrer"
+        SDL_Surface* save_surface = TTF_RenderUTF8_Blended(button_font, "Enregistrer", text_color);
+        if (save_surface) {
+            SDL_Texture* save_texture = SDL_CreateTextureFromSurface(renderer, save_surface);
+            if (save_texture) {
+                SDL_Rect text_rect = {
+                    save_btn.x + (save_btn.w - save_surface->w) / 2,
+                    save_btn.y + (save_btn.h - save_surface->h) / 2,
+                    save_surface->w,
+                    save_surface->h
+                };
+                SDL_RenderCopy(renderer, save_texture, NULL, &text_rect);
+                SDL_DestroyTexture(save_texture);
+            }
+            SDL_FreeSurface(save_surface);
+        }
+
+        // Label "Annuler"
+        SDL_Surface* cancel_surface = TTF_RenderUTF8_Blended(button_font, "Annuler", text_color);
+        if (cancel_surface) {
+            SDL_Texture* cancel_texture = SDL_CreateTextureFromSurface(renderer, cancel_surface);
+            if (cancel_texture) {
+                SDL_Rect text_rect = {
+                    cancel_btn.x + (cancel_btn.w - cancel_surface->w) / 2,
+                    cancel_btn.y + (cancel_btn.h - cancel_surface->h) / 2,
+                    cancel_surface->w,
+                    cancel_surface->h
+                };
+                SDL_RenderCopy(renderer, cancel_texture, NULL, &text_rect);
+                SDL_DestroyTexture(cancel_texture);
+            }
+            SDL_FreeSurface(cancel_surface);
+        }
+
+        // Label "Réinitialiser"
+        SDL_Surface* reset_surface = TTF_RenderUTF8_Blended(button_font, "Réinitialiser", text_color);
+        if (reset_surface) {
+            SDL_Texture* reset_texture = SDL_CreateTextureFromSurface(renderer, reset_surface);
+            if (reset_texture) {
+                SDL_Rect text_rect = {
+                    reset_btn.x + (reset_btn.w - reset_surface->w) / 2,
+                    reset_btn.y + (reset_btn.h - reset_surface->h) / 2,
+                    reset_surface->w,
+                    reset_surface->h
+                };
+                SDL_RenderCopy(renderer, reset_texture, NULL, &text_rect);
+                SDL_DestroyTexture(reset_texture);
+            }
+            SDL_FreeSurface(reset_surface);
+        }
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════
