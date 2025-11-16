@@ -158,7 +158,9 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     widget->color = (SDL_Color){0, 0, 0, 255};                      // Texte label noir
     widget->roller_bg_color = (SDL_Color){255, 255, 255, 200};      // Fond blanc alpha 200
     widget->roller_text_color = (SDL_Color){70, 80, 100, 255};      // Bleu-gris foncé
-    widget->roller_border_color = (SDL_Color){150, 150, 150, 180};  // Bordure grise
+    widget->roller_border_color = (SDL_Color){0, 0, 0, 255};        // Bordure noire fine
+    widget->bg_hover_color = (SDL_Color){0, 0, 0, 50};              // Fond survol global : noir transparent
+    widget->hover_color = (SDL_Color){255, 255, 150, 255};          // Zones survolées : jaune pâle
 
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAT D'INTERACTION DRAG
@@ -166,6 +168,12 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     widget->is_dragging = false;
     widget->drag_start_x = 0;
     widget->drag_start_value = 0;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ÉTAT DE HOVER DES ZONES CLIQUABLES
+    // ─────────────────────────────────────────────────────────────────────────
+    widget->left_zone_hovered = false;
+    widget->right_zone_hovered = false;
 
     // ─────────────────────────────────────────────────────────────────────────
     // MODE TIME : Initialisation
@@ -267,13 +275,39 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  CALCUL DE LA POSITION X DU ROLLER (pour alignement en colonnes)
+// ════════════════════════════════════════════════════════════════════════════
+// Similaire à calculate_arrows_x_offset de l'ancienne version avec flèches
+// Si container_width > 0, aligne le roller à droite
+// Sinon, utilise la position par défaut (local_roller_x)
+static int calculate_roller_x_offset(ConfigWidget* widget, int container_width) {
+    int roller_x_offset = widget->local_roller_x;  // Position par défaut
+
+    if (container_width > 0) {
+        // Alignement à droite du roller
+        const int RIGHT_MARGIN = 10;
+
+        // Largeur totale du roller
+        int roller_total_width = widget->roller_width;
+
+        // Calculer l'offset pour aligner à droite
+        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+
+        // Sécurité : ne pas superposer le texte du label
+        if (roller_x_offset < widget->local_roller_x) {
+            roller_x_offset = widget->local_roller_x;
+        }
+    }
+
+    return roller_x_offset;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU WIDGET ROLLER
 // ════════════════════════════════════════════════════════════════════════════
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
                           int offset_x, int offset_y, int container_width) {
     if (!widget || !renderer) return;
-
-    (void)container_width;  // Pas utilisé dans le nouveau design
 
     int widget_screen_x = offset_x + widget->base.x;
     int widget_screen_y = offset_y + widget->base.y;
@@ -283,6 +317,30 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     // ─────────────────────────────────────────────────────────────────────────
     TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
     if (!correct_font) return;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DE LA POSITION X DU ROLLER (alignement en colonnes)
+    // ─────────────────────────────────────────────────────────────────────────
+    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FOND AU SURVOL GLOBAL (rectangle arrondi autour de tout le widget)
+    // ─────────────────────────────────────────────────────────────────────────
+    if (widget->base.hovered) {
+        // Calculer la largeur réelle du widget (label + roller)
+        int real_width = roller_x_offset + widget->roller_width + 10;
+
+        roundedBoxRGBA(renderer,
+                       widget_screen_x - 5,
+                       widget_screen_y - 5,
+                       widget_screen_x + real_width + 5,
+                       widget_screen_y + widget->base.height + 5,
+                       5,
+                       widget->bg_hover_color.r,
+                       widget->bg_hover_color.g,
+                       widget->bg_hover_color.b,
+                       widget->bg_hover_color.a);
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // 1. RENDU DU LABEL (option_name)
@@ -321,7 +379,7 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     // ─────────────────────────────────────────────────────────────────────────
     // 3. RENDU DU ROLLER (fond arrondi avec Cairo)
     // ─────────────────────────────────────────────────────────────────────────
-    int roller_screen_x = widget_screen_x + widget->roller_rect.x;
+    int roller_screen_x = widget_screen_x + roller_x_offset;
     int roller_screen_y = widget_screen_y + widget->roller_rect.y;
 
     // Dessiner le fond arrondi avec bordure
@@ -333,6 +391,39 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
                       4,  // Rayon des coins arrondis
                       widget->roller_bg_color,
                       widget->roller_border_color);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 3.5 OVERLAY DE HOVER SUR LES ZONES CLIQUABLES (mode numeric)
+    // ─────────────────────────────────────────────────────────────────────────
+    if (strcmp(widget->widget_display_type, "numeric") == 0) {
+        int half_width = widget->roller_rect.w / 2;
+
+        // Zone gauche survolée (-1)
+        if (widget->left_zone_hovered) {
+            boxRGBA(renderer,
+                    roller_screen_x,
+                    roller_screen_y,
+                    roller_screen_x + half_width,
+                    roller_screen_y + widget->roller_rect.h,
+                    widget->hover_color.r,
+                    widget->hover_color.g,
+                    widget->hover_color.b,
+                    80);  // Alpha réduit pour overlay subtil
+        }
+
+        // Zone droite survolée (+1)
+        if (widget->right_zone_hovered) {
+            boxRGBA(renderer,
+                    roller_screen_x + half_width,
+                    roller_screen_y,
+                    roller_screen_x + widget->roller_rect.w,
+                    roller_screen_y + widget->roller_rect.h,
+                    widget->hover_color.r,
+                    widget->hover_color.g,
+                    widget->hover_color.b,
+                    80);  // Alpha réduit pour overlay subtil
+        }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // 4. RENDU DU TEXTE DANS LE ROLLER
@@ -394,16 +485,19 @@ void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
                                  int offset_x, int offset_y, int container_width) {
     if (!widget || !event) return;
 
-    (void)container_width;  // Pas utilisé dans le nouveau design
-
     int widget_screen_x = offset_x + widget->base.x;
     int widget_screen_y = offset_y + widget->base.y;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DE LA POSITION X DU ROLLER (alignement - même logique que rendu)
+    // ─────────────────────────────────────────────────────────────────────────
+    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
 
     // ─────────────────────────────────────────────────────────────────────────
     // CALCUL DU RECTANGLE DU ROLLER EN COORDONNÉES ÉCRAN
     // ─────────────────────────────────────────────────────────────────────────
     SDL_Rect roller_screen_rect = {
-        widget_screen_x + widget->roller_rect.x,
+        widget_screen_x + roller_x_offset,
         widget_screen_y + widget->roller_rect.y,
         widget->roller_rect.w,
         widget->roller_rect.h
@@ -421,6 +515,20 @@ void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
                          my >= roller_screen_rect.y && my < roller_screen_rect.y + roller_screen_rect.h);
 
         widget->base.hovered = on_roller;
+
+        // ─────────────────────────────────────────────────────────────────────
+        // MODE NUMERIC : Déterminer quelle zone est survolée (gauche/droite)
+        // ─────────────────────────────────────────────────────────────────────
+        if (strcmp(widget->widget_display_type, "numeric") == 0 && on_roller) {
+            int relative_x = mx - roller_screen_rect.x;
+            int half_width = roller_screen_rect.w / 2;
+
+            widget->left_zone_hovered = (relative_x < half_width);
+            widget->right_zone_hovered = (relative_x >= half_width);
+        } else {
+            widget->left_zone_hovered = false;
+            widget->right_zone_hovered = false;
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // MODE TIME : Déterminer quel champ est survolé (mm ou ss)

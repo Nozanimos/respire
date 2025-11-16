@@ -86,6 +86,8 @@ typedef struct ConfigWidget {
     SDL_Color roller_bg_color;   // Fond blanc alpha 200 : {255, 255, 255, 200}
     SDL_Color roller_text_color; // Bleu-gris foncé alpha 255 : {70, 80, 100, 255}
     SDL_Color roller_border_color; // Bordure du roller
+    SDL_Color bg_hover_color;    // Fond au survol global du widget
+    SDL_Color hover_color;       // Couleur des zones au survol
 
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAT D'INTERACTION DRAG
@@ -93,6 +95,12 @@ typedef struct ConfigWidget {
     bool is_dragging;            // TRUE si drag en cours
     int drag_start_x;            // Position X de départ du drag
     int drag_start_value;        // Valeur de départ du drag
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ÉTAT DE HOVER DES ZONES CLIQUABLES
+    // ─────────────────────────────────────────────────────────────────────────
+    bool left_zone_hovered;      // Zone gauche survolée (numeric: -1)
+    bool right_zone_hovered;     // Zone droite survolée (numeric: +1)
 
     // ─────────────────────────────────────────────────────────────────────────
     // MODE TIME : Gestion mm:ss
