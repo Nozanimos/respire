@@ -60,6 +60,11 @@ typedef struct {
     SDL_Texture* graph_texture; // Texture du graphique
     bool needs_redraw;          // Flag pour recalcul du graphique
 
+    // Interaction et navigation
+    int scroll_offset;          // Offset de scroll (pour historique long)
+    int selected_exercise_index; // Index de l'exercice sélectionné (-1 = dernier)
+    bool is_already_saved;      // L'exercice actuel est déjà sauvegardé
+
     // Boutons
     SDL_Rect save_button;
     SDL_Rect cancel_button;

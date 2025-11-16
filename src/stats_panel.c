@@ -66,8 +66,48 @@ static void generate_filename(char* buffer, size_t size) {
 // SAUVEGARDE/CHARGEMENT BINAIRE
 // ════════════════════════════════════════════════════════════════════════
 
+// Vérifier si l'exercice actuel est déjà sauvegardé dans l'historique
+static bool is_exercise_already_saved(StatsPanel* panel) {
+    if (!panel || !panel->current_session_times || panel->current_session_count == 0) {
+        return false;
+    }
+
+    // Parcourir l'historique
+    for (int i = 0; i < panel->history.count; i++) {
+        ExerciseEntry* entry = &panel->history.entries[i];
+
+        // Vérifier si le nombre de sessions correspond
+        if (entry->session_count != panel->current_session_count) {
+            continue;
+        }
+
+        // Comparer les temps de chaque session (tolérance de 0.5 seconde)
+        bool all_match = true;
+        for (int j = 0; j < panel->current_session_count; j++) {
+            float diff = fabs(entry->session_times[j] - panel->current_session_times[j]);
+            if (diff > 0.5f) {
+                all_match = false;
+                break;
+            }
+        }
+
+        if (all_match) {
+            return true; // Exercice identique trouvé
+        }
+    }
+
+    return false; // Pas de doublon trouvé
+}
+
 bool save_exercise_to_file(StatsPanel* panel) {
     if (!panel || !panel->current_session_times || panel->current_session_count == 0) {
+        return false;
+    }
+
+    // Vérifier si déjà sauvegardé
+    if (is_exercise_already_saved(panel)) {
+        debug_printf("⚠️ Exercice déjà sauvegardé (doublon détecté)\n");
+        panel->is_already_saved = true;
         return false;
     }
 
@@ -236,33 +276,46 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     int graph_width = width - 2 * GRAPH_MARGIN;
     int graph_height = height - 2 * GRAPH_MARGIN - 100; // Espace pour date/heure et boutons
 
-    // ═══ PRÉPARER LES 5 DERNIERS EXERCICES ═══
-    DisplayExercise exercises[GRAPH_EXERCISES] = {0};
-    int exercise_count = 0;
-
-    // Ajouter l'exercice actuel (non enregistré) s'il existe
+    // ═══ PRÉPARER LES EXERCICES (avec scroll) ═══
+    // Calculer le nombre total d'exercices disponibles
+    int total_exercises = panel->history.count;
     if (panel->current_session_count > 0 && panel->current_session_times) {
-        exercises[exercise_count].timestamp = time(NULL);
-        exercises[exercise_count].session_times = panel->current_session_times;
-        exercises[exercise_count].session_count = panel->current_session_count;
-        exercises[exercise_count].is_current = true;
-        exercise_count++;
+        total_exercises++; // Ajouter l'exercice actuel
     }
 
-    // Ajouter les derniers exercices de l'historique (du plus récent au plus ancien)
-    for (int i = panel->history.count - 1; i >= 0 && exercise_count < GRAPH_EXERCISES; i--) {
-        exercises[exercise_count].timestamp = panel->history.entries[i].timestamp;
-        exercises[exercise_count].session_times = panel->history.entries[i].session_times;
-        exercises[exercise_count].session_count = panel->history.entries[i].session_count;
-        exercises[exercise_count].is_current = false;
-        exercise_count++;
+    // Limiter scroll_offset
+    int max_offset = total_exercises > GRAPH_EXERCISES ? total_exercises - GRAPH_EXERCISES : 0;
+    if (panel->scroll_offset < 0) panel->scroll_offset = 0;
+    if (panel->scroll_offset > max_offset) panel->scroll_offset = max_offset;
+
+    // Créer la liste temporaire de tous les exercices (historique + actuel)
+    DisplayExercise* all_exercises = malloc(total_exercises * sizeof(DisplayExercise));
+    int all_count = 0;
+
+    // Ajouter l'historique (du plus ancien au plus récent)
+    for (int i = 0; i < panel->history.count; i++) {
+        all_exercises[all_count].timestamp = panel->history.entries[i].timestamp;
+        all_exercises[all_count].session_times = panel->history.entries[i].session_times;
+        all_exercises[all_count].session_count = panel->history.entries[i].session_count;
+        all_exercises[all_count].is_current = false;
+        all_count++;
     }
 
-    // Inverser pour avoir du plus ancien (gauche) au plus récent (droite)
-    for (int i = 0; i < exercise_count / 2; i++) {
-        DisplayExercise temp = exercises[i];
-        exercises[i] = exercises[exercise_count - 1 - i];
-        exercises[exercise_count - 1 - i] = temp;
+    // Ajouter l'exercice actuel à la fin (plus récent)
+    if (panel->current_session_count > 0 && panel->current_session_times) {
+        all_exercises[all_count].timestamp = time(NULL);
+        all_exercises[all_count].session_times = panel->current_session_times;
+        all_exercises[all_count].session_count = panel->current_session_count;
+        all_exercises[all_count].is_current = true;
+        all_count++;
+    }
+
+    // Sélectionner les GRAPH_EXERCISES exercices à afficher (avec scroll)
+    int start_index = panel->scroll_offset;
+    int exercise_count = (all_count - start_index) > GRAPH_EXERCISES ? GRAPH_EXERCISES : (all_count - start_index);
+    DisplayExercise exercises[GRAPH_EXERCISES];
+    for (int i = 0; i < exercise_count; i++) {
+        exercises[i] = all_exercises[start_index + i];
     }
 
     // ═══ TROUVER LE TEMPS MAXIMUM ═══
@@ -275,16 +328,22 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
         }
     }
 
-    // ═══ CRÉER LES RÈGLES HORIZONTALES UNIQUEMENT POUR LE DERNIER EXERCICE ═══
+    // ═══ CRÉER LES RÈGLES HORIZONTALES POUR L'EXERCICE SÉLECTIONNÉ ═══
     cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
     cairo_set_line_width(cr, 1.0);
     double dash[] = {5.0, 5.0};
     cairo_set_dash(cr, dash, 2, 0);
 
     if (exercise_count > 0) {
-        DisplayExercise* last_exercise = &exercises[exercise_count - 1];
-        for (int j = 0; j < last_exercise->session_count; j++) {
-            float session_time = last_exercise->session_times[j];
+        // Déterminer quel exercice afficher (par défaut le dernier)
+        int selected_idx = panel->selected_exercise_index;
+        if (selected_idx == -1 || selected_idx >= exercise_count) {
+            selected_idx = exercise_count - 1;
+        }
+
+        DisplayExercise* selected_exercise = &exercises[selected_idx];
+        for (int j = 0; j < selected_exercise->session_count; j++) {
+            float session_time = selected_exercise->session_times[j];
             double y = graph_y + graph_height - (session_time / max_time) * graph_height;
 
             cairo_move_to(cr, graph_x, y);
@@ -422,12 +481,14 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
 
         cairo_destroy(cr);
         cairo_surface_destroy(surface);
+        free(all_exercises);
 
         return texture;
     }
 
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
+    free(all_exercises);
     return NULL;
 }
 
@@ -470,6 +531,11 @@ StatsPanel* create_stats_panel(int screen_width, int screen_height,
     // Initialiser textures
     panel->graph_texture = NULL;
     panel->needs_redraw = true;
+
+    // Interaction et navigation
+    panel->scroll_offset = 0;
+    panel->selected_exercise_index = -1; // -1 = dernier exercice par défaut
+    panel->is_already_saved = false;
 
     // Boutons (en bas du panneau)
     int button_width = (panel->panel_width - 4 * BUTTON_MARGIN) / 3;
@@ -528,6 +594,7 @@ void open_stats_panel(StatsPanel* panel) {
 void close_stats_panel(StatsPanel* panel) {
     if (!panel) return;
     panel->state = STATS_CLOSING;
+    panel->is_already_saved = false; // Réinitialiser le flag
     debug_printf("📊 Fermeture panneau stats\n");
 }
 
@@ -654,6 +721,42 @@ void render_stats_panel(SDL_Renderer* renderer, StatsPanel* panel) {
             SDL_FreeSurface(reset_surface);
         }
     }
+
+    // ═══ INFOBULLE SI EXERCICE DÉJÀ SAUVEGARDÉ ═══
+    if (panel->is_already_saved) {
+        const char* message = "⚠️ Exercice déjà enregistré";
+
+        // Calculer position (au-dessus du bouton Enregistrer)
+        int tooltip_x = panel->current_x + panel->save_button.x;
+        int tooltip_y = panel->save_button.y - 40;
+
+        // Fond semi-transparent
+        SDL_Rect tooltip_bg = {tooltip_x, tooltip_y, panel->save_button.w, 30};
+        roundedBoxRGBA(renderer, tooltip_bg.x, tooltip_bg.y,
+                       tooltip_bg.x + tooltip_bg.w, tooltip_bg.y + tooltip_bg.h,
+                       5, 255, 200, 100, 230); // Orange clair
+
+        // Texte
+        TTF_Font* tooltip_font = get_font_for_size(12);
+        if (tooltip_font) {
+            SDL_Color text_color = {100, 50, 0, 255}; // Marron
+            SDL_Surface* text_surface = TTF_RenderUTF8_Blended(tooltip_font, message, text_color);
+            if (text_surface) {
+                SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+                if (text_texture) {
+                    SDL_Rect text_rect = {
+                        tooltip_x + (panel->save_button.w - text_surface->w) / 2,
+                        tooltip_y + (30 - text_surface->h) / 2,
+                        text_surface->w,
+                        text_surface->h
+                    };
+                    SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
+                    SDL_DestroyTexture(text_texture);
+                }
+                SDL_FreeSurface(text_surface);
+            }
+        }
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -662,6 +765,19 @@ void render_stats_panel(SDL_Renderer* renderer, StatsPanel* panel) {
 
 void handle_stats_panel_event(StatsPanel* panel, SDL_Event* event) {
     if (!panel || panel->state != STATS_OPEN) return;
+
+    // Gestion du scroll (molette souris)
+    if (event->type == SDL_MOUSEWHEEL) {
+        if (event->wheel.y > 0) {
+            // Scroll vers le haut = voir les exercices plus anciens
+            panel->scroll_offset--;
+        } else if (event->wheel.y < 0) {
+            // Scroll vers le bas = voir les exercices plus récents
+            panel->scroll_offset++;
+        }
+        panel->needs_redraw = true;
+        return;
+    }
 
     if (event->type == SDL_MOUSEMOTION) {
         int mx = event->motion.x;
@@ -683,6 +799,44 @@ void handle_stats_panel_event(StatsPanel* panel, SDL_Event* event) {
                                 my >= reset_zone.y && my < reset_zone.y + reset_zone.h);
     }
     else if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_LEFT) {
+        int mx = event->button.x;
+        int my = event->button.y;
+
+        // Calculer la zone du graphique
+        int graph_x = panel->current_x + GRAPH_MARGIN;
+        int graph_y = GRAPH_MARGIN + 20;
+        int graph_width = panel->panel_width - 2 * GRAPH_MARGIN;
+        int graph_height = panel->panel_height - 2 * GRAPH_MARGIN - 100;
+
+        // Vérifier si le clic est dans la zone du graphique
+        if (mx >= graph_x && mx < graph_x + graph_width &&
+            my >= graph_y && my < graph_y + graph_height) {
+
+            // Calculer le nombre total d'exercices
+            int total_exercises = panel->history.count;
+            if (panel->current_session_count > 0 && panel->current_session_times) {
+                total_exercises++;
+            }
+
+            // Calculer le nombre d'exercices affichés
+            int max_offset = total_exercises > GRAPH_EXERCISES ? total_exercises - GRAPH_EXERCISES : 0;
+            if (panel->scroll_offset > max_offset) panel->scroll_offset = max_offset;
+            int start_index = panel->scroll_offset;
+            int exercise_count = (total_exercises - start_index) > GRAPH_EXERCISES ? GRAPH_EXERCISES : (total_exercises - start_index);
+
+            // Calculer quel exercice a été cliqué
+            double exercise_width = (double)graph_width / (double)exercise_count;
+            int clicked_exercise = (int)((mx - graph_x) / exercise_width);
+
+            if (clicked_exercise >= 0 && clicked_exercise < exercise_count) {
+                panel->selected_exercise_index = clicked_exercise;
+                panel->needs_redraw = true;
+                debug_printf("📊 Exercice sélectionné: %d\n", clicked_exercise);
+            }
+            return;
+        }
+
+        // Gestion des boutons
         if (panel->save_hovered) {
             // Sauvegarder
             if (save_exercise_to_file(panel)) {
