@@ -381,7 +381,9 @@ void update_settings_panel(SettingsPanel* panel, float delta_time) {
                 panel->animation_progress = 0.0f;
                 panel->state = PANEL_CLOSED;
                 // Réinitialiser la mémoire de l'empilement quand le panneau se ferme
-                panel->panel_width_when_stacked = 0;
+                // CORRECTION BUG: Ne PAS réinitialiser panel_width_when_stacked
+                // Garder la mémoire du premier empilement pour le dépilement après réouverture
+                // panel->panel_width_when_stacked = 0;
             }
             break;
 
@@ -497,6 +499,9 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
                 debug_printf("🎯 OUVERTURE - target_x=%d, screen_width=%d, panel_width=%d\n",
                              panel->target_x, panel->screen_width, panel->rect.w);
 
+                // CORRECTION BUG: Forcer un recalcul du layout à l'ouverture
+                // Au cas où un resize se serait produit pendant que le panneau était fermé
+                panel->layout_dirty = true;
 
                 // Recharger la config et mettre à jour les widgets
                 load_config(&panel->temp_config);
