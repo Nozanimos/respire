@@ -52,7 +52,7 @@ bool add_increment_widget(WidgetList* list,
                          const char* display_name,
                          int x, int y,
                          int min_val, int max_val, int start_val, int increment,
-                         int arrow_size, int text_size,
+                         int text_size,
                          TTF_Font* font,
                          void (*callback)(int),
                          const char* display_type) {
@@ -83,7 +83,7 @@ bool add_increment_widget(WidgetList* list,
     node->widget.increment_widget = create_config_widget(
         display_name, x, y,
         min_val, max_val, start_val, increment,
-        arrow_size, text_size, font, display_type
+        text_size, font, display_type
     );
 
     if (!node->widget.increment_widget) {

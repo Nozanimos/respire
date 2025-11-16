@@ -109,7 +109,6 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
     cJSON* valeur_max = cJSON_GetObjectItem(json_obj, "valeur_max");
     cJSON* valeur_depart = cJSON_GetObjectItem(json_obj, "valeur_depart");
     cJSON* increment = cJSON_GetObjectItem(json_obj, "increment");
-    cJSON* taille_fleche = cJSON_GetObjectItem(json_obj, "taille_fleche");
     cJSON* taille_texte = cJSON_GetObjectItem(json_obj, "taille_texte");
     cJSON* callback = cJSON_GetObjectItem(json_obj, "callback");
 
@@ -148,7 +147,6 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
         valeur_max->valueint,
         valeur_depart->valueint,
         cJSON_IsNumber(increment) ? increment->valueint : 1,
-        cJSON_IsNumber(taille_fleche) ? taille_fleche->valueint : 6,
         cJSON_IsNumber(taille_texte) ? taille_texte->valueint : 18,
         ctx->font_normal,
         callback_func,

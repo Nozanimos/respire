@@ -116,7 +116,7 @@ typedef struct ConfigWidget {
 // display_type : "numeric" ou "time" (NULL = "numeric" par défaut)
 ConfigWidget* create_config_widget(const char* name, int x, int y,
                                    int min_val, int max_val, int start_val,
-                                   int increment, int arrow_size, int text_size,
+                                   int increment, int text_size,
                                    TTF_Font* font, const char* display_type);
 
 // Met à jour le widget (animations, états)

@@ -80,13 +80,13 @@ bool is_widget_list_empty(WidgetList* list);
 // ─────────────────────────────────────────────────────────────────────────
 // AJOUT DE WIDGETS
 // ─────────────────────────────────────────────────────────────────────────
-// Ajoute un widget INCREMENT (avec flèches)
+// Ajoute un widget INCREMENT (style roller)
 bool add_increment_widget(WidgetList* list,
                           const char* id,
                           const char* display_name,
                           int x, int y,
                           int min_val, int max_val, int start_val, int increment,
-                          int arrow_size, int text_size,
+                          int text_size,
                           TTF_Font* font,
                           void (*callback)(int),
                           const char* display_type);
