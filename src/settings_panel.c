@@ -1188,8 +1188,7 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
             }
 
             // Largeur réelle = local_arrows_x + arrow_size + espace + value_width + marge
-            int real_width = w->local_arrows_x + w->arrow_size +
-                            w->base_espace_apres_fleches + value_width + 10;
+            int real_width = w->local_roller_x + w->roller_width + 10;
 
             if (real_width > max_increment_width) {
                 max_increment_width = real_width;
@@ -1514,7 +1513,7 @@ void recalculate_widget_layout(SettingsPanel* panel) {
 
         int container_width = 0;
         if (longest_widget) {
-            container_width = longest_widget->local_arrows_x + longest_widget->arrow_size + 60;
+            container_width = longest_widget->local_roller_x + longest_widget->roller_width + 60;
         }
 
         for (int i = 0; i < increment_count; i++) {

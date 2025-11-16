@@ -88,7 +88,8 @@ bool add_increment_widget(WidgetList* list,
                           int min_val, int max_val, int start_val, int increment,
                           int arrow_size, int text_size,
                           TTF_Font* font,
-                          void (*callback)(int));
+                          void (*callback)(int),
+                          const char* display_type);
 
 // Ajoute un widget TOGGLE (interrupteur)
 bool add_toggle_widget(WidgetList* list,

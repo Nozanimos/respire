@@ -7,18 +7,28 @@
 #include "widget_base.h"
 
 // ════════════════════════════════════════════════════════════════════════════
-//  STRUCTURE D'UN WIDGET D'INCRÉMENTATION (ConfigWidget)
+//  STRUCTURE D'UN WIDGET D'INCRÉMENTATION (ConfigWidget) - STYLE ROLLER
 // ════════════════════════════════════════════════════════════════════════════
-// Widget interactif permettant d'incrémenter/décrémenter une valeur numérique
+// Widget interactif type "roller" mobile permettant d'incrémenter/décrémenter
 //
 // LAYOUT VISUEL :
-//   [option_name]     ▲ ▼     [value]
-//        ↑             ↑         ↑
-//   local_text_x  local_arrows_x local_value_x
+//   [option_name]     [🎚️ valeur/mm:ss]
+//        ↑                    ↑
+//   local_text_x         roller_rect
+//
+// MODES D'AFFICHAGE :
+//   - "numeric" : Affichage numérique classique (ex: 45)
+//   - "time"    : Affichage temps mm:ss (ex: 01:30)
+//
+// INTERACTIONS :
+//   - MOLETTE : incrémente/décrémente
+//   - DRAG HORIZONTAL (numeric) : glissement pour changer valeur
+//   - CLIC GAUCHE/DROITE (numeric) : -1/+1
+//   - CLIC HAUT/BAS (time) : -1/+1 sur le champ survolé (mm ou ss)
 //
 // ARCHITECTURE :
 //   - base : conteneur avec position (x,y) relative au panneau
-//   - Tous les éléments internes en coordonnées LOCALES (offsets)
+//   - roller_rect : zone interactive du roller
 //   - Position écran = panneau.x + base.x + local_x
 //
 // RESCALING INTELLIGENT :
@@ -36,9 +46,10 @@ typedef struct ConfigWidget {
     // IDENTITÉ ET VALEURS
     // ─────────────────────────────────────────────────────────────────────────
     char option_name[50];        // Nom affiché (ex: "Durée respiration")
-    int value;                   // Valeur actuelle
+    int value;                   // Valeur actuelle (stockée en secondes pour type "time")
     int min_value, max_value;    // Limites de la valeur
     int increment;               // Pas d'incrémentation
+    char widget_display_type[16];// Type d'affichage : "numeric" ou "time"
 
     // ─────────────────────────────────────────────────────────────────────────
     // CONFIGURATION DE LA POLICE (pour rescaling intelligent)
@@ -49,43 +60,46 @@ typedef struct ConfigWidget {
     // ─────────────────────────────────────────────────────────────────────────
     // ESPACEMENTS DE BASE (pour rescaling proportionnel)
     // ─────────────────────────────────────────────────────────────────────────
-    // Ces valeurs définissent les marges entre les éléments à scale 1.0
-    // Elles sont scalées proportionnellement lors du rescaling
-    int base_espace_apres_texte;     // Marge texte → flèches (ex: 20px)
-    int base_espace_entre_fleches;   // Espace vertical ▲ ↔ ▼ (ex: 5px)
-    int base_espace_apres_fleches;   // Marge flèches → valeur (ex: 15px)
+    int base_espace_apres_texte;     // Marge texte → roller (ex: 20px)
+    int base_roller_padding;         // Padding interne du roller (ex: 8px)
 
     // ─────────────────────────────────────────────────────────────────────────
     // LAYOUT INTERNE (coordonnées LOCALES au widget)
     // ─────────────────────────────────────────────────────────────────────────
-    // Ces valeurs sont des OFFSETS par rapport à (base.x, base.y)
-    // Elles sont RECALCULÉES lors du rescaling en remésurant le texte
     int local_text_x;            // Offset du texte (généralement 0)
     int local_text_y;            // Offset vertical du texte
-    int local_arrows_x;          // Offset des flèches
-    int local_arrows_y;          // Offset vertical des flèches (centre)
-    int local_value_x;           // Offset de la valeur affichée
-    int local_value_y;           // Offset vertical de la valeur
+    int local_roller_x;          // Offset du roller
+    int local_roller_y;          // Offset vertical du roller
+    SDL_Rect roller_rect;        // Rectangle du roller (coordonnées LOCALES)
 
     // ─────────────────────────────────────────────────────────────────────────
-    // DIMENSIONS DES SOUS-ÉLÉMENTS
+    // DIMENSIONS
     // ─────────────────────────────────────────────────────────────────────────
-    int arrow_size;              // Taille des triangles (base et hauteur)
-    int base_arrow_size;         // Taille de référence pour rescaling
     int text_height;             // Hauteur du texte (pour centrage)
+    int roller_width;            // Largeur du roller (calculée dynamiquement)
+    int roller_height;           // Hauteur du roller (= text_height)
 
     // ─────────────────────────────────────────────────────────────────────────
-    // STYLE ET COULEURS
+    // STYLE ET COULEURS (nouveau design)
     // ─────────────────────────────────────────────────────────────────────────
-    SDL_Color color;             // Couleur des flèches et du texte
-    SDL_Color hover_color;       // Couleur au survol (jaune pâle)
-    SDL_Color bg_hover_color;    // Couleur de fond au survol
+    SDL_Color color;             // Couleur du texte du label
+    SDL_Color roller_bg_color;   // Fond blanc alpha 200 : {255, 255, 255, 200}
+    SDL_Color roller_text_color; // Bleu-gris foncé alpha 255 : {70, 80, 100, 255}
+    SDL_Color roller_border_color; // Bordure du roller
 
     // ─────────────────────────────────────────────────────────────────────────
-    // ÉTAT D'INTERACTION (spécifique aux sous-éléments)
+    // ÉTAT D'INTERACTION DRAG
     // ─────────────────────────────────────────────────────────────────────────
-    bool up_arrow_hovered;       // TRUE si souris sur flèche haut
-    bool down_arrow_hovered;     // TRUE si souris sur flèche bas
+    bool is_dragging;            // TRUE si drag en cours
+    int drag_start_x;            // Position X de départ du drag
+    int drag_start_value;        // Valeur de départ du drag
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MODE TIME : Gestion mm:ss
+    // ─────────────────────────────────────────────────────────────────────────
+    int selected_field;          // 0 = minutes, 1 = secondes (pour hover/interaction)
+    SDL_Rect mm_rect;            // Zone des minutes (pour hover)
+    SDL_Rect ss_rect;            // Zone des secondes (pour hover)
 
     // ─────────────────────────────────────────────────────────────────────────
     // CALLBACK
@@ -98,11 +112,12 @@ typedef struct ConfigWidget {
 //  PROTOTYPES DES FONCTIONS
 // ════════════════════════════════════════════════════════════════════════════
 
-// Crée un nouveau widget de configuration
+// Crée un nouveau widget de configuration (style roller)
+// display_type : "numeric" ou "time" (NULL = "numeric" par défaut)
 ConfigWidget* create_config_widget(const char* name, int x, int y,
                                    int min_val, int max_val, int start_val,
                                    int increment, int arrow_size, int text_size,
-                                   TTF_Font* font);
+                                   TTF_Font* font, const char* display_type);
 
 // Met à jour le widget (animations, états)
 void update_config_widget(ConfigWidget* widget, float delta_time);

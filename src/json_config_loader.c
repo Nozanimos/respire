@@ -113,6 +113,9 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
     cJSON* taille_texte = cJSON_GetObjectItem(json_obj, "taille_texte");
     cJSON* callback = cJSON_GetObjectItem(json_obj, "callback");
 
+    // Champ optionnel : widget_display_type ("numeric" ou "time")
+    cJSON* widget_display_type = cJSON_GetObjectItem(json_obj, "widget_display_type");
+
     // Validation
     if (!cJSON_IsString(id) || !cJSON_IsString(nom_affichage) ||
         !cJSON_IsNumber(x) || !cJSON_IsNumber(y) ||
@@ -126,6 +129,12 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
     void (*callback_func)(int) = NULL;
     if (cJSON_IsString(callback)) {
         callback_func = obtenir_callback_int(callback->valuestring);
+    }
+
+    // Récupération du type d'affichage (par défaut "numeric")
+    const char* display_type = NULL;
+    if (cJSON_IsString(widget_display_type)) {
+        display_type = widget_display_type->valuestring;
     }
 
     // Création du widget
@@ -142,7 +151,8 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
         cJSON_IsNumber(taille_fleche) ? taille_fleche->valueint : 6,
         cJSON_IsNumber(taille_texte) ? taille_texte->valueint : 18,
         ctx->font_normal,
-        callback_func
+        callback_func,
+        display_type
     );
 
     if (success) {

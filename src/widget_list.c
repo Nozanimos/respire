@@ -54,7 +54,8 @@ bool add_increment_widget(WidgetList* list,
                          int min_val, int max_val, int start_val, int increment,
                          int arrow_size, int text_size,
                          TTF_Font* font,
-                         void (*callback)(int)) {
+                         void (*callback)(int),
+                         const char* display_type) {
     if (!list || !id || !display_name) {
         debug_printf("❌ Paramètres invalides pour add_increment_widget\n");
         return false;
@@ -82,7 +83,7 @@ bool add_increment_widget(WidgetList* list,
     node->widget.increment_widget = create_config_widget(
         display_name, x, y,
         min_val, max_val, start_val, increment,
-        arrow_size, text_size, font
+        arrow_size, text_size, font, display_type
     );
 
     if (!node->widget.increment_widget) {
@@ -339,8 +340,8 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
         if (longest_widget) {
             // Utiliser local_arrows_x (qui inclut texte + espace après texte)
             // + taille des flèches + espace + largeur estimée valeur
-            container_width = longest_widget->local_arrows_x +
-                            longest_widget->arrow_size +
+            container_width = longest_widget->local_roller_x +
+                            longest_widget->roller_width +
                             60;  // Espace après flèches + largeur valeur estimée
         }
 
@@ -542,8 +543,8 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
 
         int container_width = 0;
         if (longest_widget) {
-            container_width = longest_widget->local_arrows_x +
-                            longest_widget->arrow_size +
+            container_width = longest_widget->local_roller_x +
+                            longest_widget->roller_width +
                             60;
         }
 
@@ -1202,7 +1203,7 @@ int calculate_min_panel_width(WidgetList* list) {
 
         if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
             ConfigWidget* w = node->widget.increment_widget;
-            widget_width = w->local_value_x + 50;  // Largeur totale
+            widget_width = w->local_roller_x + w->roller_width + 10;  // Largeur totale
         }
         else if (node->type == WIDGET_TYPE_TOGGLE && node->widget.toggle_widget) {
             widget_width = node->widget.toggle_widget->base.base_width;

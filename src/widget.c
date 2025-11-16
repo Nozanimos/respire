@@ -109,12 +109,15 @@ void cleanup_font_manager(void) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  CRÉATION D'UN WIDGET DE CONFIGURATION
+//  CRÉATION D'UN WIDGET DE CONFIGURATION (STYLE ROLLER)
 // ════════════════════════════════════════════════════════════════════════════
 ConfigWidget* create_config_widget(const char* name, int x, int y,
                                    int min_val, int max_val, int start_val,
                                    int increment, int arrow_size, int text_size,
-                                   TTF_Font* font) {
+                                   TTF_Font* font, const char* display_type) {
+    (void)arrow_size;  // Paramètre conservé pour compatibilité mais non utilisé
+    (void)font;        // Paramètre conservé pour compatibilité mais non utilisé
+
     ConfigWidget* widget = malloc(sizeof(ConfigWidget));
     if (!widget) {
         debug_printf("❌ Erreur allocation ConfigWidget: %s\n", name);
@@ -132,30 +135,45 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     widget->min_value = min_val;
     widget->max_value = max_val;
     widget->increment = increment;
-    widget->arrow_size = arrow_size;
-    widget->base_arrow_size = arrow_size;
-    widget->up_arrow_hovered = false;
-    widget->down_arrow_hovered = false;
+
+    // Type d'affichage : "numeric" par défaut, ou "time"
+    if (display_type && strcmp(display_type, "time") == 0) {
+        snprintf(widget->widget_display_type, sizeof(widget->widget_display_type), "time");
+    } else {
+        snprintf(widget->widget_display_type, sizeof(widget->widget_display_type), "numeric");
+    }
 
     // Stocker la taille de police de base
     widget->base_text_size = text_size;
     widget->current_text_size = text_size;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // ESPACEMENTS DE BASE (calculés proportionnellement à la taille de police)
+    // ESPACEMENTS DE BASE (pour le roller)
     // ─────────────────────────────────────────────────────────────────────────
-    // Au lieu de valeurs fixes, on base tout sur text_size pour que les espacements
-    // soient cohérents quelle que soit la taille de police définie dans le JSON
-    widget->base_espace_apres_texte = (int)(text_size * 1.1);    // ~110% de la hauteur du texte
-    widget->base_espace_entre_fleches = (int)(text_size * 0.28); // ~28% de la hauteur du texte
-    widget->base_espace_apres_fleches = (int)(text_size * 0.83); // ~83% de la hauteur du texte
+    widget->base_espace_apres_texte = (int)(text_size * 0.7);  // Marge texte → roller
+    widget->base_roller_padding = (int)(text_size * 0.4);      // Padding interne du roller
 
     // ─────────────────────────────────────────────────────────────────────────
-    // COULEURS DU WIDGET
+    // COULEURS DU ROLLER (nouveau design)
     // ─────────────────────────────────────────────────────────────────────────
-    widget->bg_hover_color = (SDL_Color){0, 0, 0, 50};        // Fond noir transparent
-    widget->color = (SDL_Color){0, 0, 0, 255};                // Flèches et texte noirs
-    widget->hover_color = (SDL_Color){255, 255, 150, 255};    // Jaune pâle au survol
+    widget->color = (SDL_Color){0, 0, 0, 255};                      // Texte label noir
+    widget->roller_bg_color = (SDL_Color){255, 255, 255, 200};      // Fond blanc alpha 200
+    widget->roller_text_color = (SDL_Color){70, 80, 100, 255};      // Bleu-gris foncé
+    widget->roller_border_color = (SDL_Color){150, 150, 150, 180};  // Bordure grise
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ÉTAT D'INTERACTION DRAG
+    // ─────────────────────────────────────────────────────────────────────────
+    widget->is_dragging = false;
+    widget->drag_start_x = 0;
+    widget->drag_start_value = 0;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MODE TIME : Initialisation
+    // ─────────────────────────────────────────────────────────────────────────
+    widget->selected_field = -1;  // -1 = aucun champ sélectionné
+    widget->mm_rect = (SDL_Rect){0, 0, 0, 0};
+    widget->ss_rect = (SDL_Rect){0, 0, 0, 0};
 
     // ─────────────────────────────────────────────────────────────────────────
     // MESURE DU TEXTE (pour calculer les dimensions)
@@ -163,18 +181,10 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     int text_width = 0;
     int text_height = 0;
 
-    // IMPORTANT : Utiliser get_font_for_size() pour obtenir la police à la bonne
-    // taille (celle définie dans le JSON), pas le paramètre 'font' qui pourrait
-    // être à une taille différente (comme font_normal qui est 20px)
     TTF_Font* correct_font = get_font_for_size(text_size);
     if (correct_font) {
-        // Utiliser la police correcte pour mesurer précisément
         TTF_SizeUTF8(correct_font, name, &text_width, &text_height);
-    } else if (font) {
-        // Fallback sur le font passé en paramètre si get_font_for_size échoue
-        TTF_SizeUTF8(font, name, &text_width, &text_height);
     } else {
-        // Estimation grossière si pas de police du tout
         text_width = strlen(name) * (text_size / 2);
         text_height = text_size;
     }
@@ -182,28 +192,52 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     widget->text_height = text_height;
 
     // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DE LA TAILLE DU ROLLER
+    // ─────────────────────────────────────────────────────────────────────────
+    // Largeur du roller : dépend du type
+    int roller_content_width = 0;
+    if (strcmp(widget->widget_display_type, "time") == 0) {
+        // Mode time : "00:00" = 5 caractères
+        char time_sample[] = "00:00";
+        if (correct_font) {
+            TTF_SizeUTF8(correct_font, time_sample, &roller_content_width, NULL);
+        } else {
+            roller_content_width = strlen(time_sample) * (text_size / 2);
+        }
+    } else {
+        // Mode numeric : estimer la largeur max possible
+        char max_value_str[16];
+        snprintf(max_value_str, sizeof(max_value_str), "%d", max_val);
+        if (correct_font) {
+            TTF_SizeUTF8(correct_font, max_value_str, &roller_content_width, NULL);
+        } else {
+            roller_content_width = strlen(max_value_str) * (text_size / 2);
+        }
+    }
+
+    widget->roller_width = roller_content_width + (widget->base_roller_padding * 2);
+    widget->roller_height = text_height + 4;  // +4 pour un peu de padding vertical
+
+    // ─────────────────────────────────────────────────────────────────────────
     // LAYOUT INTERNE (coordonnées LOCALES au widget)
     // ─────────────────────────────────────────────────────────────────────────
     widget->local_text_x = 0;
     widget->local_text_y = 0;
 
-    widget->local_arrows_x = text_width + widget->base_espace_apres_texte;
+    widget->local_roller_x = text_width + widget->base_espace_apres_texte;
+    widget->local_roller_y = 0;
 
-    int total_arrows_height = arrow_size * 2 + widget->base_espace_entre_fleches;
-    widget->local_arrows_y = (text_height - total_arrows_height) / 2 + arrow_size / 2;
-
-    widget->local_value_x = widget->local_arrows_x + arrow_size + widget->base_espace_apres_fleches;
-    widget->local_value_y = 0;
+    // Rectangle du roller (coordonnées locales)
+    widget->roller_rect.x = widget->local_roller_x;
+    widget->roller_rect.y = widget->local_roller_y;
+    widget->roller_rect.w = widget->roller_width;
+    widget->roller_rect.h = widget->roller_height;
 
     // ─────────────────────────────────────────────────────────────────────────
     // CALCUL DE LA BOUNDING BOX TOTALE
     // ─────────────────────────────────────────────────────────────────────────
-    char value_str[16];
-    snprintf(value_str, sizeof(value_str), "%d", widget->value);
-    int value_width = strlen(value_str) * (text_size / 2);  // Estimation
-
-    int total_width = widget->local_value_x + value_width + 10;  // +10 = marge droite
-    int total_height = text_height > total_arrows_height ? text_height : total_arrows_height;
+    int total_width = widget->local_roller_x + widget->roller_width + 5;  // +5 = marge droite
+    int total_height = text_height > widget->roller_height ? text_height : widget->roller_height;
 
     // ─────────────────────────────────────────────────────────────────────────
     // INITIALISATION DE LA BASE (WidgetBase)
@@ -221,259 +255,348 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
 
     widget->on_value_changed = NULL;
 
-    debug_subsection("Création ConfigWidget");
+    debug_subsection("Création ConfigWidget ROLLER");
     debug_printf("  Nom : %s\n", name);
+    debug_printf("  Type : %s\n", widget->widget_display_type);
     debug_printf("  Position : (%d, %d)\n", x, y);
     debug_printf("  Taille : %dx%d\n", total_width, total_height);
     debug_printf("  Police : %dpx\n", text_size);
-    debug_printf("  Largeur texte mesuré : %dpx\n", text_width);
-    debug_printf("  Layout : texte@%d, flèches@%d, valeur@%d\n",
-                 widget->local_text_x, widget->local_arrows_x, widget->local_value_x);
+    debug_printf("  Roller : %dx%d\n", widget->roller_width, widget->roller_height);
     debug_blank_line();
 
     return widget;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  CALCUL DE LA POSITION X DES FLÈCHES (avec alignement optionnel)
-// ════════════════════════════════════════════════════════════════════════════
-// Fonction utilitaire pour calculer où positionner les flèches en X.
-// Si container_width > 0, aligne à droite. Sinon, utilise la position par défaut.
-// Cette fonction est utilisée à la fois par le rendu ET la détection de hovering
-// pour garantir la cohérence entre l'affichage et les zones cliquables.
-static int calculate_arrows_x_offset(ConfigWidget* widget, int container_width) {
-    int arrows_x_offset = widget->local_arrows_x;  // Position par défaut
-
-    if (container_width > 0) {
-        // Alignement à droite des flèches+valeur
-        const int RIGHT_MARGIN = 10;
-        const int ESTIMATED_VALUE_WIDTH = 40;
-
-        int arrows_value_width = widget->arrow_size +
-                                widget->base_espace_apres_fleches +
-                                ESTIMATED_VALUE_WIDTH;
-
-        arrows_x_offset = container_width - arrows_value_width - RIGHT_MARGIN;
-
-        // Sécurité : ne pas superposer le texte
-        if (arrows_x_offset < widget->local_arrows_x) {
-            arrows_x_offset = widget->local_arrows_x;
-        }
-    }
-
-    return arrows_x_offset;
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-//  RENDU DU WIDGET
+//  RENDU DU WIDGET ROLLER
 // ════════════════════════════════════════════════════════════════════════════
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
                           int offset_x, int offset_y, int container_width) {
     if (!widget || !renderer) return;
 
+    (void)container_width;  // Pas utilisé dans le nouveau design
+
     int widget_screen_x = offset_x + widget->base.x;
     int widget_screen_y = offset_y + widget->base.y;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // OBTENIR LA POLICE À LA BONNE TAILLE (pour tous les calculs)
+    // OBTENIR LA POLICE À LA BONNE TAILLE
     // ─────────────────────────────────────────────────────────────────────────
     TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
+    if (!correct_font) return;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // CALCUL DES POSITIONS POUR L'ALIGNEMENT EN COLONNES
+    // 1. RENDU DU LABEL (option_name)
     // ─────────────────────────────────────────────────────────────────────────
-    int arrows_x_offset = calculate_arrows_x_offset(widget, container_width);
-    int value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
+    SDL_Surface* label_surface = TTF_RenderUTF8_Blended(correct_font, widget->option_name, widget->color);
+    if (label_surface) {
+        SDL_Texture* label_texture = SDL_CreateTextureFromSurface(renderer, label_surface);
+        if (label_texture) {
+            SDL_Rect label_rect = {
+                widget_screen_x + widget->local_text_x,
+                widget_screen_y + widget->local_text_y,
+                label_surface->w,
+                label_surface->h
+            };
+            SDL_RenderCopy(renderer, label_texture, NULL, &label_rect);
+            SDL_DestroyTexture(label_texture);
+        }
+        SDL_FreeSurface(label_surface);
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // MESURE DE LA VALEUR (pour calcul de largeur)
+    // 2. PRÉPARATION DU TEXTE À AFFICHER DANS LE ROLLER
     // ─────────────────────────────────────────────────────────────────────────
-    char value_str[16];
-    snprintf(value_str, sizeof(value_str), "%d", widget->value);
-    int value_width = 0;
-
-    if (correct_font) {
-        TTF_SizeUTF8(correct_font, value_str, &value_width, NULL);
+    char display_str[32];
+    if (strcmp(widget->widget_display_type, "time") == 0) {
+        // Mode TIME : afficher mm:ss
+        int total_seconds = widget->value;
+        int minutes = total_seconds / 60;
+        int seconds = total_seconds % 60;
+        snprintf(display_str, sizeof(display_str), "%02d:%02d", minutes, seconds);
     } else {
-        value_width = strlen(value_str) * (widget->current_text_size / 2);
+        // Mode NUMERIC : afficher la valeur
+        snprintf(display_str, sizeof(display_str), "%d", widget->value);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // FOND AU SURVOL (rectangle arrondi)
+    // 3. RENDU DU ROLLER (fond arrondi avec Cairo)
     // ─────────────────────────────────────────────────────────────────────────
-    if (widget->base.hovered) {
-        // Calculer la largeur RÉELLE du widget (nom + flèches + valeur)
-        // Utiliser value_x_offset qui tient compte de l'alignement
+    int roller_screen_x = widget_screen_x + widget->roller_rect.x;
+    int roller_screen_y = widget_screen_y + widget->roller_rect.y;
 
-        // Largeur réelle = position de la valeur + largeur de la valeur
-        int real_width = value_x_offset + value_width + 10;
-
-        roundedBoxRGBA(renderer,
-                       widget_screen_x - 5,
-                       widget_screen_y - 5,
-                       widget_screen_x + real_width + 5,
-                       widget_screen_y + widget->base.height + 5,
-                       5,
-                       widget->bg_hover_color.r,
-                       widget->bg_hover_color.g,
-                       widget->bg_hover_color.b,
-                       widget->bg_hover_color.a);
-    }
+    // Dessiner le fond arrondi avec bordure
+    draw_rounded_rect(renderer,
+                      roller_screen_x,
+                      roller_screen_y,
+                      widget->roller_rect.w,
+                      widget->roller_rect.h,
+                      4,  // Rayon des coins arrondis
+                      widget->roller_bg_color,
+                      widget->roller_border_color);
 
     // ─────────────────────────────────────────────────────────────────────────
-    // RENDU DU TEXTE
+    // 4. RENDU DU TEXTE DANS LE ROLLER
     // ─────────────────────────────────────────────────────────────────────────
-    if (correct_font) {
-        SDL_Surface* text_surface = TTF_RenderUTF8_Blended(correct_font, widget->option_name, widget->color);
-        if (text_surface) {
-            SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-            if (text_texture) {
-                SDL_Rect text_rect = {
-                    widget_screen_x + widget->local_text_x,
-                    widget_screen_y + widget->local_text_y,
-                    text_surface->w,
-                    text_surface->h
-                };
-                SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
-                SDL_DestroyTexture(text_texture);
-            }
-            SDL_FreeSurface(text_surface);
+    SDL_Surface* value_surface = TTF_RenderUTF8_Blended(correct_font, display_str, widget->roller_text_color);
+    if (value_surface) {
+        SDL_Texture* value_texture = SDL_CreateTextureFromSurface(renderer, value_surface);
+        if (value_texture) {
+            // Centrer le texte dans le roller
+            int text_x = roller_screen_x + (widget->roller_rect.w - value_surface->w) / 2;
+            int text_y = roller_screen_y + (widget->roller_rect.h - value_surface->h) / 2;
+
+            SDL_Rect value_rect = {
+                text_x,
+                text_y,
+                value_surface->w,
+                value_surface->h
+            };
+            SDL_RenderCopy(renderer, value_texture, NULL, &value_rect);
+            SDL_DestroyTexture(value_texture);
         }
+        SDL_FreeSurface(value_surface);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // RENDU DES FLÈCHES (▲ et ▼)
+    // 5. MODE TIME : Calculer les zones des champs mm et ss (pour hover/interaction)
     // ─────────────────────────────────────────────────────────────────────────
-    int arrows_screen_x = widget_screen_x + arrows_x_offset;
-    int arrows_screen_y = widget_screen_y + widget->local_arrows_y;
+    if (strcmp(widget->widget_display_type, "time") == 0) {
+        // Mesurer la largeur de "00:" et "00"
+        int mm_width = 0, ss_width = 0;
+        TTF_SizeUTF8(correct_font, "00", &mm_width, NULL);
+        TTF_SizeUTF8(correct_font, "00", &ss_width, NULL);
 
-    SDL_Color up_color = widget->up_arrow_hovered ? widget->hover_color : widget->color;
-    SDL_Color down_color = widget->down_arrow_hovered ? widget->hover_color : widget->color;
+        int colon_width = 0;
+        TTF_SizeUTF8(correct_font, ":", &colon_width, NULL);
 
-    int up_y = arrows_screen_y;
-    Triangle* up_arrow = create_up_arrow(arrows_screen_x, up_y, widget->arrow_size, up_color);
-    if (up_arrow) {
-        draw_triangle(renderer, up_arrow);
-        free_triangle(up_arrow);
-    }
+        // Centrer le texte total
+        int total_text_width = mm_width + colon_width + ss_width;
+        int text_start_x = roller_screen_x + (widget->roller_rect.w - total_text_width) / 2;
 
-    int down_y = arrows_screen_y + widget->arrow_size + widget->base_espace_entre_fleches;
-    Triangle* down_arrow = create_down_arrow(arrows_screen_x, down_y, widget->arrow_size, down_color);
-    if (down_arrow) {
-        draw_triangle(renderer, down_arrow);
-        free_triangle(down_arrow);
-    }
+        // Zone des minutes
+        widget->mm_rect.x = text_start_x - roller_screen_x;
+        widget->mm_rect.y = 0;
+        widget->mm_rect.w = mm_width;
+        widget->mm_rect.h = widget->roller_rect.h;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // RENDU DE LA VALEUR (utilise value_str déjà calculé plus haut)
-    // ─────────────────────────────────────────────────────────────────────────
-    if (correct_font) {
-        SDL_Surface* value_surface = TTF_RenderUTF8_Blended(correct_font, value_str, widget->color);
-        if (value_surface) {
-            SDL_Texture* value_texture = SDL_CreateTextureFromSurface(renderer, value_surface);
-            if (value_texture) {
-                SDL_Rect value_rect = {
-                    widget_screen_x + value_x_offset,
-                    widget_screen_y + widget->local_value_y,
-                    value_surface->w,
-                    value_surface->h
-                };
-                SDL_RenderCopy(renderer, value_texture, NULL, &value_rect);
-                SDL_DestroyTexture(value_texture);
-            }
-            SDL_FreeSurface(value_surface);
-        }
+        // Zone des secondes
+        widget->ss_rect.x = text_start_x + mm_width + colon_width - roller_screen_x;
+        widget->ss_rect.y = 0;
+        widget->ss_rect.w = ss_width;
+        widget->ss_rect.h = widget->roller_rect.h;
     }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  GESTION DES ÉVÉNEMENTS
+//  GESTION DES ÉVÉNEMENTS ROLLER
 // ════════════════════════════════════════════════════════════════════════════
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
                                  int offset_x, int offset_y, int container_width) {
     if (!widget || !event) return;
 
+    (void)container_width;  // Pas utilisé dans le nouveau design
+
     int widget_screen_x = offset_x + widget->base.x;
     int widget_screen_y = offset_y + widget->base.y;
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // CALCUL DU RECTANGLE DU ROLLER EN COORDONNÉES ÉCRAN
+    // ─────────────────────────────────────────────────────────────────────────
+    SDL_Rect roller_screen_rect = {
+        widget_screen_x + widget->roller_rect.x,
+        widget_screen_y + widget->roller_rect.y,
+        widget->roller_rect.w,
+        widget->roller_rect.h
+    };
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉVÉNEMENT: MOUVEMENT DE SOURIS
+    // ═════════════════════════════════════════════════════════════════════════
     if (event->type == SDL_MOUSEMOTION) {
         int mx = event->motion.x;
         int my = event->motion.y;
 
-        // ─────────────────────────────────────────────────────────────────────
-        // CALCUL DE LA LARGEUR RÉELLE DU WIDGET (comme dans render)
-        // ─────────────────────────────────────────────────────────────────────
-        // Mesurer la largeur de la valeur actuelle
-        char value_str[16];
-        snprintf(value_str, sizeof(value_str), "%d", widget->value);
-        int value_width = 0;
+        // Test de survol du roller
+        bool on_roller = (mx >= roller_screen_rect.x && mx < roller_screen_rect.x + roller_screen_rect.w &&
+                         my >= roller_screen_rect.y && my < roller_screen_rect.y + roller_screen_rect.h);
 
-        TTF_Font* correct_font = get_font_for_size(widget->current_text_size);
-        if (correct_font) {
-            TTF_SizeUTF8(correct_font, value_str, &value_width, NULL);
+        widget->base.hovered = on_roller;
+
+        // ─────────────────────────────────────────────────────────────────────
+        // MODE TIME : Déterminer quel champ est survolé (mm ou ss)
+        // ─────────────────────────────────────────────────────────────────────
+        if (strcmp(widget->widget_display_type, "time") == 0 && on_roller) {
+            int relative_x = mx - roller_screen_rect.x;
+
+            // Tester si on est sur mm ou ss
+            if (relative_x >= widget->mm_rect.x && relative_x < widget->mm_rect.x + widget->mm_rect.w) {
+                widget->selected_field = 0;  // Minutes
+            } else if (relative_x >= widget->ss_rect.x && relative_x < widget->ss_rect.x + widget->ss_rect.w) {
+                widget->selected_field = 1;  // Secondes
+            } else {
+                widget->selected_field = -1;  // Aucun champ
+            }
         } else {
-            value_width = strlen(value_str) * (widget->current_text_size / 2);
+            widget->selected_field = -1;
         }
 
-        // Calculer les positions (identique au rendu)
-        int arrows_x_offset = calculate_arrows_x_offset(widget, container_width);
-        int value_x_offset = arrows_x_offset + widget->arrow_size + widget->base_espace_apres_fleches;
-        int real_width = value_x_offset + value_width + 10;
+        // ─────────────────────────────────────────────────────────────────────
+        // DRAG EN COURS (mode numeric uniquement)
+        // ─────────────────────────────────────────────────────────────────────
+        if (widget->is_dragging && strcmp(widget->widget_display_type, "numeric") == 0) {
+            int delta_x = mx - widget->drag_start_x;
 
-        // Test de survol global du widget
-        widget->base.hovered = (mx >= widget_screen_x && mx < widget_screen_x + real_width &&
-                                my >= widget_screen_y && my < widget_screen_y + widget->base.height);
+            // Sensibilité : 1 incrément tous les 10 pixels
+            const int PIXELS_PER_INCREMENT = 10;
+            int increments = delta_x / PIXELS_PER_INCREMENT;
 
-        // Calcul des zones de hovering des flèches (cohérent avec le rendu)
-        int arrows_screen_x = widget_screen_x + arrows_x_offset;
-        int arrows_screen_y = widget_screen_y + widget->local_arrows_y;
+            if (increments != 0) {
+                int new_value = widget->drag_start_value + (increments * widget->increment);
 
-        // Zone flèche UP (arrows_screen_y est déjà le centre de la flèche)
-        int up_y = arrows_screen_y;
-        widget->up_arrow_hovered = (mx >= arrows_screen_x - widget->arrow_size / 2 &&
-                                    mx <= arrows_screen_x + widget->arrow_size / 2 &&
-                                    my >= up_y - widget->arrow_size / 2 &&
-                                    my <= up_y + widget->arrow_size / 2);
+                // Limiter aux bornes
+                if (new_value < widget->min_value) new_value = widget->min_value;
+                if (new_value > widget->max_value) new_value = widget->max_value;
 
-        // Zone flèche DOWN
-        int down_y = arrows_screen_y + widget->arrow_size + widget->base_espace_entre_fleches;
-        widget->down_arrow_hovered = (mx >= arrows_screen_x - widget->arrow_size / 2 &&
-                                      mx <= arrows_screen_x + widget->arrow_size / 2 &&
-                                      my >= down_y - widget->arrow_size / 2 &&
-                                      my <= down_y + widget->arrow_size / 2);
-    }
-    else if (event->type == SDL_MOUSEWHEEL) {
-        // Support de la molette
-        if (widget->base.hovered) {
-            if (event->wheel.y > 0) {
-                if (widget->value < widget->max_value) {
-                    widget->value += widget->increment;
-                    if (widget->value > widget->max_value) widget->value = widget->max_value;
-                    if (widget->on_value_changed) widget->on_value_changed(widget->value);
-                }
-            } else if (event->wheel.y < 0) {
-                if (widget->value > widget->min_value) {
-                    widget->value -= widget->increment;
-                    if (widget->value < widget->min_value) widget->value = widget->min_value;
+                if (new_value != widget->value) {
+                    widget->value = new_value;
                     if (widget->on_value_changed) widget->on_value_changed(widget->value);
                 }
             }
         }
     }
-    else if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_LEFT) {
-        if (widget->up_arrow_hovered && widget->value < widget->max_value) {
-            widget->value += widget->increment;
-            if (widget->value > widget->max_value) widget->value = widget->max_value;
-            if (widget->on_value_changed) widget->on_value_changed(widget->value);
-        }
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉVÉNEMENT: MOLETTE
+    // ═════════════════════════════════════════════════════════════════════════
+    else if (event->type == SDL_MOUSEWHEEL) {
+        if (widget->base.hovered) {
+            int direction = (event->wheel.y > 0) ? 1 : -1;  // 1 = haut, -1 = bas
 
-        if (widget->down_arrow_hovered && widget->value > widget->min_value) {
-            widget->value -= widget->increment;
-            if (widget->value < widget->min_value) widget->value = widget->min_value;
-            if (widget->on_value_changed) widget->on_value_changed(widget->value);
+            if (strcmp(widget->widget_display_type, "time") == 0) {
+                // ─────────────────────────────────────────────────────────────
+                // MODE TIME : Modifier le champ survolé (mm ou ss)
+                // ─────────────────────────────────────────────────────────────
+                int total_seconds = widget->value;
+                int minutes = total_seconds / 60;
+                int seconds = total_seconds % 60;
+
+                if (widget->selected_field == 0) {
+                    // Modifier les minutes
+                    minutes += direction;
+                    if (minutes < 0) minutes = 0;
+                    if (minutes > 99) minutes = 99;  // Limite arbitraire
+                } else if (widget->selected_field == 1) {
+                    // Modifier les secondes
+                    seconds += direction;
+                    if (seconds < 0) seconds = 0;
+                    if (seconds > 59) seconds = 59;
+                }
+
+                int new_value = minutes * 60 + seconds;
+
+                // Appliquer les limites min/max
+                if (new_value < widget->min_value) new_value = widget->min_value;
+                if (new_value > widget->max_value) new_value = widget->max_value;
+
+                if (new_value != widget->value) {
+                    widget->value = new_value;
+                    if (widget->on_value_changed) widget->on_value_changed(widget->value);
+                }
+            } else {
+                // ─────────────────────────────────────────────────────────────
+                // MODE NUMERIC : Incrémenter/décrémenter
+                // ─────────────────────────────────────────────────────────────
+                int new_value = widget->value + (direction * widget->increment);
+
+                if (new_value >= widget->min_value && new_value <= widget->max_value) {
+                    widget->value = new_value;
+                    if (widget->on_value_changed) widget->on_value_changed(widget->value);
+                }
+            }
         }
     }
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉVÉNEMENT: CLIC SOURIS (bouton enfoncé)
+    // ═════════════════════════════════════════════════════════════════════════
+    else if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_LEFT) {
+        int mx = event->button.x;
+        int my = event->button.y;
+
+        // Tester si on clique sur le roller
+        bool on_roller = (mx >= roller_screen_rect.x && mx < roller_screen_rect.x + roller_screen_rect.w &&
+                         my >= roller_screen_rect.y && my < roller_screen_rect.y + roller_screen_rect.h);
+
+        if (on_roller) {
+            if (strcmp(widget->widget_display_type, "time") == 0) {
+                // ─────────────────────────────────────────────────────────────
+                // MODE TIME : Clic haut/bas du champ pour ±1
+                // ─────────────────────────────────────────────────────────────
+                int relative_y = my - roller_screen_rect.y;
+                int direction = (relative_y < roller_screen_rect.h / 2) ? 1 : -1;  // Haut = +1, Bas = -1
+
+                int total_seconds = widget->value;
+                int minutes = total_seconds / 60;
+                int seconds = total_seconds % 60;
+
+                if (widget->selected_field == 0) {
+                    // Modifier les minutes
+                    minutes += direction;
+                    if (minutes < 0) minutes = 0;
+                    if (minutes > 99) minutes = 99;
+                } else if (widget->selected_field == 1) {
+                    // Modifier les secondes
+                    seconds += direction;
+                    if (seconds < 0) seconds = 0;
+                    if (seconds > 59) seconds = 59;
+                }
+
+                int new_value = minutes * 60 + seconds;
+                if (new_value < widget->min_value) new_value = widget->min_value;
+                if (new_value > widget->max_value) new_value = widget->max_value;
+
+                if (new_value != widget->value) {
+                    widget->value = new_value;
+                    if (widget->on_value_changed) widget->on_value_changed(widget->value);
+                }
+            } else {
+                // ─────────────────────────────────────────────────────────────
+                // MODE NUMERIC : Démarrer le drag ou clic gauche/droite pour ±1
+                // ─────────────────────────────────────────────────────────────
+                int relative_x = mx - roller_screen_rect.x;
+                int half_width = roller_screen_rect.w / 2;
+
+                if (relative_x < half_width) {
+                    // Clic gauche → décrémenter
+                    int new_value = widget->value - widget->increment;
+                    if (new_value >= widget->min_value) {
+                        widget->value = new_value;
+                        if (widget->on_value_changed) widget->on_value_changed(widget->value);
+                    }
+                } else {
+                    // Clic droite → incrémenter
+                    int new_value = widget->value + widget->increment;
+                    if (new_value <= widget->max_value) {
+                        widget->value = new_value;
+                        if (widget->on_value_changed) widget->on_value_changed(widget->value);
+                    }
+                }
+
+                // Démarrer le drag
+                widget->is_dragging = true;
+                widget->drag_start_x = mx;
+                widget->drag_start_value = widget->value;
+            }
+        }
+    }
+    // ═════════════════════════════════════════════════════════════════════════
+    // ÉVÉNEMENT: RELÂCHEMENT SOURIS
+    // ═════════════════════════════════════════════════════════════════════════
+    else if (event->type == SDL_MOUSEBUTTONUP && event->button.button == SDL_BUTTON_LEFT) {
+        // Arrêter le drag
+        widget->is_dragging = false;
+    }
 }
+
 
 // ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DU WIDGET
@@ -498,8 +621,9 @@ void set_config_value_changed_callback(ConfigWidget* widget, void (*callback)(in
 void rescale_config_widget(ConfigWidget* widget, float panel_ratio) {
     if (!widget) return;
 
-    debug_subsection("Rescale CONFIG (intelligent)");
+    debug_subsection("Rescale CONFIG ROLLER");
     debug_printf("  Widget : %s\n", widget->option_name);
+    debug_printf("  Type : %s\n", widget->widget_display_type);
     debug_printf("  Ratio : %.2f\n", panel_ratio);
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -511,12 +635,12 @@ void rescale_config_widget(ConfigWidget* widget, float panel_ratio) {
     // 2. CALCULER LA NOUVELLE TAILLE DE POLICE
     // ─────────────────────────────────────────────────────────────────────────
     int new_text_size = (int)(widget->base_text_size * panel_ratio);
-    widget->current_text_size = new_text_size;  // Sera ajusté par get_font_for_size
+    widget->current_text_size = new_text_size;
 
     debug_printf("  Police : %dpx → %dpx\n", widget->base_text_size, new_text_size);
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 3. OBTENIR LA POLICE À CETTE TAILLE (avec minimum garanti)
+    // 3. OBTENIR LA POLICE À CETTE TAILLE
     // ─────────────────────────────────────────────────────────────────────────
     TTF_Font* scaled_font = get_font_for_size(new_text_size);
     if (!scaled_font) {
@@ -540,25 +664,44 @@ void rescale_config_widget(ConfigWidget* widget, float panel_ratio) {
     // 5. SCALER LES ESPACEMENTS
     // ─────────────────────────────────────────────────────────────────────────
     int scaled_espace_texte = (int)(widget->base_espace_apres_texte * panel_ratio);
-    int scaled_espace_fleches = (int)(widget->base_espace_apres_fleches * panel_ratio);
+    int scaled_roller_padding = (int)(widget->base_roller_padding * panel_ratio);
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 6. RECALCULER LES OFFSETS AVEC LES VRAIES DIMENSIONS
+    // 6. RECALCULER LA TAILLE DU ROLLER
     // ─────────────────────────────────────────────────────────────────────────
-    widget->local_arrows_x = new_text_width + scaled_espace_texte;
+    int roller_content_width = 0;
+    if (strcmp(widget->widget_display_type, "time") == 0) {
+        // Mode time : "00:00"
+        char time_sample[] = "00:00";
+        TTF_SizeUTF8(scaled_font, time_sample, &roller_content_width, NULL);
+    } else {
+        // Mode numeric : largeur max possible
+        char max_value_str[16];
+        snprintf(max_value_str, sizeof(max_value_str), "%d", widget->max_value);
+        TTF_SizeUTF8(scaled_font, max_value_str, &roller_content_width, NULL);
+    }
 
-    widget->arrow_size = (int)(widget->base_arrow_size * panel_ratio);
-    if (widget->arrow_size < 8) widget->arrow_size = 8;
+    widget->roller_width = roller_content_width + (scaled_roller_padding * 2);
+    widget->roller_height = new_text_height + 4;
 
-    widget->local_value_x = widget->local_arrows_x + widget->arrow_size + scaled_espace_fleches;
+    // ─────────────────────────────────────────────────────────────────────────
+    // 7. RECALCULER LES OFFSETS
+    // ─────────────────────────────────────────────────────────────────────────
+    widget->local_roller_x = new_text_width + scaled_espace_texte;
+    widget->local_roller_y = 0;
 
-    int total_arrows_height = widget->arrow_size * 2 + widget->base_espace_entre_fleches;
-    widget->local_arrows_y = (widget->text_height - total_arrows_height) / 2 + widget->arrow_size / 2;
+    // Mettre à jour le rectangle du roller
+    widget->roller_rect.x = widget->local_roller_x;
+    widget->roller_rect.y = widget->local_roller_y;
+    widget->roller_rect.w = widget->roller_width;
+    widget->roller_rect.h = widget->roller_height;
 
-    debug_printf("  ✓ Offsets : texte@%d, flèches@%d, valeur@%d\n",
-                 widget->local_text_x, widget->local_arrows_x, widget->local_value_x);
+    debug_printf("  ✓ Roller : %dx%d @ (%d, %d)\n",
+                 widget->roller_width, widget->roller_height,
+                 widget->local_roller_x, widget->local_roller_y);
     debug_blank_line();
 }
+
 
 // ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION DU WIDGET
