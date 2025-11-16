@@ -20,7 +20,7 @@
 #define STATS_DIR "../config/stats"
 #define ANIMATION_SPEED 3.0f    // Vitesse d'animation (unités par seconde)
 #define GRAPH_MARGIN 60         // Marge pour les axes et labels
-#define GRAPH_DAYS 5            // Nombre de jours affichés
+#define GRAPH_EXERCISES 5       // Nombre d'exercices affichés
 #define BUTTON_HEIGHT 30        // Plus petits
 #define BUTTON_MARGIN 8
 
@@ -210,6 +210,14 @@ bool reset_exercise_history(void) {
 // RENDU DU GRAPHIQUE AVEC CAIRO
 // ════════════════════════════════════════════════════════════════════════
 
+// Structure temporaire pour un exercice à afficher
+typedef struct {
+    time_t timestamp;
+    float* session_times;
+    int session_count;
+    bool is_current; // true = exercice actuel (non enregistré)
+} DisplayExercise;
+
 // Créer la texture du graphique
 static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* panel,
                                          int width, int height) {
@@ -224,60 +232,85 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
 
     // Zone du graphique (avec marges pour les axes)
     int graph_x = GRAPH_MARGIN;
-    int graph_y = GRAPH_MARGIN;
+    int graph_y = GRAPH_MARGIN + 20; // Espace pour le titre
     int graph_width = width - 2 * GRAPH_MARGIN;
-    int graph_height = height - 2 * GRAPH_MARGIN - 80; // Espace pour la date et boutons
+    int graph_height = height - 2 * GRAPH_MARGIN - 100; // Espace pour date/heure et boutons
 
-    // Trouver le temps maximum pour l'échelle Y (historique + exercice actuel)
+    // ═══ PRÉPARER LES 5 DERNIERS EXERCICES ═══
+    DisplayExercise exercises[GRAPH_EXERCISES] = {0};
+    int exercise_count = 0;
+
+    // Ajouter l'exercice actuel (non enregistré) s'il existe
+    if (panel->current_session_count > 0 && panel->current_session_times) {
+        exercises[exercise_count].timestamp = time(NULL);
+        exercises[exercise_count].session_times = panel->current_session_times;
+        exercises[exercise_count].session_count = panel->current_session_count;
+        exercises[exercise_count].is_current = true;
+        exercise_count++;
+    }
+
+    // Ajouter les derniers exercices de l'historique (du plus récent au plus ancien)
+    for (int i = panel->history.count - 1; i >= 0 && exercise_count < GRAPH_EXERCISES; i--) {
+        exercises[exercise_count].timestamp = panel->history.entries[i].timestamp;
+        exercises[exercise_count].session_times = panel->history.entries[i].session_times;
+        exercises[exercise_count].session_count = panel->history.entries[i].session_count;
+        exercises[exercise_count].is_current = false;
+        exercise_count++;
+    }
+
+    // Inverser pour avoir du plus ancien (gauche) au plus récent (droite)
+    for (int i = 0; i < exercise_count / 2; i++) {
+        DisplayExercise temp = exercises[i];
+        exercises[i] = exercises[exercise_count - 1 - i];
+        exercises[exercise_count - 1 - i] = temp;
+    }
+
+    // ═══ TROUVER LE TEMPS MAXIMUM ═══
     float max_time = 60.0f; // Minimum 1 minute
-
-    // Chercher dans l'historique sauvegardé
-    for (int i = 0; i < panel->history.count; i++) {
-        for (int j = 0; j < panel->history.entries[i].session_count; j++) {
-            if (panel->history.entries[i].session_times[j] > max_time) {
-                max_time = panel->history.entries[i].session_times[j];
+    for (int e = 0; e < exercise_count; e++) {
+        for (int j = 0; j < exercises[e].session_count; j++) {
+            if (exercises[e].session_times[j] > max_time) {
+                max_time = exercises[e].session_times[j];
             }
         }
     }
 
-    // Chercher dans l'exercice actuel (non sauvegardé)
-    for (int j = 0; j < panel->current_session_count; j++) {
-        if (panel->current_session_times[j] > max_time) {
-            max_time = panel->current_session_times[j];
-        }
-    }
-
-    // Arrondir max_time à la minute supérieure
-    int max_minutes = (int)ceil(max_time / 60.0f);
-
-    // ═══ GRILLE HORIZONTALE (minutes) ═══
-    cairo_set_source_rgb(cr, 0.5, 0.5, 0.5); // Gris moyen (plus visible)
+    // ═══ CRÉER LES RÈGLES HORIZONTALES UNIQUEMENT POUR LE DERNIER EXERCICE ═══
+    cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
     cairo_set_line_width(cr, 1.0);
     double dash[] = {5.0, 5.0};
     cairo_set_dash(cr, dash, 2, 0);
 
-    for (int m = 1; m <= max_minutes; m++) {
-        double y = graph_y + graph_height - (m * graph_height / (double)max_minutes);
-        cairo_move_to(cr, graph_x, y);
-        cairo_line_to(cr, graph_x + graph_width, y);
-        cairo_stroke(cr);
+    if (exercise_count > 0) {
+        DisplayExercise* last_exercise = &exercises[exercise_count - 1];
+        for (int j = 0; j < last_exercise->session_count; j++) {
+            float session_time = last_exercise->session_times[j];
+            double y = graph_y + graph_height - (session_time / max_time) * graph_height;
 
-        // Label (mm:ss format)
-        char label[16];
-        snprintf(label, sizeof(label), "%d:00", m);
-        cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-        cairo_set_font_size(cr, 12);
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, label, &extents);
-        cairo_move_to(cr, graph_x - extents.width - 5, y + 4);
-        cairo_show_text(cr, label);
-        cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+            cairo_move_to(cr, graph_x, y);
+            cairo_line_to(cr, graph_x + graph_width, y);
+            cairo_stroke(cr);
+
+            // Label du temps (mm:ss)
+            int minutes = (int)(session_time / 60.0f);
+            int seconds = (int)session_time % 60;
+            char label[16];
+            snprintf(label, sizeof(label), "%d:%02d", minutes, seconds);
+
+            cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+            cairo_set_font_size(cr, 12);
+            cairo_text_extents_t extents;
+            cairo_text_extents(cr, label, &extents);
+            cairo_move_to(cr, graph_x - extents.width - 5, y + 4);
+            cairo_show_text(cr, label);
+            cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+        }
     }
 
-    // ═══ GRILLE VERTICALE (jours) ═══
-    double day_width = graph_width / (double)GRAPH_DAYS;
-    for (int d = 0; d < GRAPH_DAYS; d++) {
-        double x = graph_x + d * day_width;
+    // ═══ GRILLE VERTICALE (exercices) ═══
+    double exercise_width = graph_width / (double)exercise_count;
+    for (int e = 0; e < exercise_count; e++) {
+        double x = graph_x + e * exercise_width;
         cairo_move_to(cr, x, graph_y);
         cairo_line_to(cr, x, graph_y + graph_height);
         cairo_stroke(cr);
@@ -286,7 +319,7 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     // ═══ AXES PRINCIPAUX ═══
     cairo_set_dash(cr, NULL, 0, 0); // Ligne continue
     cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-    cairo_set_line_width(cr, 1.0); // Plus fin
+    cairo_set_line_width(cr, 1.0);
 
     // Axe X
     cairo_move_to(cr, graph_x, graph_y + graph_height);
@@ -299,30 +332,16 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     cairo_stroke(cr);
 
     // ═══ DESSINER LES RECTANGLES (exercices) ═══
-    // Grouper par jour
-    time_t now = time(NULL);
-    struct tm* tm_now = localtime(&now);
-    int today_day = tm_now->tm_yday;
-
-    for (int i = 0; i < panel->history.count; i++) {
-        ExerciseEntry* entry = &panel->history.entries[i];
-        struct tm* tm_entry = localtime(&entry->timestamp);
-        int entry_day = tm_entry->tm_yday;
-
-        // Calculer le jour (0 = aujourd'hui, 1 = hier, etc.)
-        int day_offset = today_day - entry_day;
-        if (day_offset < 0) day_offset = 0;
-        if (day_offset >= GRAPH_DAYS) continue;
-
-        // Position X du jour
-        double day_x = graph_x + (GRAPH_DAYS - 1 - day_offset) * day_width;
+    for (int e = 0; e < exercise_count; e++) {
+        DisplayExercise* exercise = &exercises[e];
+        double ex_x = graph_x + e * exercise_width;
 
         // Dessiner les rectangles (du plus grand au plus petit pour empilement)
-        for (int j = entry->session_count - 1; j >= 0; j--) {
-            float session_time = entry->session_times[j];
-            double rect_height = (session_time / 60.0) * (graph_height / (double)max_minutes);
-            double rect_width = day_width * 0.6; // 60% de la largeur du jour
-            double rect_x = day_x + day_width * 0.2; // Centré
+        for (int j = exercise->session_count - 1; j >= 0; j--) {
+            float session_time = exercise->session_times[j];
+            double rect_height = (session_time / max_time) * graph_height;
+            double rect_width = exercise_width * 0.7; // 70% de la largeur
+            double rect_x = ex_x + exercise_width * 0.15; // Centré
 
             // Couleur arc-en-ciel
             SDL_Color color = RAINBOW_COLORS[j % RAINBOW_COUNT];
@@ -342,55 +361,36 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
         }
     }
 
-    // ═══ DESSINER L'EXERCICE EN COURS (aujourd'hui, non sauvegardé) ═══
-    if (panel->current_session_count > 0 && panel->current_session_times) {
-        // L'exercice actuel est aujourd'hui (day_offset = 0)
-        double day_x = graph_x + (GRAPH_DAYS - 1) * day_width;
-
-        // Dessiner les rectangles (du plus grand au plus petit)
-        for (int j = panel->current_session_count - 1; j >= 0; j--) {
-            float session_time = panel->current_session_times[j];
-            double rect_height = (session_time / 60.0) * (graph_height / (double)max_minutes);
-            double rect_width = day_width * 0.6;
-            double rect_x = day_x + day_width * 0.2;
-
-            // Couleur arc-en-ciel
-            SDL_Color color = RAINBOW_COLORS[j % RAINBOW_COUNT];
-            cairo_set_source_rgb(cr, color.r / 255.0, color.g / 255.0, color.b / 255.0);
-
-            // Dessiner rectangle arrondi
-            double radius = 5.0;
-            double rect_y = graph_y + graph_height - rect_height;
-
-            cairo_new_sub_path(cr);
-            cairo_arc(cr, rect_x + radius, rect_y + radius, radius, M_PI, 3 * M_PI / 2);
-            cairo_arc(cr, rect_x + rect_width - radius, rect_y + radius, radius, 3 * M_PI / 2, 0);
-            cairo_arc(cr, rect_x + rect_width - radius, rect_y + rect_height - radius, radius, 0, M_PI / 2);
-            cairo_arc(cr, rect_x + radius, rect_y + rect_height - radius, radius, M_PI / 2, M_PI);
-            cairo_close_path(cr);
-            cairo_fill(cr);
-        }
-    }
-
-    // ═══ LABELS DES JOURS ═══
+    // ═══ LABELS DATE/HEURE POUR CHAQUE EXERCICE ═══
     cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-    cairo_set_font_size(cr, 14);
 
-    for (int d = 0; d < GRAPH_DAYS; d++) {
-        time_t day_time = now - (GRAPH_DAYS - 1 - d) * 24 * 3600;
-        struct tm* tm_day = localtime(&day_time);
+    for (int e = 0; e < exercise_count; e++) {
+        struct tm* tm_ex = localtime(&exercises[e].timestamp);
+        double center_x = graph_x + e * exercise_width + exercise_width / 2;
 
-        char date_label[32];
-        snprintf(date_label, sizeof(date_label), "%02d/%02d", tm_day->tm_mday, tm_day->tm_mon + 1);
+        // Date (jj/mm)
+        char date_label[16];
+        snprintf(date_label, sizeof(date_label), "%02d/%02d", tm_ex->tm_mday, tm_ex->tm_mon + 1);
 
-        double x = graph_x + d * day_width + day_width / 2;
+        cairo_set_font_size(cr, 13);
         cairo_text_extents_t extents;
         cairo_text_extents(cr, date_label, &extents);
-        cairo_move_to(cr, x - extents.width / 2, graph_y + graph_height + 20);
+        cairo_move_to(cr, center_x - extents.width / 2, graph_y + graph_height + 20);
         cairo_show_text(cr, date_label);
+
+        // Heure (hh:mm)
+        char time_label[16];
+        snprintf(time_label, sizeof(time_label), "%02d:%02d", tm_ex->tm_hour, tm_ex->tm_min);
+
+        cairo_set_font_size(cr, 11);
+        cairo_text_extents(cr, time_label, &extents);
+        cairo_move_to(cr, center_x - extents.width / 2, graph_y + graph_height + 38);
+        cairo_show_text(cr, time_label);
     }
 
-    // ═══ DATE DU JOUR EN HAUT ═══
+    // ═══ TITRE (DATE DU JOUR) ═══
+    time_t now = time(NULL);
+    struct tm* tm_now = localtime(&now);
     char today_label[64];
     const char* days[] = {"Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"};
     const char* months[] = {"janvier", "février", "mars", "avril", "mai", "juin",
@@ -398,10 +398,10 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     snprintf(today_label, sizeof(today_label), "%s %d %s",
              days[tm_now->tm_wday], tm_now->tm_mday, months[tm_now->tm_mon]);
 
-    cairo_set_font_size(cr, 18);
+    cairo_set_font_size(cr, 16);
     cairo_text_extents_t title_extents;
     cairo_text_extents(cr, today_label, &title_extents);
-    cairo_move_to(cr, (width - title_extents.width) / 2, 30);
+    cairo_move_to(cr, (width - title_extents.width) / 2, 25);
     cairo_show_text(cr, today_label);
 
     // Finaliser
