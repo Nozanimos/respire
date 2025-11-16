@@ -17,6 +17,7 @@
 // ════════════════════════════════════════════════════════════════════════
 #define CARD_WIDTH_BASE  200    // Largeur de base (ratio carte de poker ~2.5:3.5)
 #define CARD_HEIGHT_BASE 280    // Hauteur de base
+#define CARD_CORNER_RADIUS 15   // Rayon des coins arrondis (comme une carte de poker)
 
 #define MARGIN_SIDES  10        // Marge gauche/droite
 #define MARGIN_TOP    10        // Marge du haut
@@ -25,10 +26,10 @@
 // ════════════════════════════════════════════════════════════════════════
 // CRÉATION DE LA TEXTURE DE LA CARTE
 // ════════════════════════════════════════════════════════════════════════
-// Crée la texture complète : background + texte Cairo
+// Crée la texture complète : background + texte Cairo avec effet vitré
 static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_number,
                                        int width, int height,
-                                       const char* font_path, SDL_Color text_color) {
+                                       const char* font_path) {
     // 1. Charger l'image de fond (vert.jpg)
     SDL_Surface* bg_surface = IMG_Load("../img/vert.jpg");
     if (!bg_surface) {
@@ -49,16 +50,39 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
     SDL_BlitScaled(bg_surface, NULL, scaled_bg, NULL);
     SDL_FreeSurface(bg_surface);
 
-    // 2. Créer une surface Cairo pour le texte
-    cairo_surface_t* cairo_surface = cairo_image_surface_create_for_data(
+    // 2. Créer une surface Cairo pour dessiner
+    cairo_surface_t* cairo_surface = cairo_image_surface_create(
+        CAIRO_FORMAT_ARGB32,
+        width, height
+    );
+
+    cairo_t* cr = cairo_create(cairo_surface);
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
+
+    // 3. Créer un masque avec coins arrondis (rounded rectangle)
+    double radius = CARD_CORNER_RADIUS;
+    double x = 0, y = 0;
+    double w = width, h = height;
+
+    cairo_new_sub_path(cr);
+    cairo_arc(cr, x + w - radius, y + radius, radius, -M_PI/2, 0);
+    cairo_arc(cr, x + w - radius, y + h - radius, radius, 0, M_PI/2);
+    cairo_arc(cr, x + radius, y + h - radius, radius, M_PI/2, M_PI);
+    cairo_arc(cr, x + radius, y + radius, radius, M_PI, 3*M_PI/2);
+    cairo_close_path(cr);
+    cairo_clip(cr);
+
+    // 4. Dessiner le background dans le masque arrondi
+    // Créer une surface temporaire du background
+    cairo_surface_t* bg_pattern_surface = cairo_image_surface_create_for_data(
         (unsigned char*)scaled_bg->pixels,
         CAIRO_FORMAT_ARGB32,
         width, height,
         scaled_bg->pitch
     );
-
-    cairo_t* cr = cairo_create(cairo_surface);
-    cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
+    cairo_set_source_surface(cr, bg_pattern_surface, 0, 0);
+    cairo_paint(cr);
+    cairo_surface_destroy(bg_pattern_surface);
 
     // 3. Initialiser FreeType et charger la police
     FT_Library ft_library;
@@ -83,7 +107,7 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
 
     cairo_font_face_t* cairo_face = cairo_ft_font_face_create_for_ft_face(ft_face, 0);
 
-    // 4. Dessiner "Session" en haut
+    // 5. Dessiner "Session" en haut avec effet vitré
     cairo_set_font_face(cr, cairo_face);
 
     // Calculer la taille de police dynamique pour "Session"
@@ -101,16 +125,34 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
     int title_x = (width - title_extents.width) / 2;
     int title_y = MARGIN_TOP + title_extents.height;
 
-    // Couleur du texte (opaque, pas d'alpha)
-    cairo_set_source_rgb(cr,
-                         text_color.r / 255.0,
-                         text_color.g / 255.0,
-                         text_color.b / 255.0);
+    // Créer le path du texte
+    cairo_move_to(cr, title_x, title_y);
+    cairo_text_path(cr, title_text);
+
+    // Contour blanc brillant (stroke)
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.8);  // Blanc semi-transparent
+    cairo_set_line_width(cr, 3.0);
+    cairo_stroke_preserve(cr);
+
+    // Remplissage noir
+    cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);  // Noir
+    cairo_fill(cr);
+
+    // Effet vitré (reflet lumineux en haut)
+    cairo_pattern_t* glass_pattern = cairo_pattern_create_linear(
+        title_x, title_y - title_extents.height,
+        title_x, title_y - title_extents.height/3
+    );
+    cairo_pattern_add_color_stop_rgba(glass_pattern, 0.0, 1.0, 1.0, 1.0, 0.4);
+    cairo_pattern_add_color_stop_rgba(glass_pattern, 1.0, 1.0, 1.0, 1.0, 0.0);
 
     cairo_move_to(cr, title_x, title_y);
-    cairo_show_text(cr, title_text);
+    cairo_text_path(cr, title_text);
+    cairo_set_source(cr, glass_pattern);
+    cairo_fill(cr);
+    cairo_pattern_destroy(glass_pattern);
 
-    // 5. Dessiner le numéro de session (prend l'espace restant)
+    // 6. Dessiner le numéro de session avec effet vitré
     char number_text[16];
     snprintf(number_text, sizeof(number_text), "%d", session_number);
 
@@ -128,20 +170,62 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
     int number_x = (width - number_extents.width) / 2 - number_extents.x_bearing;
     int number_y = title_y + 10 + (available_height + number_extents.height) / 2;
 
+    // Créer le path du numéro
     cairo_move_to(cr, number_x, number_y);
-    cairo_show_text(cr, number_text);
+    cairo_text_path(cr, number_text);
 
-    // 6. Nettoyer Cairo et FreeType
+    // Contour blanc brillant (stroke)
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.8);  // Blanc semi-transparent
+    cairo_set_line_width(cr, 5.0);  // Plus épais pour le gros chiffre
+    cairo_stroke_preserve(cr);
+
+    // Remplissage noir
+    cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);  // Noir
+    cairo_fill(cr);
+
+    // Effet vitré (reflet lumineux en haut)
+    cairo_pattern_t* number_glass_pattern = cairo_pattern_create_linear(
+        number_x, number_y - number_extents.height,
+        number_x, number_y - number_extents.height/2.5
+    );
+    cairo_pattern_add_color_stop_rgba(number_glass_pattern, 0.0, 1.0, 1.0, 1.0, 0.5);
+    cairo_pattern_add_color_stop_rgba(number_glass_pattern, 1.0, 1.0, 1.0, 1.0, 0.0);
+
+    cairo_move_to(cr, number_x, number_y);
+    cairo_text_path(cr, number_text);
+    cairo_set_source(cr, number_glass_pattern);
+    cairo_fill(cr);
+    cairo_pattern_destroy(number_glass_pattern);
+
+    // 7. Nettoyer Cairo et FreeType
     cairo_surface_flush(cairo_surface);
     cairo_font_face_destroy(cairo_face);
-    cairo_destroy(cr);
-    cairo_surface_destroy(cairo_surface);
     FT_Done_Face(ft_face);
     FT_Done_FreeType(ft_library);
 
-    // 7. Créer la texture SDL
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, scaled_bg);
+    // 8. Convertir la surface Cairo en SDL_Surface
+    SDL_Surface* final_surface = SDL_CreateRGBSurfaceWithFormat(
+        0, width, height, 32, SDL_PIXELFORMAT_ARGB8888
+    );
+
+    if (final_surface) {
+        memcpy(final_surface->pixels,
+               cairo_image_surface_get_data(cairo_surface),
+               height * cairo_image_surface_get_stride(cairo_surface));
+    }
+
+    cairo_destroy(cr);
+    cairo_surface_destroy(cairo_surface);
     SDL_FreeSurface(scaled_bg);
+
+    if (!final_surface) {
+        debug_printf("❌ Erreur création surface finale\n");
+        return NULL;
+    }
+
+    // 9. Créer la texture SDL
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, final_surface);
+    SDL_FreeSurface(final_surface);
 
     if (!texture) {
         debug_printf("❌ Erreur création texture carte: %s\n", SDL_GetError());
@@ -281,8 +365,7 @@ void session_card_render(SessionCardState* card, SDL_Renderer* renderer) {
             card->session_number,
             card->card_width,
             card->card_height,
-            card->font_path,
-            card->text_color
+            card->font_path
         );
 
         if (!card->card_texture) {
@@ -323,8 +406,7 @@ void session_card_reset(SessionCardState* card, int session_number, SDL_Renderer
         session_number,
         card->card_width,
         card->card_height,
-        card->font_path,
-        card->text_color
+        card->font_path
     );
 
     // Réinitialiser l'animation
