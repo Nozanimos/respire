@@ -18,3 +18,4 @@ all/
 *.html
 AJOUTER_UN_PARAMETRE.*
 bin/
+config/stats/
