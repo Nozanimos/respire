@@ -62,7 +62,7 @@
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
-            "_description": "WIDGET INCREMENT - Valeur numérique avec flèches",
+            "_description": "WIDGET INCREMENT - Style roller interactif (drag, molette, clic)",
             "_template": {
                 "type": "increment",
                 "id": "identifiant_unique",
@@ -75,8 +75,11 @@
                 "increment": 1,
                 "taille_fleche": 6,
                 "taille_texte": 18,
+                "widget_display_type": "numeric",
                 "callback": "nom_fonction_callback"
             },
+            "_note_display_type": "widget_display_type peut être 'numeric' (défaut) ou 'time' (affichage mm:ss)",
+            "_note_time": "Si 'time' : valeurs en secondes, affichage mm:ss, molette sur mm ou ss",
             "_fin_template": "═══════════════════════════════════════════════════════",
             "type": "increment",
             "id": "breath_duration",
@@ -94,15 +97,16 @@
         {
             "type": "increment",
             "id": "start_duration",
-            "nom_affichage": "Pause avant session (s)",
+            "nom_affichage": "Pause avant session",
             "x": 165,
             "y": 140,
-            "valeur_min": 10,
-            "valeur_max": 120,
+            "valeur_min": 0,
+            "valeur_max": 300,
             "valeur_depart": 10,
             "increment": 1,
             "taille_fleche": 6,
             "taille_texte": 14,
+            "widget_display_type": "time",
             "callback": "start_value_changed"
         },
         {

@@ -28,6 +28,7 @@
 			"increment":	0,
 			"taille_fleche":	0,
 			"taille_texte":	0,
+			"widget_display_type":	"numeric",
 			"callback":	"a_modifier"
 		}, {
 			"type":	"selector",
