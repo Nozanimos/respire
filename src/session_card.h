@@ -59,10 +59,12 @@ typedef struct {
  * @param screen_width Largeur de l'écran
  * @param screen_height Hauteur de l'écran
  * @param font_path Chemin vers la police TTF
+ * @param scale_factor Facteur d'échelle de la fenêtre (responsive)
  * @return Pointeur vers le SessionCardState créé, NULL si erreur
  */
 SessionCardState* session_card_create(int session_number, int screen_width,
-                                      int screen_height, const char* font_path);
+                                      int screen_height, const char* font_path,
+                                      float scale_factor);
 
 /**
  * Démarrer l'animation de la carte

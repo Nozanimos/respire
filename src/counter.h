@@ -55,10 +55,12 @@ CounterState* counter_create(int total_breaths, int retention_type, const char* 
  * @param center_x Position X du centre de l'hexagone
  * @param center_y Position Y du centre de l'hexagone
  * @param hex_radius Rayon de l'hexagone (pour calculer la largeur max du texte)
- * @param current_scale Scale actuel de l'hexagone (pour l'effet fish-eye)
+ * @param hex_node Noeud de l'hexagone (contient données précomputées)
+ * @param scale_factor Facteur d'échelle de la fenêtre (responsive)
  */
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
-                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node);
+                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node,
+                    float scale_factor);
 
 /**
  * Libérer la mémoire du compteur

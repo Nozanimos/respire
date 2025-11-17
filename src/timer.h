@@ -70,9 +70,10 @@ void timer_format(TimerState* timer, char* buffer);
  * @param center_x Position X du centre de l'hexagone
  * @param center_y Position Y du centre de l'hexagone
  * @param hex_radius Rayon de l'hexagone (pour calculer la largeur max du texte)
+ * @param scale_factor Facteur d'échelle de la fenêtre (responsive)
  */
 void timer_render(TimerState* timer, SDL_Renderer* renderer,
-                  int center_x, int center_y, int hex_radius);
+                  int center_x, int center_y, int hex_radius, float scale_factor);
 
 /**
  * Réinitialiser le timer à sa valeur initiale

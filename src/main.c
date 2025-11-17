@@ -210,11 +210,13 @@ int main(int argc, char **argv) {
     app.current_session = 1;  // Commencer à la session 1
     app.total_sessions = config.nb_session;  // Nombre total depuis la config
 
+    // 🆕 PASSER LE SCALE_FACTOR pour le responsive
     app.session_card = session_card_create(
         app.current_session,
         app.screen_width,
         app.screen_height,
-        "../fonts/arial/ARIALBD.TTF"
+        "../fonts/arial/ARIALBD.TTF",
+        app.scale_factor
     );
 
     if (!app.session_card) {

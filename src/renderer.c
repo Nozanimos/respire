@@ -638,9 +638,9 @@ void render_app(AppState* app) {
             int dx = first_node->data->vx[0];
             int dy = first_node->data->vy[0];
             int hex_radius = (int)sqrt(dx*dx + dy*dy);
-            // Rendre le timer centré sur l'hexagone
+            // 🆕 PASSER LE SCALE_FACTOR pour le responsive
             timer_render(app->session_timer, app->renderer,
-                         hex_center_x, hex_center_y, hex_radius);
+                         hex_center_x, hex_center_y, hex_radius, app->scale_factor);
         }
     }
 
@@ -655,9 +655,10 @@ void render_app(AppState* app) {
             int dy = first_node->data->vy[0];
             int hex_radius = (int)sqrt(dx*dx + dy*dy);
 
-            // 🆕 Passer le nœud hexagone directement (contient les données précomputées)
+            // 🆕 Passer le nœud hexagone ET le scale_factor
             counter_render(app->breath_counter, app->renderer,
-                           hex_center_x, hex_center_y, hex_radius, first_node);
+                           hex_center_x, hex_center_y, hex_radius, first_node,
+                           app->scale_factor);
         }
     }
 
@@ -672,9 +673,9 @@ void render_app(AppState* app) {
             int dy = first_node->data->vy[0];
             int hex_radius = (int)sqrt(dx*dx + dy*dy);
 
-            // Rendre le chronomètre centré sur l'hexagone
+            // 🆕 PASSER LE SCALE_FACTOR pour le responsive
             stopwatch_render(app->session_stopwatch, app->renderer,
-                             hex_center_x, hex_center_y, hex_radius);
+                             hex_center_x, hex_center_y, hex_radius, app->scale_factor);
         }
     }
 
@@ -689,9 +690,9 @@ void render_app(AppState* app) {
             int dy = first_node->data->vy[0];
             int hex_radius = (int)sqrt(dx*dx + dy*dy);
 
-            // Rendre le timer de rétention centré sur l'hexagone
+            // 🆕 PASSER LE SCALE_FACTOR pour le responsive
             timer_render(app->retention_timer, app->renderer,
-                         hex_center_x, hex_center_y, hex_radius);
+                         hex_center_x, hex_center_y, hex_radius, app->scale_factor);
         }
     }
 

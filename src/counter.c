@@ -89,7 +89,8 @@ static SDL_Texture* texture_from_cairo_surface(SDL_Renderer* renderer, cairo_sur
 }
 
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
-                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node) {
+                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node,
+                    float scale_factor) {
     if (!counter || !renderer || !hex_node) return;
 
     // Supprimer le warning de paramètre inutilisé
@@ -167,7 +168,8 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     snprintf(count_text, sizeof(count_text), "%d", counter->current_breath);
 
     // 🎨 EFFET FISH-EYE : Calculer la taille de police avec le scale précomputé
-    double font_size = counter->base_font_size * text_scale;
+    // 🆕 APPLIQUER LE SCALE_FACTOR pour le responsive
+    double font_size = counter->base_font_size * text_scale * scale_factor;
     if (font_size < 12.0) font_size = 12.0;  // Minimum lisible
 
     // ═══════════════════════════════════════════════════════════════════════════

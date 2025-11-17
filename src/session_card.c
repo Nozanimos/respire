@@ -238,7 +238,8 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
 // CRÉATION ET INITIALISATION
 // ════════════════════════════════════════════════════════════════════════
 SessionCardState* session_card_create(int session_number, int screen_width,
-                                      int screen_height, const char* font_path) {
+                                      int screen_height, const char* font_path,
+                                      float scale_factor) {
     SessionCardState* card = malloc(sizeof(SessionCardState));
     if (!card) {
         debug_printf("❌ Erreur allocation SessionCardState\n");
@@ -254,9 +255,10 @@ SessionCardState* session_card_create(int session_number, int screen_width,
     card->pause_duration = 3.0f;  // 3 secondes au centre
     card->exit_duration = 0.5f;   // 0.5 seconde pour sortir
 
-    // Dimensions de la carte
-    card->card_width = CARD_WIDTH_BASE;
-    card->card_height = CARD_HEIGHT_BASE;
+    // 🆕 APPLIQUER LE SCALE_FACTOR AUX DIMENSIONS DE LA CARTE
+    // Pour que la carte s'adapte au redimensionnement de la fenêtre
+    card->card_width = (int)(CARD_WIDTH_BASE * scale_factor);
+    card->card_height = (int)(CARD_HEIGHT_BASE * scale_factor);
 
     // Position et écran
     card->screen_width = screen_width;

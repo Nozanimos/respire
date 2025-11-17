@@ -113,17 +113,30 @@ void timer_format(TimerState* timer, char* buffer) {
 // RENDU DU TIMER CENTRÉ SUR L'HEXAGONE (avec SDL2_gfx)
 // ════════════════════════════════════════════════════════════════════════
 void timer_render(TimerState* timer, SDL_Renderer* renderer,
-                  int center_x, int center_y, int hex_radius) {
+                  int center_x, int center_y, int hex_radius, float scale_factor) {
     if (!timer || !renderer || !timer->font) return;
 
     // Formater le texte
     char time_text[6];
     timer_format(timer, time_text);
 
+    // 🆕 APPLIQUER LE SCALE_FACTOR À LA TAILLE DE POLICE
+    // Pour que le texte s'adapte au redimensionnement de la fenêtre
+    int scaled_font_size = (int)(timer->font_size * scale_factor);
+    if (scaled_font_size < 12) scaled_font_size = 12;  // Minimum lisible
+
+    // Charger la police avec la taille scalée
+    TTF_Font* scaled_font = TTF_OpenFont(TTF_FontFaceFamilyName(timer->font), scaled_font_size);
+    if (!scaled_font) {
+        scaled_font = timer->font;  // Fallback si erreur
+        scaled_font_size = timer->font_size;
+    }
+
     // Mesurer la largeur du texte avec TTF pour centrage précis
     int text_width, text_height;
-    if (TTF_SizeUTF8(timer->font, time_text, &text_width, &text_height) != 0) {
+    if (TTF_SizeUTF8(scaled_font, time_text, &text_width, &text_height) != 0) {
         fprintf(stderr, "❌ Erreur mesure texte: %s\n", TTF_GetError());
+        if (scaled_font != timer->font) TTF_CloseFont(scaled_font);
         return;
     }
 
@@ -132,15 +145,15 @@ void timer_render(TimerState* timer, SDL_Renderer* renderer,
     int max_width = (hex_radius * 2) - 10;
 
     // Ajuster la taille de police si le texte dépasse
-    TTF_Font* render_font = timer->font;
-    int adjusted_font_size = timer->font_size;
+    TTF_Font* render_font = scaled_font;
+    int adjusted_font_size = scaled_font_size;
 
     if (text_width > max_width) {
         // Réduire la taille de police proportionnellement
-        adjusted_font_size = (timer->font_size * max_width) / text_width;
+        adjusted_font_size = (scaled_font_size * max_width) / text_width;
         render_font = TTF_OpenFont(TTF_FontFaceFamilyName(timer->font), adjusted_font_size);
         if (!render_font) {
-            render_font = timer->font;  // Fallback si erreur
+            render_font = scaled_font;  // Fallback si erreur
         } else {
             // Re-mesurer avec la nouvelle taille
             TTF_SizeUTF8(render_font, time_text, &text_width, &text_height);
@@ -183,8 +196,11 @@ void timer_render(TimerState* timer, SDL_Renderer* renderer,
     // Libération
     SDL_DestroyTexture(text_texture);
     SDL_FreeSurface(text_surface);
-    if (render_font != timer->font) {
+    if (render_font != timer->font && render_font != scaled_font) {
         TTF_CloseFont(render_font);
+    }
+    if (scaled_font != timer->font) {
+        TTF_CloseFont(scaled_font);
     }
 }
 
