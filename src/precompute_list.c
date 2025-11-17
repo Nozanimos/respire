@@ -391,29 +391,51 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
         return;
     }
 
+    // Supprimer les warnings de paramètres inutilisés (conservés pour compatibilité API)
+    (void)fps;
+    (void)breath_duration;
+    (void)max_breaths;
+
+    // Récupérer les valeurs min/max depuis l'animation du nœud
+    double scale_min = node->animation->scale_min;
+    double scale_max = node->animation->scale_max;
+    double threshold = (scale_max - scale_min) * 0.03; // 3% de la plage pour détecter la proximité
+
     // Parcourir toutes les frames précalculées
     for (int frame = 0; frame < total_frames; frame++) {
         double current_scale = node->precomputed_scales[frame];
+        double prev_scale = (frame > 0) ? node->precomputed_scales[frame - 1]
+                                        : node->precomputed_scales[total_frames - 1];
 
-        // Calculer la progression dans le cycle
-        double time_in_seconds = (double)frame / fps;
-        double cycles_completed = time_in_seconds / breath_duration;
-        double progress_in_cycle = fmod(cycles_completed, 1.0);
-
-        // 🚩 DÉTECTER les deux positions clés du cycle de respiration :
+        // 🚩 DÉTECTER les TRANSITIONS précises du cycle de respiration :
         //
-        // Timeline du cycle :
-        // progress = 0.0-0.05  → scale_max (expire, position poumons_vides, position de départ)
-        // progress = 0.45-0.55 → scale_min (inspire, poumons pleins)
-        // progress = 0.95-1.0  → scale_max (inspire - position poumons pleins)
+        // Timeline du cycle (basée sur cosinus) :
+        // progress = 0.0     → scale_max (poumons VIDES, position de départ)
+        // progress = 0.0→0.5 → scale_max → scale_min (INSPIRE : poumons se remplissent)
+        // progress = 0.5     → scale_min (poumons PLEINS)
+        // progress = 0.5→1.0 → scale_min → scale_max (EXPIRE : poumons se vident)
+        // progress = 1.0     → scale_max (poumons VIDES, rebouclage)
+        //
+        // Détection des transitions (première frame) :
+        // - is_at_scale_min : première frame où scale_min → scale_max (début EXPIRE)
+        // - is_at_scale_max : première frame où scale_max → scale_min (début INSPIRE)
         //
         // Ces flags serviront pour :
-        // - Incrémenter le compteur (à chaque passage au scale_min)
+        // - Incrémenter le compteur (à chaque début d'expire depuis scale_min)
         // - Figer l'animation en position de repos (scale_max après la dernière respiration)
         // - Synchroniser l'audio plus tard (sons inspire/expire)
 
-        bool is_at_min = (progress_in_cycle >= 0.45 && progress_in_cycle <= 0.55);
-        bool is_at_max = (progress_in_cycle <= 0.05 || progress_in_cycle >= 0.95);
+        // 🎯 Détecter la transition scale_min → scale_max (début EXPIRE)
+        // Conditions : on est proche de scale_min ET le scale commence à augmenter
+        bool close_to_min = fabs(current_scale - scale_min) < threshold;
+        bool scale_increasing = current_scale > prev_scale;
+        bool is_at_min = close_to_min && scale_increasing;
+
+        // 🎯 Détecter la transition scale_max → scale_min (début INSPIRE)
+        // Conditions : on est proche de scale_max ET le scale commence à diminuer
+        bool close_to_max = fabs(current_scale - scale_max) < threshold;
+        bool scale_decreasing = current_scale < prev_scale;
+        bool is_at_max = close_to_max && scale_decreasing;
 
         // Enregistrer les drapeaux et le scale pour cette frame
         node->precomputed_counter_frames[frame].is_at_scale_min = is_at_min;
@@ -421,12 +443,8 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
         node->precomputed_counter_frames[frame].text_scale = current_scale;
     }
 
-    debug_printf("✅ Compteur précompute : %d frames, flags scale_min générés\n",
+    debug_printf("✅ Compteur précompute : %d frames, flags transitions scale_min/max générés\n",
                  total_frames);
-
-    // Note : max_breaths est conservé pour info mais non utilisé dans le précomputing
-    // Le compteur s'arrêtera quand current_breath atteindra max_breaths (logique dans counter_render)
-    (void)max_breaths;  // Supprimer le warning de paramètre inutilisé
 }
 
 
