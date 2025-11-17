@@ -338,11 +338,11 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
         // Calculer le container_width basé sur le widget le plus long
         int container_width = 0;
         if (longest_widget) {
-            // Utiliser local_arrows_x (qui inclut texte + espace après texte)
-            // + taille des flèches + espace + largeur estimée valeur
+            // Utiliser local_roller_x (qui inclut texte + espace après texte)
+            // + largeur du roller + RIGHT_MARGIN pour alignement à droite
             container_width = longest_widget->local_roller_x +
                             longest_widget->roller_width +
-                            60;  // Espace après flèches + largeur valeur estimée
+                            10;  // RIGHT_MARGIN (cohérent avec calculate_roller_x_offset)
         }
 
         // Appliquer cette largeur et max_text_width à tous les widgets du groupe
