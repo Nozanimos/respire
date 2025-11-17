@@ -26,9 +26,8 @@
 			"valeur_max":	0,
 			"valeur_depart":	0,
 			"increment":	0,
-			"taille_fleche":	0,
 			"taille_texte":	0,
-			"widget_display_type":	"numeric",
+			"widget_display_type":	"a_modifier",
 			"callback":	"a_modifier"
 		}, {
 			"type":	"selector",
