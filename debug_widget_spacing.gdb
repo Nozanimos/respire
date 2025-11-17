@@ -226,5 +226,7 @@ printf "  - Espacement label-roller trop grand (~15px en trop)\n"
 printf "  - Vérifier : base_espace_apres_texte et calculs de position\n"
 printf "\n"
 printf "════════════════════════════════════════════════════════════════════════════\n"
-printf "\nAppuyez sur ENTRÉE pour lancer l'application...\n"
-# Ne pas mettre de "run" ici, laisser l'utilisateur le faire manuellement
+printf "\n🚀 Lancement automatique de l'application...\n\n"
+
+# Lancer l'application automatiquement
+run
