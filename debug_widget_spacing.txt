@@ -1,0 +1,802 @@
+GNU gdb (GDB) 16.3
+Copyright (C) 2024 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-pc-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./respire...
+Breakpoint 1 at 0x1d461: file src/widget.c, line 117.
+Breakpoint 2 at 0x1581b: file src/settings_panel.c, line 1191.
+Breakpoint 3 at 0x15864: file src/settings_panel.c, line 1200.
+Breakpoint 4 at 0x1dbbb: file src/widget.c, line 309.
+Breakpoint 5 at 0x1db3b: file src/widget.c, line 284.
+
+════════════════════════════════════════════════════════════════════════════
+🔍 SCRIPT DE DEBUG : ESPACEMENT WIDGETS INCREMENT
+════════════════════════════════════════════════════════════════════════════
+
+Ce script va afficher :
+  1️⃣  Création des widgets : calcul des espacements de base
+  2️⃣  Mode STACK : calcul de la largeur max et centrage
+  3️⃣  Rendu : positions effectives avec alignement
+
+📝 INSTRUCTIONS :
+  - Lancez l'application normalement
+  - Testez en mode UNSTACK (panneau large)
+  - Testez en mode STACK (panneau étroit)
+  - Observez les valeurs affichées
+
+⚠️  PROBLÈME ATTENDU :
+  - Espacement label-roller trop grand (~15px en trop)
+  - Vérifier : base_espace_apres_texte et calculs de position
+
+════════════════════════════════════════════════════════════════════════════
+
+🚀 Lancement automatique de l'application...
+
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7fffddfff6c0 (LWP 10274)]
+[New Thread 0x7fffdd6bd6c0 (LWP 10275)]
+
+════════════════════════════════════════════════════════════════
+🔧 CRÉATION WIDGET INCREMENT : Vitesse respiration
+════════════════════════════════════════════════════════════════
+  📏 text_size = 14 px
+Breakpoint 6 at 0x5555555715b5: file src/widget.c, line 153.
+
+Thread 1 "respire" hit Breakpoint 6, create_config_widget (name=0x5555561595f0 "Vitesse respiration", x=165, y=110, min_val=1, 
+    max_val=10, start_val=3, increment=1, text_size=14, font=0x5555560b9450, display_type=0x555556159990 "numeric")
+    at src/widget.c:153
+153	    widget->base_roller_padding = (int)(text_size * 0.4);      // Padding interne du roller
+[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🔧 CRÉATION WIDGET INCREMENT : Pause avant session
+════════════════════════════════════════════════════════════════
+  📏 text_size = 14 px
+Breakpoint 7 at 0x5555555715b5: file src/widget.c, line 153.
+
+Thread 1 "respire" hit Breakpoint 6, create_config_widget (name=0x555556159c20 "Pause avant session", x=165, y=140, min_val=0, 
+    max_val=300, start_val=10, increment=1, text_size=14, font=0x5555560b9450, display_type=0x555556159fc0 "time") at src/widget.c:153
+153	    widget->base_roller_padding = (int)(text_size * 0.4);      // Padding interne du roller
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🔧 CRÉATION WIDGET INCREMENT : Nombre de session(s)
+════════════════════════════════════════════════════════════════
+  📏 text_size = 14 px
+Breakpoint 8 at 0x5555555715b5: file src/widget.c, line 153.
+
+Thread 1 "respire" hit Breakpoint 6, create_config_widget (name=0x55555615a250 "Nombre de session(s)", x=165, y=170, min_val=1, 
+    max_val=20, start_val=1, increment=1, text_size=14, font=0x5555560b9450, display_type=0x55555615a5f0 "numeric")
+    at src/widget.c:153
+153	    widget->base_roller_padding = (int)(text_size * 0.4);      // Padding interne du roller
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🔧 CRÉATION WIDGET INCREMENT : Nombre de respirations
+════════════════════════════════════════════════════════════════
+  📏 text_size = 14 px
+Breakpoint 9 at 0x5555555715b5: file src/widget.c, line 153.
+
+Thread 1 "respire" hit Breakpoint 6, create_config_widget (name=0x55555615a880 "Nombre de respirations", x=165, y=200, min_val=10, 
+    max_val=60, start_val=10, increment=5, text_size=14, font=0x5555560b9450, display_type=0x55555615ac20 "numeric")
+    at src/widget.c:153
+153	    widget->base_roller_padding = (int)(text_size * 0.4);      // Padding interne du roller
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Vitesse respiration
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 10 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556156230, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Vitesse respiration
+  container_width = 244 px
+  local_roller_x (défaut) = 125 px
+Breakpoint 11 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556156230, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Pause avant session
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 12 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556158b70, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) cc
+[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Pause avant session
+  container_width = 244 px
+  local_roller_x (défaut) = 140 px
+Breakpoint 13 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556158b70, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Nombre de session(s)
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 14 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556223e30, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Nombre de session(s)
+  container_width = 244 px
+  local_roller_x (défaut) = 149 px
+Breakpoint 15 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556223e30, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Nombre de respirations
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 16 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556225b10, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Nombre de respirations
+  container_width = 244 px
+  local_roller_x (défaut) = 158 px
+Breakpoint 17 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556225b10, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Vitesse respiration
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 18 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556156230, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Vitesse respiration
+  container_width = 244 px
+  local_roller_x (défaut) = 125 px
+Breakpoint 19 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556156230, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Pause avant session
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 20 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556158b70, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Pause avant session
+  container_width = 244 px
+  local_roller_x (défaut) = 140 px
+Breakpoint 21 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556158b70, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Nombre de session(s)
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 22 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556223e30, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Nombre de session(s)
+  container_width = 244 px
+  local_roller_x (défaut) = 149 px
+Breakpoint 23 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556223e30, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Nombre de respirations
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 24 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556225b10, offset_x=1280, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Nombre de respirations
+  container_width = 244 px
+  local_roller_x (défaut) = 158 px
+Breakpoint 25 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556225b10, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Vitesse respiration
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 26 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556156230, offset_x=1278, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Vitesse respiration
+  container_width = 244 px
+  local_roller_x (défaut) = 125 px
+Breakpoint 27 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556156230, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Pause avant session
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 28 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556158b70, offset_x=1278, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🧮 CALCUL ALIGNEMENT ROLLER
+════════════════════════════════════════════════════════════════
+  Widget: Pause avant session
+  container_width = 244 px
+  local_roller_x (défaut) = 140 px
+Breakpoint 29 at 0x555555571b62: file src/widget.c, line 294.
+
+  📐 CALCUL ALIGNEMENT À DROITE :
+     RIGHT_MARGIN = 10 px
+[?2004h(gdb) 
+Thread 1 "respire" hit Breakpoint 11, calculate_roller_x_offset (widget=0x555556158b70, container_width=244) at src/widget.c:294
+294	        roller_x_offset = container_width - roller_total_width - RIGHT_MARGIN;
+c
+[?2004lContinuing.
+
+════════════════════════════════════════════════════════════════
+🎨 RENDU WIDGET INCREMENT : Nombre de session(s)
+════════════════════════════════════════════════════════════════
+  container_width = 244 px
+Breakpoint 30 at 0x555555571c35: file src/widget.c, line 324.
+
+Thread 1 "respire" hit Breakpoint 10, render_config_widget (renderer=0x5555555dca30, widget=0x555556223e30, offset_x=1278, 
+    offset_y=0, container_width=244) at src/widget.c:324
+324	    int roller_x_offset = calculate_roller_x_offset(widget, container_width);
+[?2004h[?2004l[?2004h(gdb) quit
+[?2004l[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) quit
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) quit
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) quit
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) c[?2004l[?2004h(gdb) 
+[?2004l[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) quit
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) 
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) quit
+[?2004l[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) $quit[?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) [?2004l[?2004h(gdb) quit
+[?2004l[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) quit
+[?2004lPlease answer y or n.
+[?2004hA debugging session is active.
+
+	Inferior 1 [process 10264] will be killed.
+
+Quit anyway? (y or n) [?2004l
