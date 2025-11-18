@@ -341,6 +341,8 @@ int main(int argc, char **argv) {
                 // puis on laisse l'animation jouer jusqu'à scale_max
                 HexagoneNode* node = hex_list->first;
                 while (node) {
+                    // TEST: Commenté car utilise precomputed_scales
+                    /*
                     if (node->precomputed_scales && node->total_cycles > 0) {
                         // Calculer scale_max (le plus grand scale dans le précompute)
                         double scale_max = 0.0;
@@ -371,6 +373,7 @@ int main(int argc, char **argv) {
                                          node->precomputed_scales[start_frame], scale_max);
                         }
                     }
+                    */
 
                     // Dégeler l'animation pour la réapparition
                     node->is_frozen = false;
