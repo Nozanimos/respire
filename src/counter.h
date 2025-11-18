@@ -59,8 +59,7 @@ CounterState* counter_create(int total_breaths, int retention_type, const char* 
  * @param scale_factor Facteur d'échelle de la fenêtre (responsive)
  */
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
-                    int center_x, int center_y, int hex_radius,
-                    GlobalCounterFrames* counter_frames, int current_cycle,
+                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node,
                     float scale_factor);
 
 /**

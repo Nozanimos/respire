@@ -38,15 +38,6 @@ typedef struct {
     double text_scale;     // Scale du texte (suit le scale de l'hexagone)
 } CounterFrame;
 
-// ════════════════════════════════════════════════════════════════════════
-// STRUCTURE GLOBALE POUR LES FRAMES DU COMPTEUR
-// ════════════════════════════════════════════════════════════════════════
-// Un seul tableau partagé pour tous les hexagones (au lieu de 4 identiques)
-typedef struct GlobalCounterFrames {
-    CounterFrame* frames;     // Tableau unique des frames précalculées
-    int total_frames;         // Nombre de frames (ex: 1080)
-} GlobalCounterFrames;
-
 // Pointeur de fonction type
 typedef void (*SinusoidalMovementFunc)(double frame_time, const SinusoidalConfig* config, SinusoidalResult* result);
 
@@ -100,11 +91,6 @@ void print_rotation_frame_requirements(HexagoneList* list, int fps, float breath
 // 🆕 PRÉCOMPUTING DU COMPTEUR DE RESPIRATIONS (génère les flags scale_min)
 void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
                                float breath_duration, int max_breaths);
-
-// 🆕 PRÉCOMPUTING GLOBAL DU COMPTEUR (une seule liste partagée)
-// Calcule les VRAIES valeurs min/max au lieu d'approximer
-void precompute_counter_frames_global(HexagoneNode* reference_node,
-                                       GlobalCounterFrames* counter_frames);
 
 /*------------------------- Fonctions utiles ----------------------------------*/
 int gcd(int a, int b);

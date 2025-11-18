@@ -89,10 +89,9 @@ static SDL_Texture* texture_from_cairo_surface(SDL_Renderer* renderer, cairo_sur
 }
 
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
-                    int center_x, int center_y, int hex_radius,
-                    GlobalCounterFrames* counter_frames, int current_cycle,
+                    int center_x, int center_y, int hex_radius, HexagoneNode* hex_node,
                     float scale_factor) {
-    if (!counter || !renderer || !counter_frames || !counter_frames->frames) return;
+    if (!counter || !renderer || !hex_node) return;
 
     // Supprimer le warning de paramètre inutilisé
     (void)hex_radius;
@@ -100,12 +99,15 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     // Ne rien afficher si le compteur n'est pas actif
     if (!counter->is_active) return;
 
+    // 🎯 RÉCUPÉRER LES DONNÉES PRÉCOMPUTÉES depuis l'hexagone
+    if (!hex_node->precomputed_counter_frames) return;
+
     // Vérifier que current_cycle est dans les limites
-    if (current_cycle < 0 || current_cycle >= counter_frames->total_frames) {
+    if (hex_node->current_cycle < 0 || hex_node->current_cycle >= hex_node->total_cycles) {
         return;
     }
 
-    CounterFrame* current_frame = &counter_frames->frames[current_cycle];
+    CounterFrame* current_frame = &hex_node->precomputed_counter_frames[hex_node->current_cycle];
     bool is_at_min_now = current_frame->is_at_scale_min;
     bool is_at_max_now = current_frame->is_at_scale_max;
     double text_scale = current_frame->text_scale;
@@ -124,7 +126,7 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
         if (!counter->waiting_for_scale_min) {
             counter->current_breath++;
             debug_printf("🫁 Respiration %d/%d détectée à scale_min (expire) (frame %d)\n",
-                         counter->current_breath, counter->total_breaths, current_cycle);
+                         counter->current_breath, counter->total_breaths, hex_node->current_cycle);
 
             if (counter->current_breath >= counter->total_breaths) {
                 counter->waiting_for_scale_min = true;

@@ -93,26 +93,20 @@ int main(int argc, char **argv) {
 
     // === PRÉ-CALCULS ===
     precompute_all_cycles(hex_list, TARGET_FPS, config.breath_duration);
-
-    // 🆕 PRÉCOMPUTER LES FRAMES DU COMPTEUR (UNE SEULE LISTE PARTAGÉE)
-    // On utilise le premier hexagone comme référence (tous ont les mêmes scales)
-    app.counter_frames = malloc(sizeof(GlobalCounterFrames));
-    if (!app.counter_frames) {
-        fprintf(stderr, "Erreur d'allocation counter_frames\n");
-        return EXIT_FAILURE;
+    // 🆕 PRÉCOMPUTER LES FRAMES DU COMPTEUR pour tous les hexagones
+    // On utilise le nombre de respirations depuis la config
+    HexagoneNode* node = hex_list->first;
+    while (node) {
+        precompute_counter_frames(
+            node,
+            node->total_cycles,           // Nombre total de frames précalculées
+            TARGET_FPS,                   // Images par seconde
+            config.breath_duration,       // Durée d'un cycle complet
+            config.Nb_respiration         // Nombre max de respirations à compter
+        );
+        node = node->next;
     }
-
-    int total_frames = hex_list->first->total_cycles;
-    app.counter_frames->frames = malloc(total_frames * sizeof(CounterFrame));
-    if (!app.counter_frames->frames) {
-        fprintf(stderr, "Erreur d'allocation counter_frames->frames\n");
-        free(app.counter_frames);
-        return EXIT_FAILURE;
-    }
-    app.counter_frames->total_frames = total_frames;
-
-    // Calculer les frames en utilisant les VRAIES valeurs min/max
-    precompute_counter_frames_global(hex_list->first, app.counter_frames);
+    debug_printf("✅ Compteur précomputé pour %d hexagones\n", hex_list->count);
     print_rotation_frame_requirements(hex_list, TARGET_FPS, config.breath_duration);
 
     debug_printf("✅ Hexagones créés et assignés à app.hexagones\n");
