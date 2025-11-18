@@ -447,6 +447,66 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
                  total_frames);
 }
 
+/*──────────────────────────────────────────────────────────────────────────────
+  PRÉCOMPUTING GLOBAL DU COMPTEUR (UNE SEULE LISTE PARTAGÉE)
+──────────────────────────────────────────────────────────────────────────────*/
+// Calcule les frames du compteur en utilisant les VRAIES valeurs min/max
+// au lieu d'approximer avec un threshold
+//
+// Paramètres :
+// - reference_node : Nœud hexagone de référence (le premier)
+// - counter_frames : Structure globale qui contiendra le tableau unique
+void precompute_counter_frames_global(HexagoneNode* reference_node,
+                                       GlobalCounterFrames* counter_frames) {
+    if (!reference_node || !counter_frames || !reference_node->precomputed_scales) {
+        debug_printf("❌ Erreur: paramètres invalides pour precompute_counter_frames_global\n");
+        return;
+    }
+
+    int total_frames = reference_node->total_cycles;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1 : Trouver les VRAIES valeurs min et max dans le tableau
+    // ═══════════════════════════════════════════════════════════════════════
+    double real_min = reference_node->precomputed_scales[0];
+    double real_max = reference_node->precomputed_scales[0];
+
+    for (int i = 1; i < total_frames; i++) {
+        double scale = reference_node->precomputed_scales[i];
+        if (scale < real_min) real_min = scale;
+        if (scale > real_max) real_max = scale;
+    }
+
+    debug_printf("🔍 Vraies valeurs trouvées: scale_min=%.6f, scale_max=%.6f\n", real_min, real_max);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ÉTAPE 2 : Calculer les flags pour chaque frame
+    // ═══════════════════════════════════════════════════════════════════════
+    double threshold = (real_max - real_min) * 0.03; // 3% de la plage
+
+    for (int frame = 0; frame < total_frames; frame++) {
+        double current_scale = reference_node->precomputed_scales[frame];
+        double prev_scale = (frame > 0) ? reference_node->precomputed_scales[frame - 1]
+                                        : reference_node->precomputed_scales[total_frames - 1];
+
+        // Détecter les transitions avec les VRAIES valeurs
+        bool close_to_min = fabs(current_scale - real_min) < threshold;
+        bool scale_increasing = current_scale > prev_scale;
+        bool is_at_min = close_to_min && scale_increasing;
+
+        bool close_to_max = fabs(current_scale - real_max) < threshold;
+        bool scale_decreasing = current_scale < prev_scale;
+        bool is_at_max = close_to_max && scale_decreasing;
+
+        // Enregistrer dans le tableau global
+        counter_frames->frames[frame].is_at_scale_min = is_at_min;
+        counter_frames->frames[frame].is_at_scale_max = is_at_max;
+        counter_frames->frames[frame].text_scale = current_scale;
+    }
+
+    debug_printf("✅ Compteur global précomputé : %d frames créées (UNE SEULE LISTE)\n", total_frames);
+}
+
 
 /*----------------------------------------------------------------------------------*/
 

@@ -46,6 +46,7 @@ typedef struct {
 
     // 🆕 Compteur de respirations (démarre après le timer)
     CounterState* breath_counter;
+    GlobalCounterFrames* counter_frames;  // 🆕 Frames précalculées pour le compteur (partagées)
     bool counter_phase;
     bool timer_phase;               // true = phase timer, false = phase animation
 

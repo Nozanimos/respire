@@ -655,9 +655,10 @@ void render_app(AppState* app) {
             int dy = first_node->data->vy[0];
             int hex_radius = (int)sqrt(dx*dx + dy*dy);
 
-            // 🆕 Passer le nœud hexagone ET le scale_factor
+            // 🆕 Passer counter_frames global, current_cycle ET le scale_factor
             counter_render(app->breath_counter, app->renderer,
-                           hex_center_x, hex_center_y, hex_radius, first_node,
+                           hex_center_x, hex_center_y, hex_radius,
+                           app->counter_frames, first_node->current_cycle,
                            app->scale_factor);
         }
     }
@@ -786,6 +787,15 @@ void cleanup_app(AppState* app) {
     }
     if (app->window) {
         SDL_DestroyWindow(app->window);
+    }
+
+    // 🆕 Libère les frames du compteur global
+    if (app->counter_frames) {
+        if (app->counter_frames->frames) {
+            free(app->counter_frames->frames);
+        }
+        free(app->counter_frames);
+        app->counter_frames = NULL;
     }
 
     SDL_Quit();
