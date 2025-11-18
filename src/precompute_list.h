@@ -49,12 +49,9 @@ typedef struct HexagoneNode {
     Sint16* precomputed_vx;
     Sint16* precomputed_vy;
 
-    // 🆕 Scales précalculés pour chaque frame (utilisé par le compteur)
-    // TEST: Commenté pour vérifier si vraiment nécessaire par hexagone
-    // double* precomputed_scales;  // Tableau des scales pour effet fish-eye
     // 🆕 Frames précalculées pour le compteur de respirations
     CounterFrame* precomputed_counter_frames;  // Tableau synchronisé avec les frames de l'hexagone
-    double current_scale;         // Scale actuel (mis à jour par apply_precomputed_frame)
+    double current_scale;         // Scale actuel
 
     int total_cycles;
     int current_cycle;

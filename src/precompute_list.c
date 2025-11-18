@@ -132,23 +132,23 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
             node->precomputed_vx = malloc(total_frames * NB_SIDE * sizeof(Sint16));
             node->precomputed_vy = malloc(total_frames * NB_SIDE * sizeof(Sint16));
 
-            // 🆕 Allocation pour les scales (utilisés par le compteur de respirations)
-            // TEST: Commenté pour vérifier si vraiment nécessaire par hexagone
-            // node->precomputed_scales = malloc(total_frames * sizeof(double));
             // 🆕 Allocation pour les frames du compteur (synchronisées avec l'hexagone)
             node->precomputed_counter_frames = malloc(total_frames * sizeof(CounterFrame));
+
+            if (node->precomputed_counter_frames) {
+                debug_printf("📦 ALLOCATION precomputed_counter_frames pour Hexagone %d (%d frames, %zu bytes)\n",
+                           node->data->element_id, total_frames, total_frames * sizeof(CounterFrame));
+            }
 
             node->total_cycles = total_frames;
             node->current_cycle = 0;
             node->current_scale = 1.0;  // 🆕 Initialiser le scale actuel
 
-            if (!node->precomputed_vx || !node->precomputed_vy ||
-                /* !node->precomputed_scales || */ !node->precomputed_counter_frames) {
+            if (!node->precomputed_vx || !node->precomputed_vy || !node->precomputed_counter_frames) {
                 fprintf(stderr, "Erreur d'allocation pour hexagone %d\n", node->data->element_id);
             free(node->precomputed_vx);
             free(node->precomputed_vy);
-            // free(node->precomputed_scales);
-            free(node->precomputed_counter_frames);  // 🆕 Libérer aussi les frames du compteur
+            free(node->precomputed_counter_frames);
             continue;
                 }
 
@@ -167,10 +167,6 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
                 SinusoidalResult result;
 
                 sinusoidal_movement(time_in_seconds, &config, &result);
-
-                // 🆕 Stocker le scale précalculé pour cette frame (utilisé par le compteur)
-                // TEST: Commenté pour vérifier si vraiment nécessaire par hexagone
-                // node->precomputed_scales[frame] = result.scale;
 
                 double angle_rad = result.rotation * M_PI / 180.0;
 
@@ -225,12 +221,7 @@ void apply_precomputed_frame(HexagoneNode* node) {
         node->data->vy[i] = node->precomputed_vy[index];  // Points transformés relatifs
     }
 
-    // 🆕 Mettre à jour le scale actuel (utilisé par le compteur pour l'effet fish-eye)
-    // TEST: Commenté pour vérifier si vraiment nécessaire par hexagone
-    // node->current_scale = node->precomputed_scales[node->current_cycle];
-
-    /* NOTE : Le centre (center_x, center_y) reste inchangé pendant l'animation
-     *  L'échelle (current_scale) est maintenant mise à jour et accessible au compteur */
+    /* NOTE : Le centre (center_x, center_y) reste inchangé pendant l'animation */
 
     node->current_cycle++;
     if (node->current_cycle >= node->total_cycles) {
@@ -269,12 +260,9 @@ void free_hexagone_list(HexagoneList* list) {
     while (current) {
         HexagoneNode* next = current->next;
 
-        // Libération SIMPLIFIÉE - maintenant 3 free() pour inclure les scales
+        // Libération des tableaux précalculés
         free(current->precomputed_vx);
         free(current->precomputed_vy);
-        // TEST: Commenté pour vérifier si vraiment nécessaire par hexagone
-        // free(current->precomputed_scales);  // 🆕 Libérer les scales précalculés
-        // 🆕 Libérer les frames du compteur précomputé
         free(current->precomputed_counter_frames);
 
         if (current->animation) {
@@ -391,8 +379,7 @@ double gcd_fractional(double a, double b) {
 // - max_breaths : Nombre maximum de respirations (non utilisé ici, juste pour info)
 void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
                                float breath_duration, int max_breaths) {
-    // TEST: Commenté pour vérifier si vraiment nécessaire par hexagone
-    if (!node || !node->precomputed_counter_frames /* || !node->precomputed_scales */) {
+    if (!node || !node->precomputed_counter_frames) {
         return;
     }
 
@@ -408,7 +395,7 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
 
     // Parcourir toutes les frames précalculées
     for (int frame = 0; frame < total_frames; frame++) {
-        // TEST: Calculer les scales à la volée au lieu de lire precomputed_scales
+        // Calculer les scales à la volée (cosinus du cycle de respiration)
         double time_in_seconds = (double)frame / fps;
         double cycles_completed = time_in_seconds / breath_duration;
         double progress_in_cycle = fmod(cycles_completed, 1.0);
@@ -420,10 +407,6 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
         double prev_progress = fmod(prev_cycles, 1.0);
         double prev_scale_prog = cos(prev_progress * 2 * M_PI);
         double prev_scale = scale_min + (scale_max - scale_min) * (prev_scale_prog + 1.0) / 2.0;
-
-        // double current_scale = node->precomputed_scales[frame];
-        // double prev_scale = (frame > 0) ? node->precomputed_scales[frame - 1]
-        //                                 : node->precomputed_scales[total_frames - 1];
 
         // 🚩 DÉTECTER les TRANSITIONS précises du cycle de respiration :
         //
@@ -461,8 +444,8 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
         node->precomputed_counter_frames[frame].text_scale = current_scale;
     }
 
-    debug_printf("✅ Compteur précompute : %d frames, flags transitions scale_min/max générés\n",
-                 total_frames);
+    debug_printf("✏️  REMPLISSAGE precomputed_counter_frames pour Hexagone %d (%d frames, flags transitions calculés)\n",
+                 node->data->element_id, total_frames);
 }
 
 

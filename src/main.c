@@ -93,8 +93,11 @@ int main(int argc, char **argv) {
 
     // === PRÉ-CALCULS ===
     precompute_all_cycles(hex_list, TARGET_FPS, config.breath_duration);
-    // 🆕 PRÉCOMPUTER LES FRAMES DU COMPTEUR pour tous les hexagones
+
+    // 🆕 REMPLIR LES FRAMES DU COMPTEUR pour tous les hexagones
+    // Note: L'allocation a déjà été faite dans precompute_all_cycles()
     // On utilise le nombre de respirations depuis la config
+    debug_printf("\n📝 REMPLISSAGE des precomputed_counter_frames pour %d hexagones:\n", hex_list->count);
     HexagoneNode* node = hex_list->first;
     while (node) {
         precompute_counter_frames(
@@ -106,7 +109,21 @@ int main(int argc, char **argv) {
         );
         node = node->next;
     }
-    debug_printf("✅ Compteur précomputé pour %d hexagones\n", hex_list->count);
+
+    // Compter le nombre total de listes créées
+    int total_lists = 0;
+    size_t total_memory = 0;
+    node = hex_list->first;
+    while (node) {
+        if (node->precomputed_counter_frames) {
+            total_lists++;
+            total_memory += node->total_cycles * sizeof(CounterFrame);
+        }
+        node = node->next;
+    }
+    debug_printf("\n📊 RÉSUMÉ precomputed_counter_frames:\n");
+    debug_printf("   - Nombre de LISTES CRÉÉES: %d\n", total_lists);
+    debug_printf("   - Mémoire totale utilisée: %zu bytes (%.2f KB)\n", total_memory, total_memory / 1024.0);
     print_rotation_frame_requirements(hex_list, TARGET_FPS, config.breath_duration);
 
     debug_printf("✅ Hexagones créés et assignés à app.hexagones\n");
