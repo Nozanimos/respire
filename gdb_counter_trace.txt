@@ -1,0 +1,2791 @@
+Breakpoint 1 at 0x67da: file src/counter.c, line 127.
+Breakpoint 2 at 0x66af: file src/counter.c, line 93.
+Breakpoint 3 at 0x69a5: file src/counter.c, line 172.
+Breakpoint 4 at 0x6b0a: file src/counter.c, line 205.
+Breakpoint 5 at 0x6b6f: file src/counter.c, line 214.
+Breakpoint 6 at 0xdb53: file src/precompute_list.c, line 232.
+Breakpoint 7 at 0x67a1: file src/counter.c, line 125.
+
+═══════════════════════════════════════════════════════════════════════════
+DEBUG COMPTEUR RESPONSIVE - MODE TRACE ACTIVE
+═══════════════════════════════════════════════════════════════════════════
+
+Configuration du tracage :
+  - Capture au changement de chiffre (scale_min)
+  - 6 captures espacees de 0.3s apres le changement
+  - Logs sauvegardes dans : gdb_counter_trace.log
+
+Points de trace actifs :
+  - Incrementation compteur (counter.c:127)
+  - Entree counter_render (counter.c:91)
+  - Calcul font_size (counter.c:172)
+  - Mesure texte Cairo (counter.c:205)
+  - Creation surface Cairo (counter.c:214)
+  - Incrementation cycle (precompute_list.c:232)
+  - Etat avant changement (counter.c:125)
+
+Instructions :
+  1. Lancez l'application : run
+  2. Reduisez la fenetre a 200-300px
+  3. Lancez l'animation et attendez le changement de chiffre
+  4. Le script capturera automatiquement les donnees
+  5. Consultez gdb_counter_trace.log pour l'analyse
+
+═══════════════════════════════════════════════════════════════════════════
+
+Starting program: /home/philippe/Documents/programmes/resp2/respire/bin/respire 
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7fffddfff6c0 (LWP 17096)]
+[New Thread 0x7fffdd6bd6c0 (LWP 17097)]
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 0 / 10
+Frame actuelle          : 92 / 1080
+text_scale (precalcule) : 0.1011
+scale_factor            : 1.0000
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 1 / 10
+Frame actuelle          : 271 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 0.3766
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 0 -> 1
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 271 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 0.3766
+    = 7.14 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 12.72
+    extents.height          : 7.36
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 2 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 289 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 0.3336
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 0.3336
+    = 12.32 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 17.79
+    extents.height          : 17.20
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 17 pixels
+    text_height (height + 10): 19 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 2 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 307 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 0.3289
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 0.3289
+    = 26.48 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 32.16
+    extents.height          : 43.85
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 24 pixels
+    text_height (height + 10): 29 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 2 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 325 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 0.3281
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 0.3281
+    = 43.65 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 48.42
+    extents.height          : 77.58
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 32 pixels
+    text_height (height + 10): 42 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 2 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 343 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3266
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 0.3266
+    = 56.97 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 60.96
+    extents.height          : 104.50
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 38 pixels
+    text_height (height + 10): 51 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+
+---------------------------------------------------------------------
+CAPTURE #5 (T + 1.5s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 90
+    Secondes ecoulees       : 1.50 s
+
+Etat du compteur:
+    Chiffre affiche         : 2 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 361 / 1080
+    text_scale (precalcule) : 0.9997
+    is_at_scale_min         : 0
+    is_at_scale_max         : 1
+    current_scale (node)    : 1.0000
+
+Responsive:
+    scale_factor            : 0.3266
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9997 * 0.3266
+    = 61.70 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 66.18
+    extents.height          : 114.37
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 41 pixels
+    text_height (height + 10): 55 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+
+---------------------------------------------------------------------
+CAPTURE #6 (T + 1.8s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 108
+    Secondes ecoulees       : 1.80 s
+
+Etat du compteur:
+    Chiffre affiche         : 2 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 379 / 1080
+    text_scale (precalcule) : 0.9046
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3266
+    base_font_size          : 189
+
+---------------------------------------------------------------------
+Toutes les captures effectuees. Desactivation du tracage.
+---------------------------------------------------------------------
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 2 / 10
+Frame actuelle          : 451 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 0.3172
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 1 -> 2
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 451 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 0.3172
+    = 6.01 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 0.00
+    extents.height          : 12.41
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 3 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 469 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 0.3172
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 0.3172
+    = 11.71 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -5.64
+    extents.height          : 23.12
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 3 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 487 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 0.3172
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 0.3172
+    = 25.54 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -20.86
+    extents.height          : 48.49
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 24 pixels
+    text_height (height + 10): 29 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 3 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 505 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 0.3172
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 0.3172
+    = 42.20 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -41.16
+    extents.height          : 77.82
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 31 pixels
+    text_height (height + 10): 40 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 3 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 523 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3172
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 0.3172
+    = 55.34 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -58.08
+    extents.height          : 102.06
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 37 pixels
+    text_height (height + 10): 51 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+
+---------------------------------------------------------------------
+CAPTURE #5 (T + 1.5s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 90
+    Secondes ecoulees       : 1.50 s
+
+Etat du compteur:
+    Chiffre affiche         : 3 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 541 / 1080
+    text_scale (precalcule) : 0.9997
+    is_at_scale_min         : 0
+    is_at_scale_max         : 1
+    current_scale (node)    : 1.0000
+
+Responsive:
+    scale_factor            : 0.3172
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9997 * 0.3172
+    = 59.93 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -63.72
+    extents.height          : 111.65
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 39 pixels
+    text_height (height + 10): 54 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 541 -> 542
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 541 -> 542
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 541 -> 542
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 541 -> 542
+    current_scale : 0.9997
+
+
+---------------------------------------------------------------------
+CAPTURE #6 (T + 1.8s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 108
+    Secondes ecoulees       : 1.80 s
+
+Etat du compteur:
+    Chiffre affiche         : 3 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 559 / 1080
+    text_scale (precalcule) : 0.9046
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3172
+    base_font_size          : 189
+
+---------------------------------------------------------------------
+Toutes les captures effectuees. Desactivation du tracage.
+---------------------------------------------------------------------
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 3 / 10
+Frame actuelle          : 631 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 0.3000
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 2 -> 3
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 631 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 0.3000
+    = 5.69 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -9.90
+    extents.height          : 5.73
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 26 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 631 -> 632
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 631 -> 632
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 631 -> 632
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 631 -> 632
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 4 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 649 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 0.3000
+    = 11.08 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -20.61
+    extents.height          : 5.67
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 17 pixels
+    text_height (height + 10): 19 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 649 -> 650
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 649 -> 650
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 649 -> 650
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 649 -> 650
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 4 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 667 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 0.3000
+    = 24.15 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -47.92
+    extents.height          : 5.15
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 23 pixels
+    text_height (height + 10): 26 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 667 -> 668
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 667 -> 668
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 667 -> 668
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 667 -> 668
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 4 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 685 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 0.3000
+    = 39.91 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -80.90
+    extents.height          : 2.58
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 32 pixels
+    text_height (height + 10): 39 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 685 -> 686
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 685 -> 686
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 685 -> 686
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 685 -> 686
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 4 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 703 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 0.3000
+    = 52.34 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -107.18
+    extents.height          : 0.52
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 38 pixels
+    text_height (height + 10): 47 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 703 -> 704
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 703 -> 704
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 703 -> 704
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 703 -> 704
+    current_scale : 0.9231
+
+
+---------------------------------------------------------------------
+CAPTURE #5 (T + 1.5s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 90
+    Secondes ecoulees       : 1.50 s
+
+Etat du compteur:
+    Chiffre affiche         : 4 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 721 / 1080
+    text_scale (precalcule) : 0.9997
+    is_at_scale_min         : 0
+    is_at_scale_max         : 1
+    current_scale (node)    : 1.0000
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9997 * 0.3000
+    = 56.68 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -117.48
+    extents.height          : 0.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 40 pixels
+    text_height (height + 10): 50 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 721 -> 722
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 721 -> 722
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 721 -> 722
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 721 -> 722
+    current_scale : 0.9997
+
+
+---------------------------------------------------------------------
+CAPTURE #6 (T + 1.8s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 108
+    Secondes ecoulees       : 1.80 s
+
+Etat du compteur:
+    Chiffre affiche         : 4 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 739 / 1080
+    text_scale (precalcule) : 0.9046
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+---------------------------------------------------------------------
+Toutes les captures effectuees. Desactivation du tracage.
+---------------------------------------------------------------------
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 4 / 10
+Frame actuelle          : 811 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 0.3000
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 3 -> 4
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 811 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 0.3000
+    = 5.69 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -9.79
+    extents.height          : -5.67
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 32 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 811 -> 812
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 811 -> 812
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 811 -> 812
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 811 -> 812
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 5 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 829 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 0.3000
+    = 11.08 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -15.46
+    extents.height          : -14.94
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 32 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 829 -> 830
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 829 -> 830
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 829 -> 830
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 829 -> 830
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 5 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 847 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 0.3000
+    = 24.15 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -28.34
+    extents.height          : -38.65
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 22 pixels
+    text_height (height + 10): 26 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 847 -> 848
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 847 -> 848
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 847 -> 848
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 847 -> 848
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 5 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 865 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 0.3000
+    = 39.91 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -42.77
+    extents.height          : -68.53
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 30 pixels
+    text_height (height + 10): 39 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 865 -> 866
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 865 -> 866
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 865 -> 866
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 865 -> 866
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 5 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 883 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 0.3000
+    = 52.34 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -54.10
+    extents.height          : -92.75
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 36 pixels
+    text_height (height + 10): 47 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 883 -> 884
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 883 -> 884
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 883 -> 884
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 883 -> 884
+    current_scale : 0.9231
+
+
+---------------------------------------------------------------------
+CAPTURE #5 (T + 1.5s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 90
+    Secondes ecoulees       : 1.50 s
+
+Etat du compteur:
+    Chiffre affiche         : 5 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 901 / 1080
+    text_scale (precalcule) : 0.9997
+    is_at_scale_min         : 0
+    is_at_scale_max         : 1
+    current_scale (node)    : 1.0000
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9997 * 0.3000
+    = 56.68 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -58.74
+    extents.height          : -101.51
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 38 pixels
+    text_height (height + 10): 51 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 901 -> 902
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 901 -> 902
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 901 -> 902
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 901 -> 902
+    current_scale : 0.9997
+
+
+---------------------------------------------------------------------
+CAPTURE #6 (T + 1.8s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 108
+    Secondes ecoulees       : 1.80 s
+
+Etat du compteur:
+    Chiffre affiche         : 5 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 919 / 1080
+    text_scale (precalcule) : 0.9046
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+---------------------------------------------------------------------
+Toutes les captures effectuees. Desactivation du tracage.
+---------------------------------------------------------------------
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 5 / 10
+Frame actuelle          : 991 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 0.3000
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 4 -> 5
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 991 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 0.3000
+    = 5.69 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 0.00
+    extents.height          : -11.34
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 991 -> 992
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 991 -> 992
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 991 -> 992
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 991 -> 992
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 6 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 1009 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 0.3000
+    = 11.08 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 5.15
+    extents.height          : -21.13
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1009 -> 1010
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1009 -> 1010
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1009 -> 1010
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1009 -> 1010
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 6 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 1027 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 0.3000
+    = 24.15 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 19.07
+    extents.height          : -44.31
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 22 pixels
+    text_height (height + 10): 26 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1027 -> 1028
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1027 -> 1028
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1027 -> 1028
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1027 -> 1028
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 6 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 1045 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 0.3000
+    = 39.91 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 37.62
+    extents.height          : -71.11
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 30 pixels
+    text_height (height + 10): 39 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1045 -> 1046
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1045 -> 1046
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1045 -> 1046
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1045 -> 1046
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 6 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 1063 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 0.3000
+    = 52.34 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 53.07
+    extents.height          : -93.27
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 36 pixels
+    text_height (height + 10): 47 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1063 -> 1064
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1063 -> 1064
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1063 -> 1064
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1063 -> 1064
+    current_scale : 0.9231
+
+
+---------------------------------------------------------------------
+CAPTURE #5 (T + 1.5s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 90
+    Secondes ecoulees       : 1.50 s
+
+Etat du compteur:
+    Chiffre affiche         : 6 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 1 / 1080
+    text_scale (precalcule) : 0.9997
+    is_at_scale_min         : 0
+    is_at_scale_max         : 1
+    current_scale (node)    : 1.0000
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9997 * 0.3000
+    = 56.68 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 58.74
+    extents.height          : -102.02
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 38 pixels
+    text_height (height + 10): 52 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1 -> 2
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1 -> 2
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1 -> 2
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 1 -> 2
+    current_scale : 0.9997
+
+
+---------------------------------------------------------------------
+CAPTURE #6 (T + 1.8s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 108
+    Secondes ecoulees       : 1.80 s
+
+Etat du compteur:
+    Chiffre affiche         : 6 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 19 / 1080
+    text_scale (precalcule) : 0.9046
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+---------------------------------------------------------------------
+Toutes les captures effectuees. Desactivation du tracage.
+---------------------------------------------------------------------
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 6 / 10
+Frame actuelle          : 91 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 0.3000
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 5 -> 6
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 91 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 0.3000
+    = 5.69 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 9.79
+    extents.height          : -5.67
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 32 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 91 -> 92
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 91 -> 92
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 91 -> 92
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 91 -> 92
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 7 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 109 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 0.3000
+    = 11.08 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 20.61
+    extents.height          : -5.67
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 32 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 109 -> 110
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 109 -> 110
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 109 -> 110
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 109 -> 110
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 7 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 127 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 0.3000
+    = 24.15 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 47.92
+    extents.height          : -5.15
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 22 pixels
+    text_height (height + 10): 27 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 127 -> 128
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 127 -> 128
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 127 -> 128
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 127 -> 128
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 7 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 145 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 0.3000
+    = 39.91 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 80.90
+    extents.height          : -2.58
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 30 pixels
+    text_height (height + 10): 39 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 145 -> 146
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 145 -> 146
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 145 -> 146
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 145 -> 146
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 7 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 163 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 0.3000
+    = 52.34 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 107.18
+    extents.height          : -0.52
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 35 pixels
+    text_height (height + 10): 47 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 163 -> 164
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 163 -> 164
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 163 -> 164
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 163 -> 164
+    current_scale : 0.9231
+
+
+---------------------------------------------------------------------
+CAPTURE #5 (T + 1.5s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 90
+    Secondes ecoulees       : 1.50 s
+
+Etat du compteur:
+    Chiffre affiche         : 7 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 181 / 1080
+    text_scale (precalcule) : 0.9997
+    is_at_scale_min         : 0
+    is_at_scale_max         : 1
+    current_scale (node)    : 1.0000
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9997 * 0.3000
+    = 56.68 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 117.48
+    extents.height          : 0.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 38 pixels
+    text_height (height + 10): 50 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 181 -> 182
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 181 -> 182
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 181 -> 182
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 181 -> 182
+    current_scale : 0.9997
+
+
+---------------------------------------------------------------------
+CAPTURE #6 (T + 1.8s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 108
+    Secondes ecoulees       : 1.80 s
+
+Etat du compteur:
+    Chiffre affiche         : 7 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 199 / 1080
+    text_scale (precalcule) : 0.9046
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+---------------------------------------------------------------------
+Toutes les captures effectuees. Desactivation du tracage.
+---------------------------------------------------------------------
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 7 / 10
+Frame actuelle          : 271 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 0.3000
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 6 -> 7
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 271 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 0.3000
+    = 5.69 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 9.79
+    extents.height          : 5.67
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 271 -> 272
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 8 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 289 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 0.3000
+    = 11.08 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 15.46
+    extents.height          : 14.94
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 25 pixels
+    text_height (height + 10): 33 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 289 -> 290
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 8 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 307 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 0.3000
+    = 24.15 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 28.34
+    extents.height          : 38.65
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 23 pixels
+    text_height (height + 10): 26 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 307 -> 308
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 8 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 325 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 0.3000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 0.3000
+    = 39.91 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 42.77
+    extents.height          : 68.53
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 30 pixels
+    text_height (height + 10): 39 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 325 -> 326
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 8 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 343 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 1.0000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 1.0000
+    = 174.46 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 105.00
+    extents.height          : 180.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 92 pixels
+    text_height (height + 10): 137 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 343 -> 344
+    current_scale : 0.9231
+
+
+---------------------------------------------------------------------
+CAPTURE #5 (T + 1.5s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 90
+    Secondes ecoulees       : 1.50 s
+
+Etat du compteur:
+    Chiffre affiche         : 8 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 361 / 1080
+    text_scale (precalcule) : 0.9997
+    is_at_scale_min         : 0
+    is_at_scale_max         : 1
+    current_scale (node)    : 1.0000
+
+Responsive:
+    scale_factor            : 1.0000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9997 * 1.0000
+    = 188.95 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 114.00
+    extents.height          : 197.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 99 pixels
+    text_height (height + 10): 148 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 361 -> 362
+    current_scale : 0.9997
+
+
+---------------------------------------------------------------------
+CAPTURE #6 (T + 1.8s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 108
+    Secondes ecoulees       : 1.80 s
+
+Etat du compteur:
+    Chiffre affiche         : 8 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 379 / 1080
+    text_scale (precalcule) : 0.9046
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 1.0000
+    base_font_size          : 189
+
+---------------------------------------------------------------------
+Toutes les captures effectuees. Desactivation du tracage.
+---------------------------------------------------------------------
+
+
+═══════════════════════════════════════════════════════════════════════
+ETAT JUSTE AVANT LE CHANGEMENT DE CHIFFRE
+═══════════════════════════════════════════════════════════════════════
+Compteur actuel         : 8 / 10
+Frame actuelle          : 451 / 1080
+text_scale (precalcule) : 0.1003
+scale_factor            : 1.0000
+═══════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════
+DETECTION CHANGEMENT DE CHIFFRE : 7 -> 8
+═══════════════════════════════════════════════════════════════════════
+Frame actuelle : 451 / 1080
+Flag scale_min actuel : 1
+Flag was_at_min_last  : 0
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1003 * 1.0000
+    = 18.95 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : 0.00
+    extents.height          : 22.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 20 pixels
+    text_height (height + 10): 24 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 451 -> 452
+    current_scale : 0.1003
+
+
+---------------------------------------------------------------------
+CAPTURE #1 (T + 0.3s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 18
+    Secondes ecoulees       : 0.30 s
+
+Etat du compteur:
+    Chiffre affiche         : 9 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 469 / 1080
+    text_scale (precalcule) : 0.1954
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.1859
+
+Responsive:
+    scale_factor            : 1.0000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.1954 * 1.0000
+    = 36.93 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -10.00
+    extents.height          : 41.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 28 pixels
+    text_height (height + 10): 37 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 469 -> 470
+    current_scale : 0.1954
+
+
+---------------------------------------------------------------------
+CAPTURE #2 (T + 0.6s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 36
+    Secondes ecoulees       : 0.60 s
+
+Etat du compteur:
+    Chiffre affiche         : 9 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 487 / 1080
+    text_scale (precalcule) : 0.4260
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.4109
+
+Responsive:
+    scale_factor            : 1.0000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.4260 * 1.0000
+    = 80.51 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -37.00
+    extents.height          : 86.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 50 pixels
+    text_height (height + 10): 69 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 487 -> 488
+    current_scale : 0.4260
+
+
+---------------------------------------------------------------------
+CAPTURE #3 (T + 0.9s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 54
+    Secondes ecoulees       : 0.90 s
+
+Etat du compteur:
+    Chiffre affiche         : 9 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 505 / 1080
+    text_scale (precalcule) : 0.7039
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.6891
+
+Responsive:
+    scale_factor            : 1.0000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.7039 * 1.0000
+    = 133.04 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -73.00
+    extents.height          : 138.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 74 pixels
+    text_height (height + 10): 108 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 505 -> 506
+    current_scale : 0.7039
+
+
+---------------------------------------------------------------------
+CAPTURE #4 (T + 1.2s apres scale_min)
+---------------------------------------------------------------------
+Timing:
+    Frames depuis scale_min : 72
+    Secondes ecoulees       : 1.20 s
+
+Etat du compteur:
+    Chiffre affiche         : 9 / 10
+    was_at_min_last_frame   : 0
+    waiting_for_scale_min   : 0
+
+Animation (frame actuelle):
+    current_cycle           : 523 / 1080
+    text_scale (precalcule) : 0.9231
+    is_at_scale_min         : 0
+    is_at_scale_max         : 0
+    current_scale (node)    : 0.9141
+
+Responsive:
+    scale_factor            : 1.0000
+    base_font_size          : 189
+
+Calcul font_size:
+    base_font_size * text_scale * scale_factor
+    = 189 * 0.9231 * 1.0000
+    = 174.46 pixels
+
+Mesure texte Cairo (apres cairo_text_extents):
+    extents.width           : -103.00
+    extents.height          : 181.00
+    extents.x_bearing       : 0.00
+    extents.y_bearing       : 0.00
+
+Surface Cairo creee:
+    text_width  (width + 10) : 94 pixels
+    text_height (height + 10): 137 pixels
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+apply_precomputed_frame (incrementation cycle):
+    current_cycle : 523 -> 524
+    current_scale : 0.9231
+
+[Thread 0x7fffddfff6c0 (LWP 17096) exited]
+[Thread 0x7fffdd6bd6c0 (LWP 17097) exited]
+[Inferior 1 (process 17082) exited normally]
