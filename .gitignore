@@ -4,7 +4,6 @@
 .cppcheck
 /obj/*.o
 *.o
-debug.txt
 **/debug.txt
 template_widget.txt
 arbre.txt
