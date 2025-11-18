@@ -341,14 +341,13 @@ int main(int argc, char **argv) {
                 // puis on laisse l'animation jouer jusqu'à scale_max
                 HexagoneNode* node = hex_list->first;
                 while (node) {
-                    // TEST: Commenté car utilise precomputed_scales
-                    /*
-                    if (node->precomputed_scales && node->total_cycles > 0) {
+                    // Utilise precomputed_counter_frames au lieu de precomputed_scales
+                    if (node->precomputed_counter_frames && node->total_cycles > 0) {
                         // Calculer scale_max (le plus grand scale dans le précompute)
                         double scale_max = 0.0;
                         for (int i = 0; i < node->total_cycles; i++) {
-                            if (node->precomputed_scales[i] > scale_max) {
-                                scale_max = node->precomputed_scales[i];
+                            if (node->precomputed_counter_frames[i].text_scale > scale_max) {
+                                scale_max = node->precomputed_counter_frames[i].text_scale;
                             }
                         }
 
@@ -359,7 +358,7 @@ int main(int argc, char **argv) {
 
                         // Trouver la dernière montée vers scale_max
                         for (int i = node->total_cycles - 1; i >= 0; i--) {
-                            if (node->precomputed_scales[i] <= scale_mid) {
+                            if (node->precomputed_counter_frames[i].text_scale <= scale_mid) {
                                 start_frame = i;
                                 break;
                             }
@@ -370,10 +369,9 @@ int main(int argc, char **argv) {
                             node->current_cycle = start_frame;
                             debug_printf("🎯 Hexagone %d: tête de lecture → frame %d (scale %.2f → %.2f)\n",
                                          node->data->element_id, start_frame,
-                                         node->precomputed_scales[start_frame], scale_max);
+                                         node->precomputed_counter_frames[start_frame].text_scale, scale_max);
                         }
                     }
-                    */
 
                     // Dégeler l'animation pour la réapparition
                     node->is_frozen = false;
