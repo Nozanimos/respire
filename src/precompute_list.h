@@ -30,12 +30,13 @@ typedef struct {
 // STRUCTURE POUR LE PRÉCOMPUTING DU COMPTEUR DE RESPIRATIONS
 // ════════════════════════════════════════════════════════════════════════
 // Stocke les données précalculées pour chaque frame du compteur :
-// - Flag indiquant si on est au scale_min (inspire)
-// - Le scale pour l'effet fish-eye (synchronisé avec l'hexagone)
+// - Flags indiquant les transitions de respiration
+// - Scale RELATIF (0.0→1.0) pour le responsive parfait
 typedef struct {
-    bool is_at_scale_min;  // 🚩 true si cette frame est au scale_min (inspire)
-    bool is_at_scale_max;  // 🚩 true si cette frame est au scale_max (expire)
-    double text_scale;     // Scale du texte (suit le scale de l'hexagone)
+    bool is_at_scale_min;         // 🚩 true si cette frame est au scale_min (expire)
+    bool is_at_scale_max;         // 🚩 true si cette frame est au scale_max (inspire)
+    double relative_breath_scale; // 🎯 Scale relatif 0.0→1.0 (0.0=min, 1.0=max)
+                                   // Au render: final = relative × hex_scale × window_scale
 } CounterFrame;
 
 // Pointeur de fonction type

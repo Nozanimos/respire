@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// counter.c - VERSION CAIRO (avec antialiasing)
+// counter.c - VERSION OPTIMISÉE AVEC CACHE DE TEXTURES
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cairo/cairo.h>
-#include <cairo/cairo-ft.h>
-#include <ft2build.h>
-#include FT_FREETYPE_H
 #include "counter.h"
+#include "counter_cache.h"
 #include "debug.h"
 
 // ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU COMPTEUR
 // ════════════════════════════════════════════════════════════════════════
-CounterState* counter_create(int total_breaths, int retention_type, const char* font_path, int base_font_size) {
+CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int retention_type,
+                             const char* font_path, int base_font_size,
+                             double scale_min, double scale_max) {
+    if (!renderer) {
+        fprintf(stderr, "❌ Renderer NULL dans counter_create\n");
+        return NULL;
+    }
+
     // Allocation de la structure
     CounterState* counter = malloc(sizeof(CounterState));
     if (!counter) {
@@ -42,9 +46,20 @@ CounterState* counter_create(int total_breaths, int retention_type, const char* 
     counter->font_path = font_path;
     counter->base_font_size = base_font_size;
 
+    // 🎨 CRÉER LE CACHE DE TEXTURES (précalcul avec Cairo)
+    counter->cache = counter_cache_create(renderer, total_breaths, font_path,
+                                          base_font_size, counter->text_color,
+                                          scale_min, scale_max);
+
+    if (!counter->cache) {
+        fprintf(stderr, "❌ Erreur création cache de textures\n");
+        free(counter);
+        return NULL;
+    }
+
     const char* retention_name = (retention_type == 0) ? "poumons pleins" : "poumons vides";
-    debug_printf("✅ Compteur créé: %d respirations max (%s), police %s taille %d\n",
-                 total_breaths, retention_name, font_path, base_font_size);
+    debug_printf("✅ Compteur créé: %d respirations max (%s), cache initialisé\n",
+                 total_breaths, retention_name);
 
     return counter;
 }
@@ -52,41 +67,19 @@ CounterState* counter_create(int total_breaths, int retention_type, const char* 
 
 
 // ════════════════════════════════════════════════════════════════════════
-// RENDU DU COMPTEUR AVEC EFFET FISH-EYE (DONNÉES PRÉCOMPUTÉES) - VERSION CAIRO
+// RENDU DU COMPTEUR AVEC CACHE DE TEXTURES (ULTRA-LIGHT)
 // ════════════════════════════════════════════════════════════════════════
-// Le chiffre "respire" avec l'hexagone : sa taille vient du précomputing
+// Le chiffre "respire" avec l'hexagone : sa taille vient du cache précompilé
 // Scale max (inspire) = texte agrandi (poumons pleins)
 // Scale min (expire) = texte réduit (poumons vides)
 //
 // Logique de fin de session :
 // 1. Compter normalement jusqu'à total_breaths (ex: 10)
-// 2. Incrémenter à chaque scale_max (inspire = poumons pleins)
-// 3. Après le 10ème scale_max, passer en mode "attente scale_min"
-// 4. Continuer à afficher le dernier chiffre jusqu'au prochain scale_min
-// 5. Au scale_min, signaler que la session est terminée (poumons vides)
+// 2. Incrémenter à chaque scale_min (expire = poumons vides)
+// 3. Après le 10ème scale_min, passer en mode "attente"
+// 4. Continuer à afficher le dernier chiffre jusqu'à la position finale
+// 5. Signaler que la session est terminée
 // ════════════════════════════════════════════════════════════════════════
-
-// Fonction utilitaire pour créer une texture SDL depuis une surface Cairo
-static SDL_Texture* texture_from_cairo_surface(SDL_Renderer* renderer, cairo_surface_t* surface) {
-    int width = cairo_image_surface_get_width(surface);
-    int height = cairo_image_surface_get_height(surface);
-
-    SDL_Surface* sdl_surface = SDL_CreateRGBSurfaceWithFormat(
-        0, width, height, 32, SDL_PIXELFORMAT_ARGB8888
-    );
-
-    if (!sdl_surface) return NULL;
-
-    // Copier les données de Cairo vers SDL
-    memcpy(sdl_surface->pixels,
-           cairo_image_surface_get_data(surface),
-           height * cairo_image_surface_get_stride(surface));
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, sdl_surface);
-    SDL_FreeSurface(sdl_surface);
-
-    return texture;
-}
 
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
                     int center_x, int center_y, int hex_radius, HexagoneNode* hex_node,
@@ -110,7 +103,7 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     CounterFrame* current_frame = &hex_node->precomputed_counter_frames[hex_node->current_cycle];
     bool is_at_min_now = current_frame->is_at_scale_min;
     bool is_at_max_now = current_frame->is_at_scale_max;
-    double text_scale = current_frame->text_scale;
+    double relative_breath_scale = current_frame->relative_breath_scale;  // 🆕 Scale relatif 0.0→1.0
 
     // Flag pour éviter de terminer dans le même frame où on atteint total_breaths
     bool just_completed = false;
@@ -163,100 +156,37 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     // Ne rien afficher si breath_number est 0 (pas encore démarré)
     if (counter->current_breath == 0) return;
 
-    // Formater le texte (numéro du cycle actuel)
-    char count_text[8];
-    snprintf(count_text, sizeof(count_text), "%d", counter->current_breath);
-
-    // 🎨 EFFET FISH-EYE : Calculer la taille de police avec le scale précomputé
-    // 🆕 APPLIQUER LE SCALE_FACTOR pour le responsive
-    double font_size = counter->base_font_size * text_scale * scale_factor;
-    if (font_size < 12.0) font_size = 12.0;  // Minimum lisible
-
     // ═══════════════════════════════════════════════════════════════════════════
-    // RENDU AVEC CAIRO pour bénéficier de l'antialiasing
+    // 🚀 RENDU ULTRA-LIGHT AVEC CACHE DE TEXTURES
     // ═══════════════════════════════════════════════════════════════════════════
+    // Au lieu de créer une surface Cairo à chaque frame (coûteux),
+    // on récupère une texture prérendue du cache (simple lookup)
 
-    // Initialiser FreeType
-    FT_Library ft_library;
-    FT_Face ft_face;
+    int texture_width, texture_height;
+    SDL_Texture* cached_texture = counter_cache_get(counter->cache,
+                                                     counter->current_breath,
+                                                     relative_breath_scale,
+                                                     &texture_width,
+                                                     &texture_height);
 
-    if (FT_Init_FreeType(&ft_library)) {
-        fprintf(stderr, "❌ Erreur initialisation FreeType\n");
+    if (!cached_texture) {
+        // Fallback si texture manquante (ne devrait jamais arriver)
         return;
     }
 
-    if (FT_New_Face(ft_library, counter->font_path, 0, &ft_face)) {
-        fprintf(stderr, "❌ Erreur chargement police: %s\n", counter->font_path);
-        FT_Done_FreeType(ft_library);
-        return;
-    }
+    // 🎯 APPLIQUER LE SCALE_FACTOR pour le responsive
+    // La texture est déjà au bon scale de breathing, on applique juste le window scale
+    int scaled_width = (int)(texture_width * scale_factor);
+    int scaled_height = (int)(texture_height * scale_factor);
 
-    // Créer une surface Cairo temporaire pour mesurer le texte
-    cairo_surface_t* temp_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
-    cairo_t* temp_cr = cairo_create(temp_surface);
+    // Calculer la position centrée
+    int text_x = center_x - (scaled_width / 2);
+    int text_y = center_y - (scaled_height / 2);
 
-    // Créer une fonte Cairo depuis FreeType
-    cairo_font_face_t* cairo_face = cairo_ft_font_face_create_for_ft_face(ft_face, 0);
-    cairo_set_font_face(temp_cr, cairo_face);
-    cairo_set_font_size(temp_cr, font_size);
+    SDL_Rect dest_rect = {text_x, text_y, scaled_width, scaled_height};
 
-    // Mesurer le texte
-    cairo_text_extents_t extents;
-    cairo_text_extents(temp_cr, count_text, &extents);
-
-    int text_width = (int)(extents.width + 10);  // +10 pour marge
-    int text_height = (int)(extents.height + 10);
-
-    cairo_destroy(temp_cr);
-    cairo_surface_destroy(temp_surface);
-
-    // Créer la surface finale pour le rendu
-    cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, text_width, text_height);
-    cairo_t* cr = cairo_create(surface);
-
-    // Activer l'antialiasing de haute qualité
-    cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
-
-    // Configurer la police
-    cairo_set_font_face(cr, cairo_face);
-    cairo_set_font_size(cr, font_size);
-
-    // Dessiner le texte avec la couleur
-    cairo_set_source_rgba(cr,
-                          counter->text_color.r / 255.0,
-                          counter->text_color.g / 255.0,
-                          counter->text_color.b / 255.0,
-                          counter->text_color.a / 255.0);
-
-    // Positionner le texte (centré dans la surface)
-    cairo_move_to(cr, 5 - extents.x_bearing, 5 - extents.y_bearing);
-    cairo_show_text(cr, count_text);
-
-    cairo_surface_flush(surface);
-
-    // Convertir en texture SDL
-    SDL_Texture* text_texture = texture_from_cairo_surface(renderer, surface);
-
-    if (text_texture) {
-        SDL_SetTextureBlendMode(text_texture, SDL_BLENDMODE_BLEND);
-
-        // Calculer la position centrée
-        int text_x = center_x - (text_width / 2);
-        int text_y = center_y - (text_height / 2);
-
-        SDL_Rect dest_rect = {text_x, text_y, text_width, text_height};
-
-        // Dessiner le texte
-        SDL_RenderCopy(renderer, text_texture, NULL, &dest_rect);
-        SDL_DestroyTexture(text_texture);
-    }
-
-    // Nettoyage
-    cairo_destroy(cr);
-    cairo_surface_destroy(surface);
-    cairo_font_face_destroy(cairo_face);
-    FT_Done_Face(ft_face);
-    FT_Done_FreeType(ft_library);
+    // 🎨 BLIT de la texture (instantané !)
+    SDL_RenderCopy(renderer, cached_texture, NULL, &dest_rect);
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -264,6 +194,11 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
 // ════════════════════════════════════════════════════════════════════════
 void counter_destroy(CounterState* counter) {
     if (!counter) return;
+
+    // Détruire le cache de textures
+    if (counter->cache) {
+        counter_cache_destroy(counter->cache);
+    }
 
     free(counter);
     debug_printf("🧹 Compteur détruit\n");

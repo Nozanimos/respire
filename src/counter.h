@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "precompute_list.h"
+#include "counter_cache.h"
 
 // ════════════════════════════════════════════════════════════════════════
 // STRUCTURE COUNTER STATE
@@ -31,6 +32,9 @@ typedef struct {
     // Police TTF et taille de base
     const char* font_path;
     int base_font_size;
+
+    // 🎨 Cache de textures prérendues (Cairo au démarrage, blit au runtime)
+    CounterTextureCache* cache;
 } CounterState;
 
 // ════════════════════════════════════════════════════════════════════════
@@ -39,13 +43,18 @@ typedef struct {
 
 /**
  * Créer et initialiser un nouveau compteur de respirations
+ * @param renderer SDL renderer (pour créer le cache de textures)
  * @param total_breaths Nombre total de cycles à compter (depuis config.Nb_respiration)
  * @param retention_type Type de rétention (0=poumons pleins, 1=poumons vides)
  * @param font_path Chemin vers la police TTF
  * @param base_font_size Taille de base de la police (sera scalée dynamiquement)
+ * @param scale_min Scale minimum de l'animation breathing (pour le cache)
+ * @param scale_max Scale maximum de l'animation breathing (pour le cache)
  * @return Pointeur vers le CounterState créé, NULL si erreur
  */
-CounterState* counter_create(int total_breaths, int retention_type, const char* font_path, int base_font_size);
+CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int retention_type,
+                             const char* font_path, int base_font_size,
+                             double scale_min, double scale_max);
 
 /**
  * Dessiner le compteur centré sur l'hexagone avec effet fish-eye

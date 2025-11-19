@@ -157,16 +157,23 @@ int main(int argc, char **argv) {
     }
 
     // === CRÉATION DU COMPTEUR DE RESPIRATIONS ===
-    // 🆕 Le compteur utilise SDL_TTF avec génération dynamique pour une qualité optimale
+    // 🆕 Le compteur utilise un CACHE DE TEXTURES prérendu avec Cairo
     // La taille de police est calculée dynamiquement selon la taille du plus petit hexagone
     int counter_font_size = (int)(smallest_hex_radius * 0.7f);
 
-    // 🆕 Compteur simplifié - les données d'animation viennent du précomputing
+    // Récupérer les scales depuis le premier hexagone (tous ont les mêmes scales)
+    double scale_min = hex_list->first->animation->scale_min;
+    double scale_max = hex_list->first->animation->scale_max;
+
+    // 🆕 Compteur optimisé - avec cache de textures pour performance maximale
     app.breath_counter = counter_create(
+        app.renderer,                   // Renderer SDL (pour créer le cache)
         config.Nb_respiration,          // Nombre max de respirations
         config.retention_type,          // Type de rétention (0=pleins, 1=vides)
         "../fonts/arial/ARIALBD.TTF",   // Police (Arial Bold)
-        counter_font_size               // Taille dynamique basée sur l'hexagone
+        counter_font_size,              // Taille dynamique basée sur l'hexagone
+        scale_min,                      // Scale min pour le cache
+        scale_max                       // Scale max pour le cache
     );
 
     if (!app.breath_counter) {
@@ -358,24 +365,16 @@ int main(int argc, char **argv) {
                 // puis on laisse l'animation jouer jusqu'à scale_max
                 HexagoneNode* node = hex_list->first;
                 while (node) {
-                    // Utilise precomputed_counter_frames au lieu de precomputed_scales
+                    // Utilise precomputed_counter_frames avec relative_breath_scale (0.0→1.0)
                     if (node->precomputed_counter_frames && node->total_cycles > 0) {
-                        // Calculer scale_max (le plus grand scale dans le précompute)
-                        double scale_max = 0.0;
-                        for (int i = 0; i < node->total_cycles; i++) {
-                            if (node->precomputed_counter_frames[i].text_scale > scale_max) {
-                                scale_max = node->precomputed_counter_frames[i].text_scale;
-                            }
-                        }
-
-                        // Chercher la dernière séquence : scale_max/2 → scale_max
+                        // Chercher la dernière séquence : 0.5 → 1.0 (milieu vers maximum)
                         // On part de la fin et on remonte
-                        double scale_mid = scale_max / 2.0;
+                        double scale_mid = 0.5;  // Milieu du cycle en valeur relative
                         int start_frame = -1;
 
-                        // Trouver la dernière montée vers scale_max
+                        // Trouver la dernière montée vers scale_max (relative = 1.0)
                         for (int i = node->total_cycles - 1; i >= 0; i--) {
-                            if (node->precomputed_counter_frames[i].text_scale <= scale_mid) {
+                            if (node->precomputed_counter_frames[i].relative_breath_scale <= scale_mid) {
                                 start_frame = i;
                                 break;
                             }
@@ -384,9 +383,9 @@ int main(int argc, char **argv) {
                         // Si trouvé, positionner la tête de lecture
                         if (start_frame >= 0) {
                             node->current_cycle = start_frame;
-                            debug_printf("🎯 Hexagone %d: tête de lecture → frame %d (scale %.2f → %.2f)\n",
+                            debug_printf("🎯 Hexagone %d: tête de lecture → frame %d (scale %.2f → 1.0)\n",
                                          node->data->element_id, start_frame,
-                                         node->precomputed_counter_frames[start_frame].text_scale, scale_max);
+                                         node->precomputed_counter_frames[start_frame].relative_breath_scale);
                         }
                     }
 

@@ -438,10 +438,16 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
         bool scale_decreasing = current_scale < prev_scale;
         bool is_at_max = close_to_max && scale_decreasing;
 
-        // Enregistrer les drapeaux et le scale pour cette frame
+        // 🎯 NORMALISER le scale pour le responsive parfait
+        // Convertir current_scale (absolu) en relative_breath_scale (0.0→1.0)
+        // 0.0 = scale_min (poumons vides)
+        // 1.0 = scale_max (poumons pleins)
+        double relative_breath_scale = (current_scale - scale_min) / (scale_max - scale_min);
+
+        // Enregistrer les drapeaux et le scale RELATIF pour cette frame
         node->precomputed_counter_frames[frame].is_at_scale_min = is_at_min;
         node->precomputed_counter_frames[frame].is_at_scale_max = is_at_max;
-        node->precomputed_counter_frames[frame].text_scale = current_scale;
+        node->precomputed_counter_frames[frame].relative_breath_scale = relative_breath_scale;
     }
 
     debug_printf("✏️  REMPLISSAGE precomputed_counter_frames pour Hexagone %d (%d frames, flags transitions calculés)\n",
