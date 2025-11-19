@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
     double scale_min = hex_list->first->animation->scale_min;
     double scale_max = hex_list->first->animation->scale_max;
 
-    // 🆕 Compteur optimisé - avec cache de textures pour performance maximale
+    // 🆕 Compteur optimisé - avec cache complet par frame
     app.breath_counter = counter_create(
         app.renderer,                   // Renderer SDL (pour créer le cache)
         config.Nb_respiration,          // Nombre max de respirations
@@ -173,7 +173,9 @@ int main(int argc, char **argv) {
         "../fonts/arial/ARIALBD.TTF",   // Police (Arial Bold)
         counter_font_size,              // Taille dynamique basée sur l'hexagone
         scale_min,                      // Scale min pour le cache
-        scale_max                       // Scale max pour le cache
+        scale_max,                      // Scale max pour le cache
+        TARGET_FPS,                     // FPS (60) pour calculer frames_per_cycle
+        config.breath_duration          // Durée d'un cycle (3.0s) pour calculer frames_per_cycle
     );
 
     if (!app.breath_counter) {

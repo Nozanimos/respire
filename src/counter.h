@@ -50,11 +50,14 @@ typedef struct {
  * @param base_font_size Taille de base de la police (sera scalée dynamiquement)
  * @param scale_min Scale minimum de l'animation breathing (pour le cache)
  * @param scale_max Scale maximum de l'animation breathing (pour le cache)
+ * @param fps Frames par seconde (TARGET_FPS)
+ * @param breath_duration Durée d'un cycle en secondes (config.breath_duration)
  * @return Pointeur vers le CounterState créé, NULL si erreur
  */
 CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int retention_type,
                              const char* font_path, int base_font_size,
-                             double scale_min, double scale_max);
+                             double scale_min, double scale_max,
+                             int fps, float breath_duration);
 
 /**
  * Dessiner le compteur centré sur l'hexagone avec effet fish-eye

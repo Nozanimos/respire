@@ -12,7 +12,8 @@
 // ════════════════════════════════════════════════════════════════════════
 CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int retention_type,
                              const char* font_path, int base_font_size,
-                             double scale_min, double scale_max) {
+                             double scale_min, double scale_max,
+                             int fps, float breath_duration) {
     if (!renderer) {
         fprintf(stderr, "❌ Renderer NULL dans counter_create\n");
         return NULL;
@@ -46,10 +47,11 @@ CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int rete
     counter->font_path = font_path;
     counter->base_font_size = base_font_size;
 
-    // 🎨 CRÉER LE CACHE DE TEXTURES (précalcul avec Cairo)
+    // 🎨 CRÉER LE CACHE DE TEXTURES (précalcul complet avec Cairo + sinusoïdale)
     counter->cache = counter_cache_create(renderer, total_breaths, font_path,
                                           base_font_size, counter->text_color,
-                                          scale_min, scale_max);
+                                          scale_min, scale_max,
+                                          fps, breath_duration);
 
     if (!counter->cache) {
         fprintf(stderr, "❌ Erreur création cache de textures\n");
@@ -103,7 +105,6 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     CounterFrame* current_frame = &hex_node->precomputed_counter_frames[hex_node->current_cycle];
     bool is_at_min_now = current_frame->is_at_scale_min;
     bool is_at_max_now = current_frame->is_at_scale_max;
-    double relative_breath_scale = current_frame->relative_breath_scale;  // 🆕 Scale relatif 0.0→1.0
 
     // Flag pour éviter de terminer dans le même frame où on atteint total_breaths
     bool just_completed = false;
@@ -157,15 +158,15 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     if (counter->current_breath == 0) return;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 🚀 RENDU ULTRA-LIGHT AVEC CACHE DE TEXTURES
+    // 🚀 RENDU ULTRA-LIGHT AVEC CACHE COMPLET PAR FRAME
     // ═══════════════════════════════════════════════════════════════════════════
-    // Au lieu de créer une surface Cairo à chaque frame (coûteux),
-    // on récupère une texture prérendue du cache (simple lookup)
+    // La texture est déjà rendue à la taille exacte pour cette frame
+    // On fait juste un lookup direct et un blit avec scale_factor (responsive)
 
     int texture_width, texture_height;
     SDL_Texture* cached_texture = counter_cache_get(counter->cache,
                                                      counter->current_breath,
-                                                     relative_breath_scale,
+                                                     hex_node->current_cycle,
                                                      &texture_width,
                                                      &texture_height);
 
@@ -174,8 +175,8 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
         return;
     }
 
-    // 🎯 APPLIQUER LE SCALE_FACTOR pour le responsive
-    // La texture est déjà au bon scale de breathing, on applique juste le window scale
+    // 🎯 APPLIQUER UNIQUEMENT LE SCALE_FACTOR pour le responsive
+    // Le breathing est déjà dans la texture (précalculée avec sinusoïdale)
     int scaled_width = (int)(texture_width * scale_factor);
     int scaled_height = (int)(texture_height * scale_factor);
 

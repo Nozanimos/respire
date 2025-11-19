@@ -9,6 +9,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "counter_cache.h"
+#include "precompute_list.h"  // Pour sinusoidal_movement
 #include "debug.h"
 
 // ════════════════════════════════════════════════════════════════════════
@@ -131,8 +132,10 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
                                           int base_font_size,
                                           SDL_Color text_color,
                                           double min_scale,
-                                          double max_scale) {
-    if (!renderer || !font_path || max_numbers <= 0) {
+                                          double max_scale,
+                                          int fps,
+                                          float breath_duration) {
+    if (!renderer || !font_path || max_numbers <= 0 || fps <= 0 || breath_duration <= 0.0f) {
         fprintf(stderr, "❌ Paramètres invalides pour counter_cache_create\n");
         return NULL;
     }
@@ -147,14 +150,23 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
     // Initialiser les champs
     cache->renderer = renderer;
     cache->max_numbers = max_numbers;
-    cache->scale_levels = CACHE_SCALE_LEVELS;
+    cache->fps = fps;
+    cache->breath_duration = breath_duration;
+    cache->frames_per_cycle = (int)(fps * breath_duration);  // Ex: 60 × 3.0 = 180 frames
     cache->min_scale = min_scale;
     cache->max_scale = max_scale;
     cache->font_path = font_path;
     cache->base_font_size = base_font_size;
     cache->text_color = text_color;
 
-    // Allouer le tableau 2D de textures
+    debug_printf("🎨 PRÉCALCUL COMPLET DES TEXTURES DU COMPTEUR (1 texture par frame)...\n");
+    debug_printf("   Chiffres : 1 à %d\n", max_numbers);
+    debug_printf("   Frames par cycle : %d (fps=%d × breath_duration=%.1fs)\n",
+                 cache->frames_per_cycle, fps, breath_duration);
+    debug_printf("   Scale breathing : %.2f → %.2f\n", min_scale, max_scale);
+    debug_printf("   Police : %s (taille base %d)\n", font_path, base_font_size);
+
+    // Allouer le tableau 2D de textures [number][frame_index]
     cache->textures = malloc(max_numbers * sizeof(SDL_Texture**));
     if (!cache->textures) {
         fprintf(stderr, "❌ Erreur allocation tableau de textures\n");
@@ -163,7 +175,7 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
     }
 
     for (int i = 0; i < max_numbers; i++) {
-        cache->textures[i] = malloc(CACHE_SCALE_LEVELS * sizeof(SDL_Texture*));
+        cache->textures[i] = malloc(cache->frames_per_cycle * sizeof(SDL_Texture*));
         if (!cache->textures[i]) {
             fprintf(stderr, "❌ Erreur allocation sous-tableau de textures\n");
             // Libérer les tableaux déjà alloués
@@ -176,42 +188,49 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
         }
     }
 
-    debug_printf("🎨 PRÉCALCUL DES TEXTURES DU COMPTEUR...\n");
-    debug_printf("   Chiffres : 1 à %d\n", max_numbers);
-    debug_printf("   Niveaux de scale : %d (%.2f → %.2f)\n",
-                 CACHE_SCALE_LEVELS, min_scale, max_scale);
-    debug_printf("   Police : %s (taille base %d)\n", font_path, base_font_size);
+    // Configurer la structure pour sinusoidal_movement
+    SinusoidalConfig sinusoidal_config = {
+        .angle_per_cycle = 0.0,           // Pas utilisé pour le scale
+        .scale_min = min_scale,
+        .scale_max = max_scale,
+        .clockwise = true,                // Pas utilisé pour le scale
+        .breath_duration = breath_duration
+    };
 
-    // Précalculer toutes les textures
+    // Précalculer TOUTES les textures pour chaque frame du cycle
     int total_textures = 0;
     for (int number = 1; number <= max_numbers; number++) {
-        for (int scale_level = 0; scale_level < CACHE_SCALE_LEVELS; scale_level++) {
-            // Calculer le scale pour ce niveau (interpolation linéaire)
-            double scale_ratio = (double)scale_level / (CACHE_SCALE_LEVELS - 1);
-            double breath_scale = min_scale + (max_scale - min_scale) * scale_ratio;
+        for (int frame = 0; frame < cache->frames_per_cycle; frame++) {
+            // Calculer le temps de cette frame
+            double frame_time = (double)frame / fps;
 
-            // Calculer la taille de police finale
-            double font_size = base_font_size * breath_scale;
+            // Calculer le scale exact pour cette frame avec la sinusoïdale
+            SinusoidalResult sinusoidal_result;
+            sinusoidal_movement(frame_time, &sinusoidal_config, &sinusoidal_result);
+
+            // Calculer la taille de police pour cette frame
+            double font_size = base_font_size * sinusoidal_result.scale;
             if (font_size < 12.0) font_size = 12.0;  // Minimum lisible
 
-            // Rendre la texture avec Cairo
+            // Rendre la texture avec Cairo à la taille exacte
             SDL_Texture* texture = render_number_with_cairo(renderer, number, font_path,
                                                             font_size, text_color);
 
             if (!texture) {
-                fprintf(stderr, "❌ Erreur rendu texture pour %d (scale %.2f)\n",
-                        number, breath_scale);
+                fprintf(stderr, "❌ Erreur rendu texture pour %d (frame %d, scale %.2f)\n",
+                        number, frame, sinusoidal_result.scale);
                 // Continuer quand même (texture NULL sera gérée dans get)
             } else {
                 total_textures++;
             }
 
-            cache->textures[number - 1][scale_level] = texture;
+            cache->textures[number - 1][frame] = texture;
         }
     }
 
-    debug_printf("✅ Cache créé: %d textures précalculées (%.1f KB estimé)\n",
-                 total_textures, (total_textures * 50.0) / 1024.0);  // ~50KB par texture (estimation)
+    double memory_mb = (total_textures * 50.0) / 1024.0;  // ~50KB par texture (estimation)
+    debug_printf("✅ Cache créé: %d textures précalculées (%.1f MB estimé)\n",
+                 total_textures, memory_mb);
 
     return cache;
 }
@@ -221,28 +240,19 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
 // ════════════════════════════════════════════════════════════════════════
 SDL_Texture* counter_cache_get(CounterTextureCache* cache,
                                int number,
-                               double relative_breath_scale,
+                               int frame_index,
                                int* texture_width,
                                int* texture_height) {
     if (!cache || number < 1 || number > cache->max_numbers) {
         return NULL;
     }
 
-    // Clamp le scale relatif entre 0.0 et 1.0
-    if (relative_breath_scale < 0.0) relative_breath_scale = 0.0;
-    if (relative_breath_scale > 1.0) relative_breath_scale = 1.0;
+    // Wrap le frame_index dans le cycle (modulo)
+    // Ex: frame_index = 185, frames_per_cycle = 180 → frame_in_cycle = 5
+    int frame_in_cycle = frame_index % cache->frames_per_cycle;
 
-    // Convertir le scale relatif en index de niveau
-    // relative_breath_scale = 0.0 → niveau 0 (min_scale)
-    // relative_breath_scale = 1.0 → niveau (CACHE_SCALE_LEVELS - 1) (max_scale)
-    int scale_level = (int)round(relative_breath_scale * (cache->scale_levels - 1));
-
-    // Sécurité
-    if (scale_level < 0) scale_level = 0;
-    if (scale_level >= cache->scale_levels) scale_level = cache->scale_levels - 1;
-
-    // Récupérer la texture
-    SDL_Texture* texture = cache->textures[number - 1][scale_level];
+    // Récupérer la texture pour cette frame exacte
+    SDL_Texture* texture = cache->textures[number - 1][frame_in_cycle];
 
     // Récupérer les dimensions si demandées
     if (texture && (texture_width || texture_height)) {
@@ -263,7 +273,7 @@ void counter_cache_destroy(CounterTextureCache* cache) {
 
     // Libérer toutes les textures SDL
     for (int i = 0; i < cache->max_numbers; i++) {
-        for (int j = 0; j < cache->scale_levels; j++) {
+        for (int j = 0; j < cache->frames_per_cycle; j++) {
             if (cache->textures[i][j]) {
                 SDL_DestroyTexture(cache->textures[i][j]);
             }
