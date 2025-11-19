@@ -18,3 +18,4 @@ all/
 AJOUTER_UN_PARAMETRE.*
 bin/
 config/stats/
+*.bak
