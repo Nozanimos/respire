@@ -189,17 +189,15 @@ static SDL_Texture* create_wim_title_texture(SDL_Renderer* renderer, const char*
     return texture;
 }
 
-// Initialise toute la partie SDL et graphique
-bool initialize_app(AppState* app, const char* title, const char* image_path) {
-    // 1. Initialisation SDL
+// Initialisation SDL, TTF et gestionnaire de polices
+static bool init_sdl_and_fonts(void) {
+    // Initialisation SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("ERREUR SDL_Init: %s", SDL_GetError());
         return false;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // 1.5 Initialisation TTF et gestionnaire de polices
-    // ═══════════════════════════════════════════════════════════════════════════
+    // Initialisation TTF
     if (TTF_Init() == -1) {
         debug_printf("❌ Erreur TTF_Init: %s\n", TTF_GetError());
         SDL_Quit();
@@ -227,6 +225,137 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
 
     debug_printf("✅ Gestionnaire de polices prêt\n");
     debug_blank_line();
+
+    return true;
+}
+
+// Création et positionnement responsive de la fenêtre JSON editor
+static void create_json_editor_window(AppState* app) {
+    if (!app) return;
+
+    int editor_pos_x, editor_pos_y;
+
+    // Récupérer la taille totale de l'écran (pas juste la fenêtre)
+    SDL_DisplayMode display_mode;
+    SDL_GetCurrentDisplayMode(0, &display_mode);  // 0 = écran principal
+    int screen_total_width = display_mode.w;
+    int screen_total_height = display_mode.h;
+
+    debug_printf("📺 Résolution écran détectée : %dx%d\n",
+                 screen_total_width, screen_total_height);
+
+    // Choix intelligent de la position
+    if (screen_total_width >= 2000) {
+        // Écran large : placer à droite de la fenêtre principale
+        int main_window_x, main_window_y;
+        SDL_GetWindowPosition(app->window, &main_window_x, &main_window_y);
+
+        editor_pos_x = main_window_x + app->screen_width + 20;  // 20px de marge
+        editor_pos_y = main_window_y;
+
+        debug_printf("🖥️ Écran large : JSON à droite de la fenêtre (%d, %d)\n",
+                     editor_pos_x, editor_pos_y);
+    } else {
+        // Écran normal/petit : centrer la fenêtre JSON
+        editor_pos_x = (screen_total_width - JSON_EDITOR_WIDTH) / 2;
+        editor_pos_y = (screen_total_height - JSON_EDITOR_HEIGHT) / 2;
+
+        // Sécurité : ne jamais sortir de l'écran
+        if (editor_pos_x < 0) editor_pos_x = 50;
+        if (editor_pos_y < 0) editor_pos_y = 50;
+
+        debug_printf("💻 Écran standard : JSON centrée (%d, %d)\n",
+                     editor_pos_x, editor_pos_y);
+    }
+
+    // Créer la fenêtre avec la position calculée
+    app->json_editor = creer_json_editor(
+        CONFIG_WIDGETS,
+        editor_pos_x,
+        editor_pos_y
+    );
+
+    if (!app->json_editor) {
+        debug_printf("⚠️ Impossible de créer l'éditeur JSON\n");
+    }
+}
+
+// Gestion de l'arrêt du chronomètre (ESPACE ou CLIC)
+static void handle_chrono_stop(AppState* app, const char* trigger_name) {
+    if (!app || !app->session_stopwatch) return;
+
+    // Arrêter le chronomètre
+    stopwatch_stop(app->session_stopwatch);
+
+    // Récupérer le temps écoulé
+    int elapsed_seconds = stopwatch_get_elapsed_seconds(app->session_stopwatch);
+    float elapsed_time = (float)elapsed_seconds;
+
+    // Stocker le temps dans le tableau (avec réallocation si nécessaire)
+    if (app->session_times && app->session_count < app->session_capacity) {
+        app->session_times[app->session_count] = elapsed_time;
+        app->session_count++;
+        debug_printf("✅ Session %d terminée: %.0f secondes (stocké)\n",
+                     app->session_count, elapsed_time);
+    } else if (app->session_times) {
+        // Réallocation du tableau (doubler la capacité)
+        int new_capacity = app->session_capacity * 2;
+        float* new_array = realloc(app->session_times, new_capacity * sizeof(float));
+        if (new_array) {
+            app->session_times = new_array;
+            app->session_capacity = new_capacity;
+            app->session_times[app->session_count] = elapsed_time;
+            app->session_count++;
+            debug_printf("✅ Session %d terminée: %.0f secondes (tableau étendu à %d)\n",
+                         app->session_count, elapsed_time, new_capacity);
+        } else {
+            debug_printf("⚠️ Échec réallocation tableau - temps non stocké\n");
+        }
+    }
+
+    // Désactiver la phase chrono et activer la phase inspiration
+    app->chrono_phase = false;
+    app->inspiration_phase = true;
+
+    debug_printf("⏹️  Chronomètre arrêté par %s\n", trigger_name);
+    debug_printf("🫁 Phase INSPIRATION activée - animation scale_min → scale_max\n");
+}
+
+// Configuration de l'écran d'accueil (Wim Hof)
+static void setup_welcome_screen(AppState* app) {
+    if (!app || !app->renderer) return;
+
+    app->waiting_to_start = true;  // Commence sur l'écran d'accueil
+
+    // Charger l'image wim.png
+    SDL_Surface* wim_surface = IMG_Load(IMG_WIM);
+    if (!wim_surface) {
+        debug_printf("⚠️  Impossible de charger wim.png: %s\n", IMG_GetError());
+        app->wim_image = NULL;
+    } else {
+        app->wim_image = SDL_CreateTextureFromSurface(app->renderer, wim_surface);
+        SDL_FreeSurface(wim_surface);
+
+        if (!app->wim_image) {
+            debug_printf("⚠️  Impossible de créer texture wim.png\n");
+        }
+    }
+
+    // Créer le titre "Technique\nWim Hof" en Cairo
+    app->wim_title = create_wim_title_texture(app->renderer, FONT_ARIAL_REGULAR);
+    if (!app->wim_title) {
+        debug_printf("⚠️  Impossible de créer titre Wim Hof\n");
+    }
+
+    debug_printf("✅ Écran d'accueil Wim Hof créé\n");
+}
+
+// Initialise toute la partie SDL et graphique
+bool initialize_app(AppState* app, const char* title, const char* image_path) {
+    // 1. Initialisation SDL, TTF et polices
+    if (!init_sdl_and_fonts()) {
+        return false;
+    }
 
     // 2. Création fenêtre plein écran
     app->window = SDL_CreateWindow(title,
@@ -316,118 +445,26 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
         update_window_minimum_size(app->settings_panel, app->window);
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // 6d. GÉNÉRATION AUTOMATIQUE DES TEMPLATES JSON
-    // ════════════════════════════════════════════════════════════════════════
-    // Générer templates.json si absent ou obsolète
-    // Ce fichier contient des templates vierges pour chaque type de widget
-    // utilisables dans l'éditeur JSON
-    // Toujours régénérer au démarrage pour garantir la synchronisation
+    // Génération automatique des templates JSON
     if (!generer_templates_json(CONFIG_WIDGETS, GENERATED_TEMPLATES_JSON)) {
         debug_printf("⚠️ Impossible de générer templates.json (non bloquant)\n");
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // CRÉATION DE LA FENÊTRE ÉDITEUR JSON
-    // ─────────────────────────────────────────────────────────────────────────
-    // ⚠️ IMPORTANT : Positionner la fenêtre de manière RESPONSIVE !
-    //
-    // PROBLÈME RÉSOLU : L'ancienne version utilisait une position fixe (1400px)
-    // qui sortait de l'écran sur les petits moniteurs, causant un SDL_QUIT et
-    // fermant immédiatement toute l'application !
-    //
-    // NOUVELLE LOGIQUE :
-    // - Si l'écran est assez large (> 2000px) : placer à droite de la fenêtre
-    // - Sinon : placer la fenêtre JSON au centre de l'écran
-    // ─────────────────────────────────────────────────────────────────────────
-
-    int editor_pos_x, editor_pos_y;
-
-    // Récupérer la taille totale de l'écran (pas juste la fenêtre)
-    SDL_DisplayMode display_mode;
-    SDL_GetCurrentDisplayMode(0, &display_mode);  // 0 = écran principal
-    int screen_total_width = display_mode.w;
-    int screen_total_height = display_mode.h;
-
-    debug_printf("📺 Résolution écran détectée : %dx%d\n",
-                 screen_total_width, screen_total_height);
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // CHOIX INTELLIGENT DE LA POSITION
-    // ═════════════════════════════════════════════════════════════════════════
-    if (screen_total_width >= 2000) {
-        // Écran large : placer à droite de la fenêtre principale
-        int main_window_x, main_window_y;
-        SDL_GetWindowPosition(app->window, &main_window_x, &main_window_y);
-
-        editor_pos_x = main_window_x + app->screen_width + 20;  // 20px de marge
-        editor_pos_y = main_window_y;
-
-        debug_printf("🖥️ Écran large : JSON à droite de la fenêtre (%d, %d)\n",
-                     editor_pos_x, editor_pos_y);
-    } else {
-        // Écran normal/petit : centrer la fenêtre JSON
-        // Constantes JSON_EDITOR_WIDTH et JSON_EDITOR_HEIGHT définies dans constants.h
-        editor_pos_x = (screen_total_width - JSON_EDITOR_WIDTH) / 2;
-        editor_pos_y = (screen_total_height - JSON_EDITOR_HEIGHT) / 2;
-
-        // Sécurité : ne jamais sortir de l'écran
-        if (editor_pos_x < 0) editor_pos_x = 50;
-        if (editor_pos_y < 0) editor_pos_y = 50;
-
-        debug_printf("💻 Écran standard : JSON centrée (%d, %d)\n",
-                     editor_pos_x, editor_pos_y);
-    }
-
-    // Créer la fenêtre avec la position calculée
-    app->json_editor = creer_json_editor(
-        CONFIG_WIDGETS,
-        editor_pos_x,
-        editor_pos_y
-    );
-
-    if (!app->json_editor) {
-        debug_printf("⚠️ Impossible de créer l'éditeur JSON\n");
-        // Ce n'est pas bloquant, on continue sans
-    }
+    // Création de la fenêtre éditeur JSON avec positionnement responsive
+    create_json_editor_window(app);
 
     // Chargement de la configuration
     load_config(&app->config);
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // INITIALISATION FPS ADAPTATIF
-    // ═══════════════════════════════════════════════════════════════════════════
+    // Initialisation FPS adaptatif
     app->last_interaction_time = SDL_GetTicks();
     app->editor_has_focus = false;
     app->last_editor_event = 0;
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉCRAN D'ACCUEIL (Technique Wim Hof)
-    // ═══════════════════════════════════════════════════════════════════════════
-    app->waiting_to_start = true;  // Commence sur l'écran d'accueil
-
-    // Charger l'image wim.png
-    SDL_Surface* wim_surface = IMG_Load(IMG_WIM);
-    if (!wim_surface) {
-        debug_printf("⚠️  Impossible de charger wim.png: %s\n", IMG_GetError());
-        app->wim_image = NULL;
-    } else {
-        app->wim_image = SDL_CreateTextureFromSurface(app->renderer, wim_surface);
-        SDL_FreeSurface(wim_surface);
-
-        if (!app->wim_image) {
-            debug_printf("⚠️  Impossible de créer texture wim.png\n");
-        }
-    }
-
-    // Créer le titre "Technique\nWim Hof" en Cairo
-    app->wim_title = create_wim_title_texture(app->renderer, FONT_ARIAL_REGULAR);
-    if (!app->wim_title) {
-        debug_printf("⚠️  Impossible de créer titre Wim Hof\n");
-    }
+    // Configuration de l'écran d'accueil Wim Hof
+    setup_welcome_screen(app);
 
     debug_printf("Application initialisée: %dx%d\n", app->screen_width, app->screen_height);
-    debug_printf("✅ Écran d'accueil Wim Hof créé\n");
     return true;
 }
 
@@ -778,41 +815,7 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             }
             // 🆕 ARRÊT DU CHRONOMÈTRE avec ESPACE
             else if (event->key.keysym.sym == SDLK_SPACE && app->chrono_phase && app->session_stopwatch) {
-                // Arrêter le chronomètre
-                stopwatch_stop(app->session_stopwatch);
-
-                // Récupérer le temps écoulé
-                int elapsed_seconds = stopwatch_get_elapsed_seconds(app->session_stopwatch);
-                float elapsed_time = (float)elapsed_seconds;
-
-                // Stocker le temps dans le tableau (avec réallocation si nécessaire)
-                if (app->session_times && app->session_count < app->session_capacity) {
-                    app->session_times[app->session_count] = elapsed_time;
-                    app->session_count++;
-                    debug_printf("✅ Session %d terminée: %.0f secondes (stocké)\n",
-                                 app->session_count, elapsed_time);
-                } else if (app->session_times) {
-                    // Réallocation du tableau (doubler la capacité)
-                    int new_capacity = app->session_capacity * 2;
-                    float* new_array = realloc(app->session_times, new_capacity * sizeof(float));
-                    if (new_array) {
-                        app->session_times = new_array;
-                        app->session_capacity = new_capacity;
-                        app->session_times[app->session_count] = elapsed_time;
-                        app->session_count++;
-                        debug_printf("✅ Session %d terminée: %.0f secondes (tableau étendu à %d)\n",
-                                     app->session_count, elapsed_time, new_capacity);
-                    } else {
-                        debug_printf("⚠️ Échec réallocation tableau - temps non stocké\n");
-                    }
-                }
-
-                // Désactiver la phase chrono et activer la phase inspiration
-                app->chrono_phase = false;
-                app->inspiration_phase = true;
-
-                debug_printf("⏹️  Chronomètre arrêté par ESPACE\n");
-                debug_printf("🫁 Phase INSPIRATION activée - animation scale_min → scale_max\n");
+                handle_chrono_stop(app, "ESPACE");
             }
             break;
 
@@ -847,41 +850,7 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             app->last_interaction_time = SDL_GetTicks();
             // 🆕 ARRÊT DU CHRONOMÈTRE avec CLIC GAUCHE (priorité sur le panneau)
             if (event->button.button == SDL_BUTTON_LEFT && app->chrono_phase && app->session_stopwatch) {
-                // Arrêter le chronomètre
-                stopwatch_stop(app->session_stopwatch);
-
-                // Récupérer le temps écoulé
-                int elapsed_seconds = stopwatch_get_elapsed_seconds(app->session_stopwatch);
-                float elapsed_time = (float)elapsed_seconds;
-
-                // Stocker le temps dans le tableau (avec réallocation si nécessaire)
-                if (app->session_times && app->session_count < app->session_capacity) {
-                    app->session_times[app->session_count] = elapsed_time;
-                    app->session_count++;
-                    debug_printf("✅ Session %d terminée: %.0f secondes (stocké)\n",
-                                 app->session_count, elapsed_time);
-                } else if (app->session_times) {
-                    // Réallocation du tableau (doubler la capacité)
-                    int new_capacity = app->session_capacity * 2;
-                    float* new_array = realloc(app->session_times, new_capacity * sizeof(float));
-                    if (new_array) {
-                        app->session_times = new_array;
-                        app->session_capacity = new_capacity;
-                        app->session_times[app->session_count] = elapsed_time;
-                        app->session_count++;
-                        debug_printf("✅ Session %d terminée: %.0f secondes (tableau étendu à %d)\n",
-                                     app->session_count, elapsed_time, new_capacity);
-                    } else {
-                        debug_printf("⚠️ Échec réallocation tableau - temps non stocké\n");
-                    }
-                }
-
-                // Désactiver la phase chrono et activer la phase inspiration
-                app->chrono_phase = false;
-                app->inspiration_phase = true;
-
-                debug_printf("⏹️  Chronomètre arrêté par CLIC GAUCHE\n");
-                debug_printf("🫁 Phase INSPIRATION activée - animation scale_min → scale_max\n");
+                handle_chrono_stop(app, "CLIC GAUCHE");
             }
             // Sinon, transmettre l'événement aux panneaux UNIQUEMENT si on est sur l'écran d'accueil
             // Pendant l'animation principale, aucun panneau ne doit recevoir d'événements
@@ -917,6 +886,52 @@ void update_app(AppState* app, float delta_time) {
     }
 }
 
+// Rendu de l'écran d'accueil (Wim Hof)
+static void render_welcome_screen(AppState* app) {
+    if (!app || !app->renderer) return;
+
+    debug_verbose("🎨 RENDU écran d'accueil (waiting_to_start=%d)\n", app->waiting_to_start);
+
+    // Calculer les positions pour centrer le tout
+    int title_w, title_h;
+    if (app->wim_title) {
+        SDL_QueryTexture(app->wim_title, NULL, NULL, &title_w, &title_h);
+    } else {
+        title_w = TITLE_WIDTH;
+        title_h = TITLE_HEIGHT;
+    }
+
+    int total_height = title_h + VERTICAL_MARGIN + IMAGE_SIZE;  // titre + marge + image
+    int start_y = (app->screen_height - total_height) / 2;
+
+    // Rendre le titre au-dessus de l'image
+    if (app->wim_title) {
+        SDL_Rect title_rect = {
+            (app->screen_width - title_w) / 2,
+            start_y,
+            title_w,
+            title_h
+        };
+        SDL_RenderCopy(app->renderer, app->wim_title, NULL, &title_rect);
+    }
+
+    // Rendre l'image wim.png (IMAGE_SIZE x IMAGE_SIZE au centre)
+    debug_verbose("🖼️  Vérification wim_image: %p\n", (void*)app->wim_image);
+    if (app->wim_image) {
+        SDL_Rect img_rect = {
+            (app->screen_width - IMAGE_SIZE) / 2,
+            start_y + title_h + VERTICAL_MARGIN,
+            IMAGE_SIZE,
+            IMAGE_SIZE
+        };
+        debug_verbose("🖼️  Avant rendu - img_rect: pos(%d,%d) size(%dx%d)\n",
+                     img_rect.x, img_rect.y, img_rect.w, img_rect.h);
+        SDL_RenderCopy(app->renderer, app->wim_image, NULL, &img_rect);
+    } else {
+        debug_printf("⚠️  wim_image est NULL - impossible de rendre l'écran d'accueil !\n");
+    }
+}
+
 // Rendu complet de l'application
 void render_app(AppState* app) {
     if (!app || !app->renderer) return;
@@ -940,56 +955,10 @@ void render_app(AppState* app) {
         goto render_panels;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // ÉCRAN D'ACCUEIL (Technique Wim Hof)
-    // ═══════════════════════════════════════════════════════════════════════
+    // Écran d'accueil (Technique Wim Hof)
     if (app->waiting_to_start) {
-        debug_verbose("🎨 RENDU écran d'accueil (waiting_to_start=%d)\n", app->waiting_to_start);
-        // Calculer les positions pour centrer le tout
-        int title_w, title_h;
-        if (app->wim_title) {
-            SDL_QueryTexture(app->wim_title, NULL, NULL, &title_w, &title_h);
-        } else {
-            title_w = TITLE_WIDTH;
-            title_h = TITLE_HEIGHT;
-        }
-
-        int total_height = title_h + VERTICAL_MARGIN + IMAGE_SIZE;  // titre + marge + image
-        int start_y = (app->screen_height - total_height) / 2;
-
-        // Rendre le titre au-dessus de l'image
-        if (app->wim_title) {
-            SDL_Rect title_rect = {
-                (app->screen_width - title_w) / 2,
-                start_y,
-                title_w,
-                title_h
-            };
-            SDL_RenderCopy(app->renderer, app->wim_title, NULL, &title_rect);
-        }
-
-        // Rendre l'image wim.png (IMAGE_SIZE x IMAGE_SIZE au centre)
-        debug_verbose("🖼️  Vérification wim_image: %p\n", (void*)app->wim_image);
-        if (app->wim_image) {
-            SDL_Rect img_rect = {
-                (app->screen_width - IMAGE_SIZE) / 2,
-                start_y + title_h + VERTICAL_MARGIN,
-                IMAGE_SIZE,
-                IMAGE_SIZE
-            };
-            debug_verbose("🖼️  Avant rendu - img_rect: pos(%d,%d) size(%dx%d)\n",
-                         img_rect.x, img_rect.y, img_rect.w, img_rect.h);
-            SDL_RenderCopy(app->renderer, app->wim_image, NULL, &img_rect);
-        } else {
-            debug_printf("⚠️  wim_image est NULL - impossible de rendre l'écran d'accueil !\n");
-        }
-
-        // Ne PAS faire SDL_RenderPresent ici !
-        // On continue pour rendre le panneau settings et l'éditeur JSON
-        // Le RenderPresent est fait à la fin de la fonction (ligne 1030)
+        render_welcome_screen(app);
     }
-    // Si on est sur l'écran d'accueil, on a déjà rendu l'image Wim Hof
-    // Maintenant on continue pour rendre le panneau settings et l'éditeur JSON
 
     // 2. Dessine tous les hexagones (sauf si la session de comptage est terminée et qu'on n'est PAS sur l'écran d'accueil)
     if (app->hexagones) {

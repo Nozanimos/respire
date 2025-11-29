@@ -69,6 +69,27 @@ void init_panel_callback_context(SettingsPanel* panel, AppConfig* main_config,
     debug_printf("✅ CallbackContext initialisé (10 variables globales → 1 seule)\n");
 }
 
+//  MACROS POUR CALLBACKS SIMPLES (ÉLIMINE DUPLICATION)
+// Macro pour callbacks qui modifient un champ int dans temp_config
+#define DEFINE_INT_CALLBACK(func_name, field, label) \
+void func_name(int new_value) { \
+    if (!g_active_panel || !g_active_panel->callback_ctx) return; \
+    CallbackContext* ctx = g_active_panel->callback_ctx; \
+    if (!ctx->panel || !ctx->main_config) return; \
+    ctx->panel->temp_config.field = new_value; \
+    debug_printf("✅ " label " changé: %d (en attente de validation)\n", new_value); \
+}
+
+// Macro pour callbacks qui modifient un champ bool dans temp_config
+#define DEFINE_BOOL_CALLBACK(func_name, field, label) \
+void func_name(bool new_value) { \
+    if (!g_active_panel || !g_active_panel->callback_ctx) return; \
+    CallbackContext* ctx = g_active_panel->callback_ctx; \
+    if (!ctx->panel || !ctx->main_config) return; \
+    ctx->panel->temp_config.field = new_value; \
+    debug_printf("✅ " label " changé: %s (en attente de validation)\n", new_value ? "ACTIF" : "INACTIF"); \
+}
+
 //  CALLBACKS POUR LES WIDGETS
 
 void duration_value_changed(int new_value) {
@@ -106,20 +127,7 @@ void duration_value_changed(int new_value) {
     }
 }
 
-void cycles_value_changed(int new_value) {
-    if (!g_active_panel || !g_active_panel->callback_ctx) return;
-
-    CallbackContext* ctx = g_active_panel->callback_ctx;
-    if (!ctx->panel || !ctx->main_config) return;
-
-    // Mise à jour temp_config (sans sauvegarder)
-    // Modification stockée dans temp_config uniquement
-    ctx->panel->temp_config.nb_session = new_value;
-
-    // Sauvegarde uniquement lors du clic sur "Appliquer"
-
-    debug_printf("✅ Cycles changés: %d (en attente de validation)\n", new_value);
-}
+DEFINE_INT_CALLBACK(cycles_value_changed, nb_session, "Cycles")
 
 void nb_breath(int new_value) {
     if (!g_active_panel || !g_active_panel->callback_ctx) return;
@@ -136,47 +144,11 @@ void nb_breath(int new_value) {
     debug_printf("✅ Nombre de respirations changé: %d (en attente de validation)\n", new_value);
 }
 
-void start_value_changed(int new_value) {
-    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+DEFINE_INT_CALLBACK(start_value_changed, start_duration, "Durée de démarrage")
 
-    CallbackContext* ctx = g_active_panel->callback_ctx;
-    if (!ctx->panel || !ctx->main_config) return;
+DEFINE_INT_CALLBACK(session_value_changed, nb_session, "Nombre de sessions")
 
-    // Mise à jour temp_config (sans sauvegarder)
-    // Modification stockée dans temp_config uniquement
-    ctx->panel->temp_config.start_duration = new_value;
-
-    // Sauvegarde uniquement lors du clic sur "Appliquer"
-
-    debug_printf("✅ Durée de démarrage changée: %d secondes (en attente de validation)\n", new_value);
-}
-
-void session_value_changed(int new_value) {
-    if (!g_active_panel || !g_active_panel->callback_ctx) return;
-
-    CallbackContext* ctx = g_active_panel->callback_ctx;
-    if (!ctx->panel || !ctx->main_config) return;
-
-    // Mise à jour temp_config (sans sauvegarder)
-    ctx->panel->temp_config.nb_session = new_value;
-
-    debug_printf("✅ Nombre de sessions changé: %d (en attente de validation)\n", new_value);
-}
-
-void alternate_cycles_changed(bool new_value) {
-    if (!g_active_panel || !g_active_panel->callback_ctx) return;
-
-    CallbackContext* ctx = g_active_panel->callback_ctx;
-    if (!ctx->panel || !ctx->main_config) return;
-
-    // Mise à jour temp_config (sans sauvegarder)
-    // Modification stockée dans temp_config uniquement
-    ctx->panel->temp_config.alternate_cycles = new_value;
-
-    // Sauvegarde uniquement lors du clic sur "Appliquer"
-
-    debug_printf("✅ Cycles alternés changés: %s (en attente de validation)\n", new_value ? "ACTIF" : "INACTIF");
-}
+DEFINE_BOOL_CALLBACK(alternate_cycles_changed, alternate_cycles, "Cycles alternés")
 
 //  CALLBACKS POUR LE SELECTOR PATTERN DE RÉTENTION (NOUVEAU SYSTÈME)
 void retention_pattern_changed(int new_index) {
@@ -200,18 +172,7 @@ void retention_pattern_changed(int new_index) {
                 pattern_names[new_index]);
 }
 
-void retention_start_changed(bool new_state) {
-    if (!g_active_panel || !g_active_panel->callback_ctx) return;
-
-    CallbackContext* ctx = g_active_panel->callback_ctx;
-    if (!ctx->panel || !ctx->main_config) return;
-
-    // Mise à jour temp_config
-    ctx->panel->temp_config.retention_start_empty = new_state;
-
-    debug_printf("✅ Commencer par poumons vides: %s (en attente de validation)\n",
-                new_state ? "OUI" : "NON");
-}
+DEFINE_BOOL_CALLBACK(retention_start_changed, retention_start_empty, "Commencer par poumons vides")
 
 /**
  * Callback pour le selector_widget en mode roller (pattern personnalisé)
