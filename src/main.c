@@ -6,43 +6,57 @@
 #include <locale.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "geometry.h"
-#include "precompute_list.h"
-#include "renderer.h"
-#include "config.h"
-#include "debug.h"
-#include "widget_base.h"
-#include "timer.h"
-#include "counter.h"
-#include "chronometre.h"
-#include "session_card.h"
+#include "core/geometry.h"
+#include "core/precompute_list.h"
+#include "core/renderer.h"
+#include "core/config.h"
+#include "core/debug.h"
+#include "core/widget_base.h"
+#include "core/timer.h"
+#include "core/counter.h"
+#include "core/chronometre.h"
+#include "core/session_card.h"
+#include "instances/technique_instance.h"
+#include "instances/whm/whm.h"
 
 
 
 void init_debug_mode(int argc, char **argv) {
+    int debug_enabled = 0;
+
+    // Vérifier les arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
-            // Configurer la locale pour UTF-8
-            setlocale(LC_ALL, "");
+            debug_enabled = 1;
+        }
+        if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
+            verbose_mode = 1;
+        }
+    }
 
-            debug_file = fopen("debug.txt", "w");
-            if (debug_file) {
-                // Écrire le BOM UTF-8 pour garantir l'encodage
-                fprintf(debug_file, "\xEF\xBB\xBF");
-                // Marqueur d'encodage reconnu par les éditeurs (vim, VS Code, emacs, etc.)
-                fprintf(debug_file, "# -*- coding: utf-8 -*-\n");
+    if (debug_enabled) {
+        // Configurer la locale pour UTF-8
+        setlocale(LC_ALL, "");
 
-                // Une seule redirection
-                freopen("debug.txt", "a", stdout);  // Mode 'a' pour ne pas écraser le BOM
-                // stderr reste séparé pour les vraies erreurs
+        debug_file = fopen("debug.txt", "w");
+        if (debug_file) {
+            // Écrire le BOM UTF-8 pour garantir l'encodage
+            fprintf(debug_file, "\xEF\xBB\xBF");
+            // Marqueur d'encodage reconnu par les éditeurs (vim, VS Code, emacs, etc.)
+            fprintf(debug_file, "# -*- coding: utf-8 -*-\n");
 
-                setbuf(stdout, NULL);
+            // Une seule redirection
+            freopen("debug.txt", "a", stdout);  // Mode 'a' pour ne pas écraser le BOM
+            // stderr reste séparé pour les vraies erreurs
 
-                time_t now = time(NULL);
-                debug_printf("=== DÉBUT SESSION DEBUG - %s ===\n", ctime(&now));
-                debug_printf("✅ Mode debug activé - logs dans debug.txt\n");
+            setbuf(stdout, NULL);
+
+            time_t now = time(NULL);
+            debug_printf("=== DÉBUT SESSION DEBUG - %s ===\n", ctime(&now));
+            debug_printf("✅ Mode debug activé - logs dans debug.txt\n");
+            if (verbose_mode) {
+                debug_printf("✅ Mode VERBOSE activé\n");
             }
-            break;
         }
     }
 }
@@ -91,43 +105,32 @@ int main(int argc, char **argv) {
     // Assignement hex_list à app.hexagones
     app.hexagones = hex_list;
 
-    // === PRÉ-CALCULS ===
-    precompute_all_cycles(hex_list, TARGET_FPS, config.breath_duration);
-
-    // 🆕 REMPLIR LES FRAMES DU COMPTEUR pour tous les hexagones
-    // Note: L'allocation a déjà été faite dans precompute_all_cycles()
-    // On utilise le nombre de respirations depuis la config
-    debug_printf("\n📝 REMPLISSAGE des precomputed_counter_frames pour %d hexagones:\n", hex_list->count);
-    HexagoneNode* node = hex_list->first;
-    while (node) {
-        precompute_counter_frames(
-            node,
-            node->total_cycles,           // Nombre total de frames précalculées
-            TARGET_FPS,                   // Images par seconde
-            config.breath_duration,       // Durée d'un cycle complet
-            config.Nb_respiration         // Nombre max de respirations à compter
-        );
-        node = node->next;
-    }
-
-    // Compter le nombre total de listes créées
-    int total_lists = 0;
-    size_t total_memory = 0;
-    node = hex_list->first;
-    while (node) {
-        if (node->precomputed_counter_frames) {
-            total_lists++;
-            total_memory += node->total_cycles * sizeof(CounterFrame);
+    // 🐛 FIX: Corriger current_scale des hexagones pour le responsive
+    // Les hexagones sont créés avec current_scale = 1.0, mais ils doivent avoir scale_factor
+    if (hex_list) {
+        HexagoneNode* node = hex_list->first;
+        while (node && node->data) {
+            node->data->current_scale = app.scale_factor;
+            node = node->next;
         }
-        node = node->next;
+        debug_printf("✅ Hexagones créés avec scale_factor=%.2f\n", app.scale_factor);
     }
-    debug_printf("\n📊 RÉSUMÉ precomputed_counter_frames:\n");
-    debug_printf("   - Nombre de LISTES CRÉÉES: %d\n", total_lists);
-    debug_printf("   - Mémoire totale utilisée: %zu bytes (%.2f KB)\n", total_memory, total_memory / 1024.0);
-    print_rotation_frame_requirements(hex_list, TARGET_FPS, config.breath_duration);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 🆕 OPTIMISATION : PRÉ-CALCULS DIFFÉRÉS
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Les pré-calculs (~100 MB) ne sont PAS faits au démarrage !
+    // Ils seront faits PENDANT le timer (après le clic sur l'image Wim Hof)
+    // Avantages :
+    //   - Démarrage instantané de l'application
+    //   - 10+ secondes disponibles pour le calcul pendant le timer
+    //   - Libération de la mémoire à la fin de l'animation
+    //   - Économie de ressources pour les autres techniques de respiration futures
+    // ═══════════════════════════════════════════════════════════════════════════
 
     debug_printf("✅ Hexagones créés et assignés à app.hexagones\n");
     debug_printf("📊 Nombre d'hexagones: %d\n", hex_list->count);
+    debug_printf("⏳ Pré-calculs différés (se feront après le clic sur l'image)\n");
 
 
     // === CRÉATION DU TIMER ===
@@ -143,17 +146,18 @@ int main(int argc, char **argv) {
         fprintf(stderr, "⚠️  Échec création timer - démarrage direct de l'animation\n");
         app.timer_phase = false;
     } else {
-        app.timer_phase = true;
-        timer_start(app.session_timer);
-        debug_printf("✅ Timer créé: %d secondes\n", timer_duration);
+        // ⚠️ NE PAS DÉMARRER LE TIMER MAINTENANT !
+        // Le timer sera démarré après le clic sur l'écran d'accueil
+        app.timer_phase = false;  // Sera activé après le clic
+        debug_printf("✅ Timer créé: %d secondes (sera démarré après clic)\n", timer_duration);
 
-        // 🆕 FIGER L'ANIMATION PENDANT LE TIMER
+        // 🆕 FIGER L'ANIMATION POUR PLUS TARD
         HexagoneNode* node = hex_list->first;
         while (node) {
             node->is_frozen = true;  // Figer tous les hexagones
             node = node->next;
         }
-        debug_printf("❄️  Animation figée pendant le timer\n");
+        debug_printf("❄️  Animation figée (sera démarrée après clic)\n");
     }
 
     // === CRÉATION DU COMPTEUR DE RESPIRATIONS ===
@@ -256,7 +260,14 @@ int main(int argc, char **argv) {
 
     /*------------------------------------------------------------*/
 
-    const int FRAME_DELAY = 1000 / TARGET_FPS;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FPS ADAPTATIF : 60 FPS (animations) ou 15 FPS (idle/économie CPU)
+    // ═══════════════════════════════════════════════════════════════════════════
+    const int FRAME_DELAY_HIGH = 1000 / TARGET_FPS;  // 60 FPS = ~16ms
+    const int FRAME_DELAY_LOW = 1000 / 15;           // 15 FPS = ~66ms
+    int current_frame_delay = FRAME_DELAY_HIGH;      // Commence en 60 FPS
+    bool was_high_fps = true;                        // Pour logger les changements
+
     Uint32 frame_start;
     int frame_time;
     int frame_count = 0;
@@ -272,6 +283,14 @@ int main(int argc, char **argv) {
 
         // Gestion événements
         while (SDL_PollEvent(&event)) {
+            // Si une technique est active, déléguer les événements à l'instance
+            if (app.active_technique) {
+                TechniqueInstance* instance = (TechniqueInstance*)app.active_technique;
+                if (instance->handle_event) {
+                    instance->handle_event(instance, &event);
+                }
+            }
+
             // Utiliser la fonction centralisée de renderer.c
             handle_app_events(&app, &event);
 
@@ -280,6 +299,181 @@ int main(int argc, char **argv) {
                 done = 0;
             }
         }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // DÉLÉGATION À L'INSTANCE DE TECHNIQUE ACTIVE
+        // ═════════════════════════════════════════════════════════════════════
+        if (app.active_technique) {
+            TechniqueInstance* instance = (TechniqueInstance*)app.active_technique;
+
+            // Mettre à jour l'instance
+            float delta_time = 1.0f / TARGET_FPS;
+            if (instance->update) {
+                instance->update(instance, delta_time);
+            }
+
+            // Vérifier si la technique est terminée
+            if (instance->is_finished) {
+                debug_printf("🔙 [MAIN] Technique terminée\n");
+
+                // Récupérer les données de session avant de détruire l'instance
+                WHMData* whm_data = (WHMData*)instance->technique_data;
+                float* session_times = NULL;
+                int session_count = 0;
+
+                if (whm_data && whm_data->session_controller &&
+                    whm_data->session_controller->session_times &&
+                    whm_data->session_controller->session_count > 0) {
+                    // Copier les temps de session depuis le controller
+                    session_count = whm_data->session_controller->session_count;
+                    session_times = malloc(sizeof(float) * session_count);
+                    if (session_times) {
+                        memcpy(session_times, whm_data->session_controller->session_times,
+                               sizeof(float) * session_count);
+                    }
+                }
+
+                // Détruire l'instance
+                technique_destroy(instance);
+                app.active_technique = NULL;
+
+                // Créer et ouvrir le panneau de statistiques si on a des sessions
+                if (session_times && session_count > 0 && !app.stats_panel) {
+                    app.stats_panel = create_stats_panel(
+                        app.screen_width,
+                        app.screen_height,
+                        session_times,
+                        session_count
+                    );
+
+                    if (app.stats_panel) {
+                        open_stats_panel(app.stats_panel);
+                        debug_printf("📊 [MAIN] Panneau de statistiques ouvert\n");
+                    }
+
+                    free(session_times);
+                } else {
+                    // Pas de sessions → retour direct à l'écran d'accueil
+                    app.waiting_to_start = true;
+                    debug_printf("🏠 [MAIN] Retour direct à l'écran d'accueil\n");
+                }
+            }
+
+            // Rendre l'app (qui déléguera le rendu à l'instance)
+            render_app(&app);
+
+            // Réguler les FPS selon les besoins de l'instance
+            regulate_fps(frame_start);
+
+            // Continuer la boucle (skip le code ancien ci-dessous)
+            continue;
+        }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // MISE À JOUR DU PANNEAU STATS (s'il est ouvert)
+        // ═════════════════════════════════════════════════════════════════════
+        if (app.stats_panel) {
+            float delta_time = 1.0f / TARGET_FPS;
+            update_stats_panel(app.stats_panel, delta_time);
+
+            // 🆕 RETOUR À L'ÉCRAN D'ACCUEIL quand le panneau stats est complètement fermé
+            if (app.stats_panel->state == STATS_CLOSED && !app.waiting_to_start) {
+                app.waiting_to_start = true;
+                debug_printf("🏠 Retour à l'écran d'accueil (stats fermé)\n");
+
+                // ═════════════════════════════════════════════════════════════════
+                // FERMER LE JSON EDITOR
+                // ═════════════════════════════════════════════════════════════════
+                if (app.json_editor && app.json_editor->est_ouvert) {
+                    app.json_editor->est_ouvert = false;
+                    debug_printf("📝 JSON Editor fermé (retour écran d'accueil)\n");
+                }
+
+                // ═════════════════════════════════════════════════════════════════
+                // RECHARGER LA CONFIGURATION
+                // ═════════════════════════════════════════════════════════════════
+                load_config(&app.config);
+                debug_printf("🔄 Configuration rechargée depuis respiration.conf\n");
+
+                // ═════════════════════════════════════════════════════════════════
+                // RÉINITIALISER LES HEXAGONES PRINCIPAUX
+                // ═════════════════════════════════════════════════════════════════
+                // ⚠️  NE PAS free_precomputed_data ici !
+                // Le precompute sera refait au prochain clic Wim dans renderer.c
+                // On réinitialise juste l'état visuel des hexagones
+                if (app.hexagones) {
+                    HexagoneNode* node = app.hexagones->first;
+                    while (node) {
+                        node->data->center_x = app.screen_width / 2;
+                        node->data->center_y = app.screen_height / 2;
+
+                        // 🐛 FIX: Positionner sur scale_max pour que le timer soit bien visible
+                        // Les precomputed_counter_frames existent encore (pas de free_precomputed_data)
+                        bool found_scale_max = false;
+                        if (node->precomputed_counter_frames && node->total_cycles > 0) {
+                            for (int i = 0; i < node->total_cycles; i++) {
+                                if (node->precomputed_counter_frames[i].is_at_scale_max) {
+                                    node->current_cycle = i;
+                                    found_scale_max = true;
+
+                                    // 🔥 CRITIQUE: Appliquer la frame pour copier vx/vy !
+                                    node->is_frozen = false;
+                                    apply_precomputed_frame(node);
+                                    node->is_frozen = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Fallback
+                        if (!found_scale_max) {
+                            node->current_cycle = 0;
+                            node->is_frozen = false;
+                            apply_precomputed_frame(node);
+                            node->is_frozen = true;
+                        } else {
+                            node->is_frozen = true;
+                        }
+
+                        node = node->next;
+                    }
+                }
+
+                // ═════════════════════════════════════════════════════════════════
+                // RÉINITIALISER LE PREVIEW DU PANNEAU SETTINGS
+                // ═════════════════════════════════════════════════════════════════
+                if (app.settings_panel && app.settings_panel->preview_system.hex_list) {
+                    debug_printf("🗑️  Libération anciennes données preview...\n");
+                    free_precomputed_data(app.settings_panel->preview_system.hex_list);
+
+                    // Recalculer avec la nouvelle durée
+                    debug_printf("🔢 Recalcul preview (breath_duration=%.1fs)...\n",
+                                 app.config.breath_duration);
+                    precompute_all_cycles(app.settings_panel->preview_system.hex_list,
+                                         TARGET_FPS,
+                                         app.config.breath_duration);
+
+                    // Réinitialiser le temps d'animation
+                    app.settings_panel->preview_system.current_time = 0.0;
+                    app.settings_panel->preview_system.last_update = SDL_GetTicks();
+
+                    debug_printf("✅ Preview réinitialisé\n");
+                }
+
+                // ═════════════════════════════════════════════════════════════════
+                // DÉTRUIRE LE PANNEAU STATS
+                // ═════════════════════════════════════════════════════════════════
+                if (app.stats_panel) {
+                    destroy_stats_panel(app.stats_panel);
+                    app.stats_panel = NULL;
+                    debug_printf("🗑️  Panneau stats détruit\n");
+                }
+            }
+        }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // CODE ANCIEN (sera supprimé progressivement)
+        // ═════════════════════════════════════════════════════════════════════
 
         // === GESTION TIMER ===
         if (app.timer_phase) {
@@ -583,7 +777,14 @@ int main(int argc, char **argv) {
                     debug_printf("🎉 Toutes les sessions terminées (%d/%d)\n",
                                  app.current_session, app.total_sessions);
 
+                    // 🆕 LIBÉRER LES DONNÉES PRÉCOMPILÉES (~100 MB)
+                    // Plus besoin des pré-calculs, libérer la mémoire pour économiser les ressources
+                    if (app.hexagones) {
+                        free_precomputed_data(app.hexagones);
+                    }
+
                     // 🆕 CRÉER ET OUVRIR LE PANNEAU DE STATISTIQUES
+                    // UNIQUEMENT si au moins une session a été comptée
                     if (!app.stats_panel && app.session_times && app.session_count > 0) {
                         app.stats_panel = create_stats_panel(
                             app.screen_width,
@@ -597,27 +798,276 @@ int main(int argc, char **argv) {
                             debug_printf("📊 Panneau de statistiques ouvert\n");
                         }
                     }
+                    // 🆕 Si aucune session n'a été comptée, revenir directement à l'écran d'accueil
+                    else if (app.session_count == 0) {
+                        app.waiting_to_start = true;
+                        debug_printf("🏠 Retour direct à l'écran d'accueil (aucune session comptée)\n");
+
+                        // Fermer le JSON Editor
+                        if (app.json_editor && app.json_editor->est_ouvert) {
+                            app.json_editor->est_ouvert = false;
+                            debug_printf("📝 JSON Editor fermé (retour écran d'accueil)\n");
+                        }
+
+                        // Recharger la configuration
+                        load_config(&app.config);
+                        debug_printf("🔄 Configuration rechargée depuis respiration.conf\n");
+
+                        // Réinitialiser tous les timers
+                        if (app.session_timer) {
+                            timer_reset(app.session_timer);
+                            app.session_timer->total_seconds = app.config.start_duration;
+                            app.session_timer->remaining_seconds = app.config.start_duration;
+                            debug_printf("🔄 Timer de session réinitialisé à %d secondes\n", app.config.start_duration);
+                        }
+
+                        if (app.session_stopwatch) {
+                            stopwatch_reset(app.session_stopwatch);
+                            debug_printf("🔄 Chronomètre réinitialisé\n");
+                        }
+
+                        if (app.retention_timer) {
+                            timer_reset(app.retention_timer);
+                            debug_printf("🔄 Timer de rétention réinitialisé\n");
+                        }
+
+                        // Réinitialiser le compteur de respirations
+                        if (app.breath_counter) {
+                            app.breath_counter->current_breath = 0;
+                            app.breath_counter->was_at_min_last_frame = false;
+                            app.breath_counter->waiting_for_scale_min = false;
+                            app.breath_counter->was_at_max_last_frame = false;
+                            app.breath_counter->is_active = false;
+                            app.breath_counter->total_breaths = app.config.Nb_respiration;
+                            debug_printf("🔄 Compteur réinitialisé à 0/%d respirations\n", app.config.Nb_respiration);
+                        }
+
+                        // Réinitialiser les phases pour la prochaine session
+                        app.timer_phase = false;
+                        app.session_card_phase = false;
+                        app.counter_phase = false;
+                        app.reappear_phase = false;
+                        app.chrono_phase = false;
+                        app.inspiration_phase = false;
+                        app.retention_phase = false;
+
+                        // Réinitialiser le compteur de sessions
+                        app.current_session = 1;
+                        app.total_sessions = app.config.nb_session;
+                        debug_printf("🔄 Nombre de sessions mis à jour: %d\n", app.total_sessions);
+
+                        // Réinitialiser les hexagones principaux
+                        if (app.hexagones) {
+                            free_precomputed_data(app.hexagones);
+                            HexagoneNode* node = app.hexagones->first;
+                            while (node) {
+                                node->data->center_x = app.screen_width / 2;
+                                node->data->center_y = app.screen_height / 2;
+                                node->current_cycle = 0;
+                                node->is_frozen = true;
+
+                                // 🐛 FIX: Après free_precomputed_data, pas de frames précompilées
+                                // Les vx/vy seront recalculés au prochain precompute_all_cycles
+                                // On garde juste current_scale intact (scale_factor déjà appliqué)
+
+                                node = node->next;
+                            }
+                        }
+
+                        // Réinitialiser le preview du panneau settings
+                        if (app.settings_panel && app.settings_panel->preview_system.hex_list) {
+                            debug_printf("🗑️  Libération anciennes données preview...\n");
+                            free_precomputed_data(app.settings_panel->preview_system.hex_list);
+
+                            debug_printf("🔢 Recalcul preview (breath_duration=%.1fs)...\n",
+                                         app.config.breath_duration);
+                            precompute_all_cycles(app.settings_panel->preview_system.hex_list,
+                                                 TARGET_FPS,
+                                                 app.config.breath_duration);
+
+                            app.settings_panel->preview_system.current_time = 0.0;
+                            app.settings_panel->preview_system.last_update = SDL_GetTicks();
+                            debug_printf("✅ Preview réinitialisé\n");
+                        }
+
+                        // Détruire le panneau stats s'il existe
+                        if (app.stats_panel) {
+                            destroy_stats_panel(app.stats_panel);
+                            app.stats_panel = NULL;
+                            debug_printf("🗑️  Panneau stats détruit\n");
+                        }
+                    }
                 }
             }
         }
 
+        // ═══════════════════════════════════════════════════════════════════════
+        // FPS ADAPTATIF : Détecter si on a besoin de 60 FPS ou 15 FPS
+        // ═══════════════════════════════════════════════════════════════════════
+        bool use_high_fps = should_use_high_fps(&app);
+        current_frame_delay = use_high_fps ? FRAME_DELAY_HIGH : FRAME_DELAY_LOW;
+
+        // Logger les changements de FPS (pour debug)
+        if (use_high_fps != was_high_fps) {
+            debug_printf("🎯 FPS adaptatif : %s → %s (%d FPS)\n",
+                        was_high_fps ? "60 FPS" : "15 FPS",
+                        use_high_fps ? "60 FPS" : "15 FPS",
+                        use_high_fps ? 60 : 15);
+            was_high_fps = use_high_fps;
+        }
+
         // Mise à jour animation panneau settings
         if (app.settings_panel) {
-            update_settings_panel(app.settings_panel, (float)FRAME_DELAY / 1000.0f);
+            update_settings_panel(app.settings_panel, (float)current_frame_delay / 1000.0f);
         }
 
         // Mise à jour animation panneau stats
         if (app.stats_panel) {
-            update_stats_panel(app.stats_panel, (float)FRAME_DELAY / 1000.0f);
+            update_stats_panel(app.stats_panel, (float)current_frame_delay / 1000.0f);
+
+            // 🆕 RETOUR À L'ÉCRAN D'ACCUEIL quand le panneau stats est complètement fermé
+            if (app.stats_panel->state == STATS_CLOSED && !app.waiting_to_start) {
+                app.waiting_to_start = true;
+                debug_printf("🏠 Retour à l'écran d'accueil (stats fermé)\n");
+
+                // ═════════════════════════════════════════════════════════════════
+                // FERMER LE JSON EDITOR
+                // ═════════════════════════════════════════════════════════════════
+                // S'assurer que le JSON editor est fermé pour ne pas consommer les clics
+                if (app.json_editor && app.json_editor->est_ouvert) {
+                    app.json_editor->est_ouvert = false;
+                    debug_printf("📝 JSON Editor fermé (retour écran d'accueil)\n");
+                }
+
+                // ═════════════════════════════════════════════════════════════════
+                // RECHARGER LA CONFIGURATION
+                // ═════════════════════════════════════════════════════════════════
+                // Recharger respiration.conf pour prendre en compte les modifications
+                // faites dans le panneau settings AVANT le prochain clic
+                load_config(&app.config);
+                debug_printf("🔄 Configuration rechargée depuis respiration.conf\n");
+
+                // ═════════════════════════════════════════════════════════════════
+                // RÉINITIALISER TOUS LES TIMERS
+                // ═════════════════════════════════════════════════════════════════
+                if (app.session_timer) {
+                    timer_reset(app.session_timer);
+                    // Mettre à jour la durée avec la nouvelle config
+                    app.session_timer->total_seconds = app.config.start_duration;
+                    app.session_timer->remaining_seconds = app.config.start_duration;
+                    debug_printf("🔄 Timer de session réinitialisé à %d secondes\n", app.config.start_duration);
+                }
+
+                if (app.session_stopwatch) {
+                    stopwatch_reset(app.session_stopwatch);
+                    debug_printf("🔄 Chronomètre réinitialisé\n");
+                }
+
+                if (app.retention_timer) {
+                    timer_reset(app.retention_timer);
+                    debug_printf("🔄 Timer de rétention réinitialisé\n");
+                }
+
+                // ═════════════════════════════════════════════════════════════════
+                // RÉINITIALISER LE COMPTEUR DE RESPIRATIONS
+                // ═════════════════════════════════════════════════════════════════
+                if (app.breath_counter) {
+                    app.breath_counter->current_breath = 0;
+                    app.breath_counter->was_at_min_last_frame = false;
+                    app.breath_counter->waiting_for_scale_min = false;
+                    app.breath_counter->was_at_max_last_frame = false;
+                    app.breath_counter->is_active = false;
+                    // Mettre à jour le nombre de respirations avec la nouvelle config
+                    app.breath_counter->total_breaths = app.config.Nb_respiration;
+                    debug_printf("🔄 Compteur réinitialisé à 0/%d respirations\n", app.config.Nb_respiration);
+                }
+
+                // Réinitialiser les phases pour la prochaine session
+                app.timer_phase = false;
+                app.session_card_phase = false;
+                app.counter_phase = false;
+                app.reappear_phase = false;
+                app.chrono_phase = false;
+                app.inspiration_phase = false;
+                app.retention_phase = false;
+
+                // Réinitialiser le compteur de sessions
+                app.current_session = 1;
+                app.session_count = 0;
+                app.total_sessions = app.config.nb_session;
+                debug_printf("🔄 Nombre de sessions mis à jour: %d\n", app.total_sessions);
+
+                // ═════════════════════════════════════════════════════════════════
+                // RÉINITIALISER LES HEXAGONES PRINCIPAUX
+                // ═════════════════════════════════════════════════════════════════
+                // VERSION STABLE : Réinitialisation au lieu de destruction
+                // (La destruction complète cause des crashs)
+                if (app.hexagones) {
+                    // Libérer les données précompilées
+                    free_precomputed_data(app.hexagones);
+
+                    // Réinitialiser chaque hexagone à son état d'origine
+                    HexagoneNode* node = app.hexagones->first;
+                    while (node) {
+                        node->data->center_x = app.screen_width / 2;
+                        node->data->center_y = app.screen_height / 2;
+                        node->current_cycle = 0;
+                        node->is_frozen = true;
+
+                        // 🐛 FIX: Après free_precomputed_data, pas de frames précompilées
+                        // Les vx/vy seront recalculés au prochain precompute_all_cycles
+                        // On garde juste current_scale intact (scale_factor déjà appliqué)
+
+                        node = node->next;
+                    }
+                }
+
+                // ═════════════════════════════════════════════════════════════════
+                // RÉINITIALISER LE PREVIEW DU PANNEAU SETTINGS
+                // ═════════════════════════════════════════════════════════════════
+                // Le PreviewSystem garde les données précompilées de l'ancien stage
+                // Il faut libérer et recalculer avec la nouvelle durée
+                if (app.settings_panel && app.settings_panel->preview_system.hex_list) {
+                    debug_printf("🗑️  Libération anciennes données preview...\n");
+                    free_precomputed_data(app.settings_panel->preview_system.hex_list);
+
+                    // Recalculer avec la nouvelle durée
+                    debug_printf("🔢 Recalcul preview (breath_duration=%.1fs)...\n",
+                                 app.config.breath_duration);
+                    precompute_all_cycles(app.settings_panel->preview_system.hex_list,
+                                         TARGET_FPS,
+                                         app.config.breath_duration);
+
+                    // Réinitialiser le temps d'animation
+                    app.settings_panel->preview_system.current_time = 0.0;
+                    app.settings_panel->preview_system.last_update = SDL_GetTicks();
+
+                    debug_printf("✅ Preview réinitialisé\n");
+                }
+
+                // ═════════════════════════════════════════════════════════════════
+                // DÉTRUIRE LE PANNEAU STATS
+                // ═════════════════════════════════════════════════════════════════
+                // Le panneau stats doit être détruit pour permettre une nouvelle session
+                if (app.stats_panel) {
+                    destroy_stats_panel(app.stats_panel);
+                    app.stats_panel = NULL;
+                    debug_printf("🗑️  Panneau stats détruit\n");
+                }
+
+                // 🆕 La zone cliquable sera automatiquement mise à jour par le rendu
+                // via la ligne: app->wim_clickable_rect = img_rect; dans render_app()
+                // Pas besoin de la recalculer manuellement ici
+            }
         }
 
         // RENDU COMPLET
         render_app(&app);
 
-        // Régulation FPS
+        // Régulation FPS adaptatif
         frame_time = SDL_GetTicks() - frame_start;
-        if (frame_time < FRAME_DELAY) {
-            SDL_Delay(FRAME_DELAY - frame_time);
+        if (frame_time < current_frame_delay) {
+            SDL_Delay(current_frame_delay - frame_time);
         }
 
         // Affichage FPS

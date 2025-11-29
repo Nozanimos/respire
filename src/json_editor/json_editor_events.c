@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "json_editor.h"
-#include "../debug.h"
+#include "../core/debug.h"
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_mouse.h>
 

@@ -1,0 +1,20 @@
+CompileFlags:
+  Add:
+    - -I/usr/include/SDL2
+    - -I/usr/include/harfbuzz
+    - -I/usr/include/glib-2.0
+    - -I/usr/lib/glib-2.0/include
+    - -I/usr/include/sysprof-6
+    - -pthread
+    - -D_GNU_SOURCE=1
+    - -D_REENTRANT
+    - -DHWY_SHARED_DEFINE
+    - -DAVIF_DLL
+    - -I/usr/include/rav1e
+    - -I/usr/include/svt-av1
+    - -DEB_DLL
+    - -I/usr/include/webp
+    - -I/usr/include/cairo
+    - -I/usr/include/pixman-1
+    - -I/usr/include/freetype2
+    - -I/usr/include/libpng16

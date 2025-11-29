@@ -11,7 +11,11 @@ OBJ_DIR = obj
 BIN_DIR = bin
 
 # Trouve tous les fichiers .c dans src/
-SRCS = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/json_editor/*.c)
+SRCS = $(wildcard $(SRC_DIR)/*.c) \
+       $(wildcard $(SRC_DIR)/core/*.c) \
+       $(wildcard $(SRC_DIR)/instances/*.c) \
+       $(wildcard $(SRC_DIR)/instances/whm/*.c) \
+       $(wildcard $(SRC_DIR)/json_editor/*.c)
 # Transforme src/fichier.c → obj/fichier.o
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 # Nom de l'exécutable final

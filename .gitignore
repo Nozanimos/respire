@@ -8,14 +8,8 @@
 template_widget.txt
 arbre.txt
 node_modules/
-help/
-clean/
-all/
 .claude/
-**/kdev4
-*.kdev4
 *.html
-AJOUTER_UN_PARAMETRE.*
 bin/
 config/stats/
 *.bak

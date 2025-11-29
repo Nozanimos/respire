@@ -137,34 +137,34 @@
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
-            "_description": "WIDGET SELECTOR - Liste déroulante avec flèches",
+            "_description": "WIDGET SELECTOR - Mode roller avec pattern personnalisé",
             "_template": {
                 "type": "selector",
                 "id": "identifiant_unique",
-                "nom_affichage": "Label affiché",
+                "nom_affichage": "Pattern de rétention",
                 "x": 165,
-                "y": 250,
-                "options": [
-                    {"texte": "Option 1", "callback": "callback_option_1"},
-                    {"texte": "Option 2", "callback": "callback_option_2"},
-                    {"texte": "Option 3", "callback": "callback_option_3"}
-                ],
-                "index_depart": 0,
-                "taille_texte": 14
+                "y": 230,
+                "taille_texte": 14,
+                "submenu_enabled": true,
+                "roller_seq1_type_default": 1,
+                "roller_seq1_count_default": 1,
+                "roller_seq2_type_default": 0,
+                "roller_seq2_count_default": 2,
+                "roller_callback": "retention_roller_changed"
             },
             "_fin_template": "═══════════════════════════════════════════════════════",
             "type": "selector",
-            "id": "retention_type",
+            "id": "retention_pattern",
             "nom_affichage": "Type de rétention",
             "x": 165,
             "y": 230,
-            "options": [
-                {"texte": "Poumons pleins", "callback": "retention_full"},
-                {"texte": "Poumons vides", "callback": "retention_empty"},
-                {"texte": "Alternée", "callback": "retention_alternate"}
-            ],
-            "index_depart": 0,
-            "taille_texte": 14
+            "taille_texte": 14,
+            "submenu_enabled": true,
+            "roller_seq1_type_default": 1,
+            "roller_seq1_count_default": 1,
+            "roller_seq2_type_default": 0,
+            "roller_seq2_count_default": 2,
+            "roller_callback": "retention_roller_changed"
         },
         {
             "_commentaire": "═══════════════════════════════════════════════════════",
@@ -180,7 +180,7 @@
             "_fin_template": "═══════════════════════════════════════════════════════",
             "type": "separateur",
             "x": 20,
-            "y": 320,
+            "y": 350,
             "largeur": 460,
             "hauteur": 1,
             "couleur": {"r": 0, "g": 0, "b": 0, "a": 255}
@@ -206,7 +206,7 @@
             "id": "a_modifier",
             "nom_affichage": "Voix de Phil",
             "x": 40,
-            "y": 335,
+            "y": 365,
             "etat_depart": false,
             "largeur_toggle": 28,
             "hauteur_toggle": 14,

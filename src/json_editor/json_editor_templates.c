@@ -3,7 +3,7 @@
 // Gestion des templates JSON (sous-menu en cascade)
 
 #include "json_editor.h"
-#include "../debug.h"
+#include "../core/debug.h"
 #include <cjson/cJSON.h>
 #include <stdio.h>
 #include <stdlib.h>
