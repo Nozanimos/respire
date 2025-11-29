@@ -13,6 +13,7 @@ node_modules/
 bin/
 config/stats/
 *.bak
+*.backup*
 .kateproject
 .clangd
 .claudeignore

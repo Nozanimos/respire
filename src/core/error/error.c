@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "error.h"
-#include "../debug.h"
+#include "core/debug.h"
 #include <string.h>
 
 void error_set(Error* err, ErrorCode code, const char* message,

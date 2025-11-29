@@ -9,7 +9,7 @@
 #include "geometry.h"
 #include "config.h"
 #include "settings_panel.h"
-#include "../json_editor/json_editor.h"
+#include "json_editor/json_editor.h"
 #include "timer.h"
 #include "counter.h"
 #include "chronometre.h"

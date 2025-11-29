@@ -3,13 +3,13 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-#include "../technique_instance.h"
-#include "../../core/timer.h"
-#include "../../core/counter.h"
-#include "../../core/chronometre.h"
-#include "../../core/session_card.h"
-#include "../../core/precompute_list.h"
-#include "../../core/geometry.h"
+#include "instances/technique_instance.h"
+#include "core/timer.h"
+#include "core/counter.h"
+#include "core/chronometre.h"
+#include "core/session_card.h"
+#include "core/precompute_list.h"
+#include "core/geometry.h"
 #include "whm_session_controller.h"
 
 /**

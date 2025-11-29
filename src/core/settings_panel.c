@@ -6,12 +6,11 @@
 #include "preview_widget.h"
 #include "button_widget.h"
 #include "debug.h"
+#include "constants.h"
 #include "json_config_loader.h"
 #include "timer.h"
 #include "chronometre.h"
 #include "counter.h"
-
-#define PANEL_WIDTH 500
 #define ANIMATION_DURATION 0.3f
 #define BUTTON_WIDTH 120
 #define BUTTON_HEIGHT 40
@@ -26,46 +25,62 @@ extern int calculate_panel_width(int screen_width, float scale);
 static int calculate_required_width_for_json_layout(SettingsPanel* panel);
 
 // ════════════════════════════════════════════════════════════════════════════
-//  CALLBACKS POUR LES WIDGETS
+//  VARIABLE GLOBALE UNIQUE POUR LE PANNEAU ACTIF
 // ════════════════════════════════════════════════════════════════════════════
-static SettingsPanel* current_panel_for_callbacks = NULL;
-static AppConfig* current_main_config_for_callbacks = NULL;
-
-// Pointeurs vers les timers/compteurs pour mise à jour lors du clic sur "Appliquer"
-static TimerState** current_session_timer = NULL;
-static StopwatchState** current_session_stopwatch = NULL;
-static TimerState** current_retention_timer = NULL;
-static BreathCounter** current_breath_counter = NULL;
-static int* current_total_sessions = NULL;
-static HexagoneList** current_hexagones = NULL;  // 🆕 Pointeur vers les hexagones
-static int* current_screen_width = NULL;         // 🆕 Pour repositionner les hexagones
-static int* current_screen_height = NULL;        // 🆕 Pour repositionner les hexagones
+// Remplace les 10 variables globales par une seule pointant vers le panel actif
+// Thread-safe car un seul panneau de settings peut être actif à la fois
+static SettingsPanel* g_active_panel = NULL;
 
 // ════════════════════════════════════════════════════════════════════════════
-//  DÉFINIR LES POINTEURS VERS TIMERS/COMPTEURS
+//  INITIALISATION DU CALLBACK CONTEXT
 // ════════════════════════════════════════════════════════════════════════════
-void set_timers_for_callbacks(TimerState** session_timer, StopwatchState** session_stopwatch,
-                              TimerState** retention_timer, BreathCounter** breath_counter,
-                              int* total_sessions, HexagoneList** hexagones,
-                              int* screen_width, int* screen_height) {
-    current_session_timer = session_timer;
-    current_session_stopwatch = session_stopwatch;
-    current_retention_timer = retention_timer;
-    current_breath_counter = breath_counter;
-    current_total_sessions = total_sessions;
-    current_hexagones = hexagones;
-    current_screen_width = screen_width;
-    current_screen_height = screen_height;
+void init_panel_callback_context(SettingsPanel* panel, AppConfig* main_config,
+                                 TimerState** session_timer, StopwatchState** session_stopwatch,
+                                 TimerState** retention_timer, BreathCounter** breath_counter,
+                                 int* total_sessions, HexagoneList** hexagones,
+                                 int* screen_width, int* screen_height) {
+    if (!panel) return;
+
+    // Allouer le contexte
+    panel->callback_ctx = malloc(sizeof(CallbackContext));
+    if (!panel->callback_ctx) {
+        fprintf(stderr, "❌ Erreur allocation CallbackContext\n");
+        return;
+    }
+
+    // Initialiser tous les pointeurs
+    panel->callback_ctx->panel = panel;
+    panel->callback_ctx->main_config = main_config;
+    panel->callback_ctx->session_timer = session_timer;
+    panel->callback_ctx->session_stopwatch = session_stopwatch;
+    panel->callback_ctx->retention_timer = retention_timer;
+    panel->callback_ctx->breath_counter = breath_counter;
+    panel->callback_ctx->total_sessions = total_sessions;
+    panel->callback_ctx->hexagones = hexagones;
+    panel->callback_ctx->screen_width = screen_width;
+    panel->callback_ctx->screen_height = screen_height;
+
+    // Activer ce panneau
+    g_active_panel = panel;
+
+    debug_printf("✅ CallbackContext initialisé (10 variables globales → 1 seule)\n");
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  CALLBACKS POUR LES WIDGETS
+// ════════════════════════════════════════════════════════════════════════════
+
 void duration_value_changed(int new_value) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // MISE À JOUR DE TEMP_CONFIG (SANS SAUVEGARDER)
     // ═══════════════════════════════════════════════════════════════════════════
     // Modification stockée dans temp_config uniquement
-    current_panel_for_callbacks->temp_config.breath_duration = new_value;
+    ctx->panel->temp_config.breath_duration = new_value;
 
     // Sauvegarder immédiatement dans le fichier
     // Sauvegarde uniquement lors du clic sur "Appliquer"
@@ -75,7 +90,7 @@ void duration_value_changed(int new_value) {
     // ═══════════════════════════════════════════════════════════════════════════
     // METTRE À JOUR LE PREVIEW DANS LA WIDGET LIST
     // ═══════════════════════════════════════════════════════════════════════════
-    WidgetList* list = current_panel_for_callbacks->widget_list;
+    WidgetList* list = ctx->panel->widget_list;
     if (list) {
         WidgetNode* node = list->first;
         while (node) {
@@ -91,11 +106,14 @@ void duration_value_changed(int new_value) {
 }
 
 void cycles_value_changed(int new_value) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config (sans sauvegarder)
     // Modification stockée dans temp_config uniquement
-    current_panel_for_callbacks->temp_config.nb_session = new_value;
+    ctx->panel->temp_config.nb_session = new_value;
 
     // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
@@ -104,11 +122,14 @@ void cycles_value_changed(int new_value) {
 }
 
 void nb_breath(int new_value) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config (sans sauvegarder)
-    current_main_config_for_callbacks->Nb_respiration = new_value;
-    current_panel_for_callbacks->temp_config.Nb_respiration = new_value;
+    ctx->main_config->Nb_respiration = new_value;
+    ctx->panel->temp_config.Nb_respiration = new_value;
 
     // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
@@ -117,11 +138,14 @@ void nb_breath(int new_value) {
 }
 
 void start_value_changed(int new_value) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config (sans sauvegarder)
     // Modification stockée dans temp_config uniquement
-    current_panel_for_callbacks->temp_config.start_duration = new_value;
+    ctx->panel->temp_config.start_duration = new_value;
 
     // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
@@ -130,20 +154,26 @@ void start_value_changed(int new_value) {
 }
 
 void session_value_changed(int new_value) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config (sans sauvegarder)
-    current_panel_for_callbacks->temp_config.nb_session = new_value;
+    ctx->panel->temp_config.nb_session = new_value;
 
     debug_printf("✅ Nombre de sessions changé: %d (en attente de validation)\n", new_value);
 }
 
 void alternate_cycles_changed(bool new_value) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config (sans sauvegarder)
     // Modification stockée dans temp_config uniquement
-    current_panel_for_callbacks->temp_config.alternate_cycles = new_value;
+    ctx->panel->temp_config.alternate_cycles = new_value;
 
     // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
@@ -155,10 +185,13 @@ void alternate_cycles_changed(bool new_value) {
 //  CALLBACKS POUR LE SELECTOR PATTERN DE RÉTENTION (NOUVEAU SYSTÈME)
 // ════════════════════════════════════════════════════════════════════════════
 void retention_pattern_changed(int new_index) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config avec le nouveau pattern
-    current_panel_for_callbacks->temp_config.retention_pattern = new_index;
+    ctx->panel->temp_config.retention_pattern = new_index;
 
     const char* pattern_names[] = {
         "POUMONS PLEINS",
@@ -173,10 +206,13 @@ void retention_pattern_changed(int new_index) {
 }
 
 void retention_start_changed(bool new_state) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config
-    current_panel_for_callbacks->temp_config.retention_start_empty = new_state;
+    ctx->panel->temp_config.retention_start_empty = new_state;
 
     debug_printf("✅ Commencer par poumons vides: %s (en attente de validation)\n",
                 new_state ? "OUI" : "NON");
@@ -190,14 +226,17 @@ void retention_start_changed(bool new_state) {
  * @param seq2_count Séquence 2: nombre de sessions (1-10)
  */
 void retention_roller_changed(int seq1_type, int seq1_count, int seq2_type, int seq2_count) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     // Mise à jour temp_config avec pattern CUSTOM
-    current_panel_for_callbacks->temp_config.retention_pattern = 5;  // RETENTION_PATTERN_CUSTOM
-    current_panel_for_callbacks->temp_config.pattern_seq1_type = seq1_type;
-    current_panel_for_callbacks->temp_config.pattern_seq1_count = seq1_count;
-    current_panel_for_callbacks->temp_config.pattern_seq2_type = seq2_type;
-    current_panel_for_callbacks->temp_config.pattern_seq2_count = seq2_count;
+    ctx->panel->temp_config.retention_pattern = 5;  // RETENTION_PATTERN_CUSTOM
+    ctx->panel->temp_config.pattern_seq1_type = seq1_type;
+    ctx->panel->temp_config.pattern_seq1_count = seq1_count;
+    ctx->panel->temp_config.pattern_seq2_type = seq2_type;
+    ctx->panel->temp_config.pattern_seq2_count = seq2_count;
 
     const char* type1_str = (seq1_type == 0) ? "pleins" : "vides";
     const char* type2_str = (seq2_type == 0) ? "pleins" : "vides";
@@ -233,44 +272,46 @@ void retention_alternate(void) {
  * - Ferme le panneau
  */
 void apply_button_clicked(void) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     debug_printf("💾 APPLIQUER : Sauvegarde des modifications\n");
 
     // Étape 1: Widgets → temp_config (+ sauvegarde dans respiration.conf)
-    sync_widgets_to_config(current_panel_for_callbacks->widget_list,
-                          &current_panel_for_callbacks->temp_config);
+    sync_widgets_to_config(ctx->panel->widget_list, &ctx->panel->temp_config);
 
     // Étape 2: temp_config → main_config (copie directe)
-    *current_main_config_for_callbacks = current_panel_for_callbacks->temp_config;
+    *ctx->main_config = ctx->panel->temp_config;
 
     // Étape 2.5: Mettre à jour les timers et compteurs avec la nouvelle config
-    if (current_session_timer && *current_session_timer) {
-        (*current_session_timer)->total_seconds = current_main_config_for_callbacks->start_duration;
-        (*current_session_timer)->remaining_seconds = current_main_config_for_callbacks->start_duration;
-        debug_printf("🔄 Timer session mis à jour: %d secondes\n", current_main_config_for_callbacks->start_duration);
+    if (ctx->session_timer && *ctx->session_timer) {
+        (*ctx->session_timer)->total_seconds = ctx->main_config->start_duration;
+        (*ctx->session_timer)->remaining_seconds = ctx->main_config->start_duration;
+        debug_printf("🔄 Timer session mis à jour: %d secondes\n", ctx->main_config->start_duration);
     }
 
-    if (current_breath_counter && *current_breath_counter) {
-        (*current_breath_counter)->total_breaths = current_main_config_for_callbacks->Nb_respiration;
-        debug_printf("🔄 Compteur mis à jour: %d respirations\n", current_main_config_for_callbacks->Nb_respiration);
+    if (ctx->breath_counter && *ctx->breath_counter) {
+        (*ctx->breath_counter)->total_breaths = ctx->main_config->Nb_respiration;
+        debug_printf("🔄 Compteur mis à jour: %d respirations\n", ctx->main_config->Nb_respiration);
     }
 
-    if (current_total_sessions) {
-        *current_total_sessions = current_main_config_for_callbacks->nb_session;
-        debug_printf("🔄 Nombre de sessions mis à jour: %d\n", current_main_config_for_callbacks->nb_session);
+    if (ctx->total_sessions) {
+        *ctx->total_sessions = ctx->main_config->nb_session;
+        debug_printf("🔄 Nombre de sessions mis à jour: %d\n", ctx->main_config->nb_session);
     }
 
     // 🆕 Étape 2.6: Réinitialiser les hexagones principaux (comme après stats_panel)
-    if (current_hexagones && *current_hexagones && current_screen_width && current_screen_height) {
+    if (ctx->hexagones && *ctx->hexagones && ctx->screen_width && ctx->screen_height) {
         // Libérer les données précompilées (seront recalculées au prochain clic Wim)
-        free_precomputed_data(*current_hexagones);
+        free_precomputed_data(*ctx->hexagones);
 
         // Réinitialiser chaque hexagone à son état d'origine
-        HexagoneNode* node = (*current_hexagones)->first;
+        HexagoneNode* node = (*ctx->hexagones)->first;
         while (node) {
-            node->data->center_x = *current_screen_width / 2;
-            node->data->center_y = *current_screen_height / 2;
+            node->data->center_x = *ctx->screen_width / 2;
+            node->data->center_y = *ctx->screen_height / 2;
             node->data->current_scale = 1.0f;
             node->current_cycle = 0;
             node->is_frozen = true;
@@ -280,7 +321,7 @@ void apply_button_clicked(void) {
     }
 
     // Étape 3: Fermer le panneau
-    current_panel_for_callbacks->state = PANEL_CLOSING;
+    ctx->panel->state = PANEL_CLOSING;
     debug_printf("✅ Modifications sauvegardées et appliquées\n");
 }
 
@@ -291,19 +332,21 @@ void apply_button_clicked(void) {
  * - Ferme le panneau
  */
 void cancel_button_clicked(void) {
-    if (!current_panel_for_callbacks || !current_main_config_for_callbacks) return;
+    if (!g_active_panel || !g_active_panel->callback_ctx) return;
+
+    CallbackContext* ctx = g_active_panel->callback_ctx;
+    if (!ctx->panel || !ctx->main_config) return;
 
     debug_printf("❌ ANNULER : Restauration des valeurs initiales\n");
 
     // Étape 1: Recharger la config depuis le fichier (annule les modifs non sauvegardées)
-    load_config(&current_panel_for_callbacks->temp_config);
+    load_config(&ctx->panel->temp_config);
 
     // Étape 2: Synchroniser config → widgets (restaurer visuellement)
-    sync_config_to_widgets(&current_panel_for_callbacks->temp_config,
-                          current_panel_for_callbacks->widget_list);
+    sync_config_to_widgets(&ctx->panel->temp_config, ctx->panel->widget_list);
 
     // Étape 3: Fermer le panneau
-    current_panel_for_callbacks->state = PANEL_CLOSING;
+    ctx->panel->state = PANEL_CLOSING;
     debug_printf("✅ Modifications annulées\n");
 }
 // ════════════════════════════════════════════════════════════════════════════
@@ -338,7 +381,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->content_height = 0;
     panel->max_scroll = 0;
     panel->layout_mode_column = false;
-    panel->layout_threshold_width = 350;  // Passer en mode colonne si largeur < 350px
+    panel->layout_threshold_width = PANEL_LAYOUT_THRESHOLD;  // Passer en mode colonne si largeur < seuil
     panel->widgets_stacked = false;       // Initialement, widgets aux positions originales
     panel->panel_width_when_stacked = 0;  // 0 = jamais empilé
     panel->layout_dirty = true;           // Nécessite un recalcul initial
@@ -382,7 +425,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
         .font_titre = panel->font_title,
         .font_normal = panel->font,
         .font_petit = panel->font_small,
-        .panel_width = PANEL_WIDTH  // Passer la largeur de référence pour calculs CENTER/RIGHT
+        .panel_width = BASE_PANEL_WIDTH  // Passer la largeur de référence pour calculs CENTER/RIGHT
     };
 
     if (!charger_widgets_depuis_json(panel->json_config_path, &ctx, panel->widget_list)) {
@@ -402,15 +445,15 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->min_width_for_unstack = calculate_required_width_for_json_layout(panel);
     debug_printf("✅ Largeur minimale pour dépiler: %dpx\n", panel->min_width_for_unstack);
 
-    // Synchroniser les widgets avec la config chargée (pour initialiser les valeurs)
-    sync_config_to_widgets(&panel->temp_config, panel->widget_list);
+    // NOTE: sync_config_to_widgets() est appelé dans initialize_app() APRÈS init_panel_callback_context()
+    // pour éviter que les callbacks ne soient appelés avec g_active_panel=NULL
 
     // ════════════════════════════════════════════════════════════════════════
     // CHARGEMENT DU FOND ET DE L'ICÔNE
     // ════════════════════════════════════════════════════════════════════════
     SDL_Surface* bg_surface = IMG_Load("../img/settings_bg.png");
     if (!bg_surface) {
-        bg_surface = SDL_CreateRGBSurface(0, PANEL_WIDTH, screen_height, 32, 0, 0, 0, 0);
+        bg_surface = SDL_CreateRGBSurface(0, BASE_PANEL_WIDTH, screen_height, 32, 0, 0, 0, 0);
         SDL_FillRect(bg_surface, NULL, SDL_MapRGBA(bg_surface->format, 240, 240, 240, 255));
     }
     panel->background = SDL_CreateTextureFromSurface(renderer, bg_surface);
@@ -553,8 +596,10 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
 void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConfig* main_config) {
     if (!panel || !event) return;
 
-    current_panel_for_callbacks = panel;
-    current_main_config_for_callbacks = main_config;
+    // Pas besoin de set les variables globales - g_active_panel est déjà initialisé
+    // via init_panel_callback_context() appelé dans initialize_app()
+    (void)main_config; // Éviter warning unused parameter
+
     int panel_x = panel->rect.x;
     int panel_y = panel->rect.y;
 
@@ -633,10 +678,8 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
         handle_widget_list_events(panel->widget_list, event, panel_x, panel_y, panel->scroll_offset);
     }
 
-    if (event->type == SDL_MOUSEBUTTONUP) {
-        current_panel_for_callbacks = NULL;
-        current_main_config_for_callbacks = NULL;
-    }
+    // Plus besoin de réinitialiser les variables globales - g_active_panel reste actif
+    // jusqu'à la destruction du panel dans free_settings_panel()
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -658,7 +701,7 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     // ═════════════════════════════════════════════════════════════════════════
     // CALCUL DE LA LARGEUR DU PANNEAU (limitée par le minimum)
     // ═════════════════════════════════════════════════════════════════════════
-    int panel_width = (screen_width >= PANEL_WIDTH) ? PANEL_WIDTH : screen_width;
+    int panel_width = (screen_width >= BASE_PANEL_WIDTH) ? BASE_PANEL_WIDTH : screen_width;
 
     // Ne jamais descendre en dessous de la largeur minimale
     if (panel_width < min_panel_width) {
@@ -669,7 +712,7 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     panel->rect.h = screen_height;
 
     // Calcul du ratio pour les éléments internes (garde pour compatibilité)
-    float panel_ratio = (float)panel_width / (float)PANEL_WIDTH;
+    float panel_ratio = (float)panel_width / (float)BASE_PANEL_WIDTH;
 
     // Sauvegarder le ratio dans la structure pour l'utiliser ailleurs
     panel->panel_ratio = panel_ratio;
@@ -715,7 +758,7 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     // MISE À JOUR DE L'ENGRENAGE
     // ═════════════════════════════════════════════════════════════════════════
     // ⚠️ IMPORTANT : L'engrenage doit rester à sa taille de base (40px) tant
-    // que la fenêtre fait plus de PANEL_WIDTH (500px) !
+    // que la fenêtre fait plus de BASE_PANEL_WIDTH (500px) !
     // Il ne doit réduire QUE si la fenêtre devient plus petite.
     //
     // Solution : Utiliser le panel_ratio (et non scale_factor) !
@@ -780,7 +823,7 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     // Mise à jour du preview (avec panel_ratio)
     const int BASE_PREVIEW_FRAME_X = 50;
     const int BASE_PREVIEW_FRAME_Y = 80;
-    const int BASE_PREVIEW_SIZE = 100;
+    // BASE_PREVIEW_SIZE est défini dans constants.h
 
     panel->preview_system.frame_x = (int)(BASE_PREVIEW_FRAME_X * panel_ratio);
     panel->preview_system.frame_y = (int)(BASE_PREVIEW_FRAME_Y * panel_ratio);
@@ -1019,7 +1062,7 @@ static bool get_widget_rect(WidgetNode* node, WidgetRect* rect) {
 
 // Calculer la largeur minimale nécessaire basée sur la bbox des widgets aux positions JSON
 static int calculate_required_width_for_json_layout(SettingsPanel* panel) {
-    if (!panel || !panel->widget_list) return 400;
+    if (!panel || !panel->widget_list) return MIN_PANEL_HEIGHT;
 
     int max_right_edge = 0;  // Bord droit le plus à droite
     WidgetNode* node = panel->widget_list->first;
@@ -1845,6 +1888,17 @@ void handle_panel_scroll(SettingsPanel* panel, SDL_Event* event) {
 void free_settings_panel(SettingsPanel* panel) {
     if (!panel) return;
 
+    // Désactiver le panel actif si c'est celui-ci
+    if (g_active_panel == panel) {
+        g_active_panel = NULL;
+    }
+
+    // Libérer le contexte de callback
+    if (panel->callback_ctx) {
+        free(panel->callback_ctx);
+        panel->callback_ctx = NULL;
+    }
+
     if (panel->preview_system.hex_list) {
         free_hexagone_list(panel->preview_system.hex_list);
     }
@@ -1934,7 +1988,7 @@ void reload_widgets_from_json(SettingsPanel* panel, int screen_width, int screen
         .font_titre = panel->font_title,
         .font_normal = panel->font,
         .font_petit = panel->font_small,
-        .panel_width = PANEL_WIDTH  // Passer la largeur de référence pour calculs CENTER/RIGHT
+        .panel_width = BASE_PANEL_WIDTH  // Passer la largeur de référence pour calculs CENTER/RIGHT
     };
 
     if (!charger_widgets_depuis_json(panel->json_config_path, &ctx, panel->widget_list)) {
@@ -1966,10 +2020,10 @@ void update_window_minimum_size(SettingsPanel* panel, SDL_Window* window) {
     if (!panel || !window) return;
 
     int min_width = get_minimum_window_width(panel);
-    const int MIN_HEIGHT = 400;
+    // MIN_PANEL_HEIGHT défini dans constants.h
 
-    SDL_SetWindowMinimumSize(window, min_width, MIN_HEIGHT);
-    debug_printf("🔄 Taille minimale fenêtre mise à jour: %dx%d\n", min_width, MIN_HEIGHT);
+    SDL_SetWindowMinimumSize(window, min_width, MIN_PANEL_HEIGHT);
+    debug_printf("🔄 Taille minimale fenêtre mise à jour: %dx%d\n", min_width, MIN_PANEL_HEIGHT);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2008,7 +2062,7 @@ void check_json_hot_reload(SettingsPanel* panel, float delta_time, int screen_wi
 // ════════════════════════════════════════════════════════════════════════════
 int get_minimum_window_width(SettingsPanel* panel) {
     if (!panel || !panel->widget_list) {
-        return 400;  // Valeur par défaut minimale
+        return MIN_PANEL_HEIGHT;  // Valeur par défaut minimale
     }
 
     // Utiliser la fonction de widget_list.c qui calcule la largeur min du panneau
@@ -2020,9 +2074,9 @@ int get_minimum_window_width(SettingsPanel* panel) {
     int min_window_width = min_panel_width + BUFFER;
 
     // Assurer une largeur minimale absolue (pour éviter des fenêtres trop petites)
-    const int ABSOLUTE_MIN = 200;
-    if (min_window_width < ABSOLUTE_MIN) {
-        min_window_width = ABSOLUTE_MIN;
+    // ABSOLUTE_MIN_HEIGHT défini dans constants.h
+    if (min_window_width < ABSOLUTE_MIN_HEIGHT) {
+        min_window_width = ABSOLUTE_MIN_HEIGHT;
     }
 
     debug_printf("📐 Largeur minimale fenêtre calculée: %d px (panneau: %d px)\n",

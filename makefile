@@ -1,6 +1,6 @@
 # Compilateur et flags
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -g
+CFLAGS = -Wall -Wextra -pedantic -g -I$(SRC_DIR)
 SDL_FLAGS = `sdl2-config --cflags --libs`
 CAIRO_FLAGS = `pkg-config --cflags --libs cairo freetype2`
 LIBS = -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lSDL2_mixer -lm -lcjson

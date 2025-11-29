@@ -5,8 +5,9 @@
 #include "json_config_loader.h"
 #include "session_card.h"
 #include "debug.h"
-#include "../instances/technique_instance.h"
-#include "../instances/whm/whm.h"
+#include "constants.h"
+#include "instances/technique_instance.h"
+#include "instances/whm/whm.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
@@ -21,14 +22,8 @@
 // ═════════════════════════════════════════════════════════════════════════════
 // SYSTÈME D'ÉCHELLE RESPONSIVE
 // ═════════════════════════════════════════════════════════════════════════════
-
-// Résolution de référence (HD Ready)
-#define REFERENCE_WIDTH  1280
-#define REFERENCE_HEIGHT 720
-
-// Limites du facteur d'échelle
-#define MIN_SCALE 0.3f   // Très petits écrans (smartwatches, etc.)
-#define MAX_SCALE 3.0f   // Très grands écrans (4K+)
+// Les constantes REFERENCE_WIDTH, REFERENCE_HEIGHT, MIN_SCALE, MAX_SCALE
+// sont définies dans constants.h
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CALCULE LE FACTEUR D'ÉCHELLE EN FONCTION DE LA TAILLE D'ÉCRAN
@@ -76,14 +71,12 @@ int scale_value(int value, float scale) {
 // CALCULE LA LARGEUR DU PANNEAU EN FONCTION DE L'ÉCRAN
 // ─────────────────────────────────────────────────────────────────────────────
 // Règles spéciales :
-//   - Téléphone (< 600px) : 100% de la largeur
-//   - Tablette/Desktop : 500px * scale, max 80% de l'écran
+//   - Téléphone (< MOBILE_WIDTH_THRESHOLD) : 100% de la largeur
+//   - Tablette/Desktop : BASE_PANEL_WIDTH * scale, max 80% de l'écran
 // ─────────────────────────────────────────────────────────────────────────────
 int calculate_panel_width(int screen_width, float scale) {
-    const int BASE_PANEL_WIDTH = 500;  // Largeur de référence
-
     // Cas 1 : Téléphone (écran très étroit)
-    if (screen_width < 600) {
+    if (screen_width < MOBILE_WIDTH_THRESHOLD) {
         return screen_width;  // Prendre toute la largeur
     }
 
@@ -307,7 +300,19 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     );
 
     // ════════════════════════════════════════════════════════════════════════
-    // 6a. SYNCHRONISER CONFIG → WIDGETS
+    // 6a. INITIALISER LE CALLBACK CONTEXT DU PANNEAU
+    // ════════════════════════════════════════════════════════════════════════
+    // Remplace les 10 variables globales statiques par un contexte unifié
+    if (app->settings_panel) {
+        init_panel_callback_context(app->settings_panel, &app->config,
+                                    &app->session_timer, &app->session_stopwatch,
+                                    &app->retention_timer, &app->breath_counter,
+                                    &app->total_sessions, &app->hexagones,
+                                    &app->screen_width, &app->screen_height);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 6b. SYNCHRONISER CONFIG → WIDGETS
     // ════════════════════════════════════════════════════════════════════════
     // Les widgets sont créés avec les valeurs du JSON (valeur_depart)
     // Mais on doit les mettre à jour avec les valeurs de respiration.conf
@@ -316,7 +321,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // 6b. DÉFINIR LA LARGEUR MINIMALE DE FENÊTRE
+    // 6c. DÉFINIR LA LARGEUR MINIMALE DE FENÊTRE
     // ════════════════════════════════════════════════════════════════════════
     // Empêcher que les widgets ne sortent de la fenêtre par la droite
     // en définissant une largeur minimale basée sur le plus grand widget
@@ -325,7 +330,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // 6c. GÉNÉRATION AUTOMATIQUE DES TEMPLATES JSON
+    // 6d. GÉNÉRATION AUTOMATIQUE DES TEMPLATES JSON
     // ════════════════════════════════════════════════════════════════════════
     // Générer templates.json si absent ou obsolète
     // Ce fichier contient des templates vierges pour chaque type de widget
@@ -378,11 +383,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
                      editor_pos_x, editor_pos_y);
     } else {
         // Écran normal/petit : centrer la fenêtre JSON
-        // EDITOR_WIDTH est défini dans json_editor.h (typiquement 600)
-        // EDITOR_HEIGHT est défini dans json_editor.h (typiquement 800)
-        const int JSON_EDITOR_WIDTH = 600;   // Valeur par défaut
-        const int JSON_EDITOR_HEIGHT = 800;  // Valeur par défaut
-
+        // Constantes JSON_EDITOR_WIDTH et JSON_EDITOR_HEIGHT définies dans constants.h
         editor_pos_x = (screen_total_width - JSON_EDITOR_WIDTH) / 2;
         editor_pos_y = (screen_total_height - JSON_EDITOR_HEIGHT) / 2;
 
@@ -477,18 +478,18 @@ void handle_app_events(AppState* app, SDL_Event* event) {
 
             // Calculer la zone cliquable avec la MÊME formule que le rendu
             // (exactement comme dans render_app() lignes 905-933)
-            int title_w = 200, title_h = 60;
+            int title_w = TITLE_WIDTH, title_h = TITLE_HEIGHT;
             if (app->wim_title) {
                 SDL_QueryTexture(app->wim_title, NULL, NULL, &title_w, &title_h);
             }
-            int total_height = title_h + 20 + 250;
+            int total_height = title_h + VERTICAL_MARGIN + IMAGE_SIZE;
             int start_y = (app->screen_height - total_height) / 2;
 
             SDL_Rect clickable_rect = {
-                (app->screen_width - 250) / 2,
-                start_y + title_h + 20,
-                250,
-                250
+                (app->screen_width - IMAGE_SIZE) / 2,
+                start_y + title_h + VERTICAL_MARGIN,
+                IMAGE_SIZE,
+                IMAGE_SIZE
             };
 
             debug_printf("🖱️  Clic gauche à (%d,%d) - Zone cliquable: (%d,%d) %dx%d\n",
@@ -848,11 +849,6 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             // Pendant l'animation principale, aucun panneau ne doit recevoir d'événements
             if (app->waiting_to_start) {
                 if (app->settings_panel) {
-                    // Définir les pointeurs pour mise à jour lors de "Appliquer"
-                    set_timers_for_callbacks(&app->session_timer, &app->session_stopwatch,
-                                            &app->retention_timer, &app->breath_counter,
-                                            &app->total_sessions, &app->hexagones,
-                                            &app->screen_width, &app->screen_height);
                     handle_settings_panel_event(app->settings_panel, event, &app->config);
                 }
             }
@@ -907,11 +903,6 @@ void handle_app_events(AppState* app, SDL_Event* event) {
             // Pendant l'animation principale, aucun panneau ne doit recevoir d'événements
             else if (app->waiting_to_start) {
                 if (app->settings_panel) {
-                    // Définir les pointeurs pour mise à jour lors de "Appliquer"
-                    set_timers_for_callbacks(&app->session_timer, &app->session_stopwatch,
-                                            &app->retention_timer, &app->breath_counter,
-                                            &app->total_sessions, &app->hexagones,
-                                            &app->screen_width, &app->screen_height);
                     handle_settings_panel_event(app->settings_panel, event, &app->config);
                 }
             }
@@ -975,11 +966,11 @@ void render_app(AppState* app) {
         if (app->wim_title) {
             SDL_QueryTexture(app->wim_title, NULL, NULL, &title_w, &title_h);
         } else {
-            title_w = 200;
-            title_h = 60;
+            title_w = TITLE_WIDTH;
+            title_h = TITLE_HEIGHT;
         }
 
-        int total_height = title_h + 20 + 250;  // titre + marge + image
+        int total_height = title_h + VERTICAL_MARGIN + IMAGE_SIZE;  // titre + marge + image
         int start_y = (app->screen_height - total_height) / 2;
 
         // Rendre le titre au-dessus de l'image
@@ -993,14 +984,14 @@ void render_app(AppState* app) {
             SDL_RenderCopy(app->renderer, app->wim_title, NULL, &title_rect);
         }
 
-        // Rendre l'image wim.png (250x250 au centre)
+        // Rendre l'image wim.png (IMAGE_SIZE x IMAGE_SIZE au centre)
         debug_verbose("🖼️  Vérification wim_image: %p\n", (void*)app->wim_image);
         if (app->wim_image) {
             SDL_Rect img_rect = {
-                (app->screen_width - 250) / 2,
-                start_y + title_h + 20,
-                250,
-                250
+                (app->screen_width - IMAGE_SIZE) / 2,
+                start_y + title_h + VERTICAL_MARGIN,
+                IMAGE_SIZE,
+                IMAGE_SIZE
             };
             debug_verbose("🖼️  Avant rendu - img_rect: pos(%d,%d) size(%dx%d)\n",
                          img_rect.x, img_rect.y, img_rect.w, img_rect.h);

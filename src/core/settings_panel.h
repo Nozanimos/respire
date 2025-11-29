@@ -22,6 +22,9 @@ typedef enum {
     PANEL_CLOSING
 } PanelState;
 
+// Forward declaration
+typedef struct CallbackContext CallbackContext;
+
 // === STRUCTURES UI ===
 typedef struct {
     int min_value;
@@ -133,12 +136,31 @@ typedef struct {
     SDL_Rect apply_button_rect;
     SDL_Rect cancel_button_rect;
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CALLBACK CONTEXT (remplace les variables globales statiques)
+    // ═══════════════════════════════════════════════════════════════════════════
+    CallbackContext* callback_ctx;
+
 } SettingsPanel;
 
 // Prédéclarations des types (pour éviter include circulaire)
 typedef struct TimerState TimerState;
 typedef struct StopwatchState StopwatchState;
 typedef struct CounterState BreathCounter;
+
+// === STRUCTURE CALLBACK CONTEXT (remplace les variables globales) ===
+struct CallbackContext {
+    SettingsPanel* panel;
+    AppConfig* main_config;
+    TimerState** session_timer;
+    StopwatchState** session_stopwatch;
+    TimerState** retention_timer;
+    BreathCounter** breath_counter;
+    int* total_sessions;
+    HexagoneList** hexagones;
+    int* screen_width;
+    int* screen_height;
+};
 
 // PROTOTYPES
 SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window, int screen_width, int screen_height, float scale_factor);
@@ -147,11 +169,12 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel);
 void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConfig* main_config);
 void free_settings_panel(SettingsPanel* panel);
 
-// Définir les pointeurs vers timers/compteurs/hexagones pour mise à jour lors de "Appliquer"
-void set_timers_for_callbacks(TimerState** session_timer, StopwatchState** session_stopwatch,
-                              TimerState** retention_timer, BreathCounter** breath_counter,
-                              int* total_sessions, HexagoneList** hexagones,
-                              int* screen_width, int* screen_height);
+// Initialiser le contexte de callback (remplace set_timers_for_callbacks)
+void init_panel_callback_context(SettingsPanel* panel, AppConfig* main_config,
+                                 TimerState** session_timer, StopwatchState** session_stopwatch,
+                                 TimerState** retention_timer, BreathCounter** breath_counter,
+                                 int* total_sessions, HexagoneList** hexagones,
+                                 int* screen_width, int* screen_height);
 
 // PROTOTYPES POUR LA PRÉVISUALISATION
 void reinitialiser_preview_system(PreviewSystem* preview);

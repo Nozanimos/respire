@@ -5,11 +5,11 @@
 
 #include <stdbool.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include "constants.h"
 
 
 // nombre d'hexagones
 #define NB_HX 4
-#define NB_SIDE 6
 
 // Configuration centralisée des angles
 #define ANGLE_1     20.0

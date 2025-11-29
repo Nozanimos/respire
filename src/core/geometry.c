@@ -11,10 +11,9 @@
 #include "animation.h"
 #include "config.h"
 #include "debug.h"
+#include "constants.h"
 
-#define NB_SIDE 6
 #define ADJUST 0.05f
-#define PI 3.14159265358979323846
 
 /*----------------------------------------------------*/
 /* FONCTIONS UTILITAIRES CAIRO */
@@ -164,8 +163,8 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
 
     // Créer des points RELATIFS (centrés sur 0,0)
     for(int i = 0; i < NB_SIDE; i++) {
-        hex->vx[i] = (Sint16)(current_radius * cos(2*i*PI/NB_SIDE));  // RELATIF
-        hex->vy[i] = (Sint16)(current_radius * sin(2*i*PI/NB_SIDE));  // RELATIF
+        hex->vx[i] = (Sint16)(current_radius * cos(2*i*M_PI/NB_SIDE));  // RELATIF
+        hex->vy[i] = (Sint16)(current_radius * sin(2*i*M_PI/NB_SIDE));  // RELATIF
     }
 
     SDL_Color colors[] = {
@@ -277,7 +276,7 @@ void recalculer_sommets(Hexagon* hex, int container_size) {
     //    (ou en radians : 0, π/3, 2π/3, π, 4π/3, 5π/3)
     for (int i = 0; i < NB_SIDE; i++) {
         // Calculer l'angle du sommet i (en radians)
-        double angle_rad = 2.0 * i * PI / NB_SIDE;  // 0, 60°, 120°, etc.
+        double angle_rad = 2.0 * i * M_PI / NB_SIDE;  // 0, 60°, 120°, etc.
 
         // Calculer les coordonnées relatives (centrées sur 0,0)
         hex->vx[i] = (Sint16)(current_radius * cos(angle_rad));
@@ -560,7 +559,7 @@ void draw_rounded_rect(SDL_Renderer* renderer, int x, int y, int width, int heig
 
     // Créer le chemin arrondi
     double r = radius;
-    double degrees = PI / 180.0;
+    double degrees = M_PI / 180.0;
 
     cairo_new_sub_path(cr);
     cairo_arc(cr, width - r, r, r, -90 * degrees, 0 * degrees);
@@ -628,7 +627,7 @@ void draw_toggle_circle(SDL_Renderer* renderer, int center_x, int center_y,
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 
     // Dessiner le cercle rempli
-    cairo_arc(cr, radius + 2, radius + 2, radius, 0, 2 * PI);
+    cairo_arc(cr, radius + 2, radius + 2, radius, 0, 2 * M_PI);
     cairo_set_source_rgba(cr,
                           color.r / 255.0,
                           color.g / 255.0,

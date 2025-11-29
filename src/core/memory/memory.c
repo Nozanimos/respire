@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "memory.h"
-#include "../debug.h"
+#include "core/debug.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

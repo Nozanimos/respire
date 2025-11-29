@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "whm.h"
-#include "../../core/config.h"
-#include "../../core/debug.h"
+#include "core/config.h"
+#include "core/debug.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

@@ -6,8 +6,7 @@
 #include "precompute_list.h"
 #include "config.h"
 #include "debug.h"
-
-#define NB_SIDE 6
+#include "constants.h"
 
 
 /*------------------------------ Nouvelle Liste ------------------------------------*/

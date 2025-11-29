@@ -1,5 +1,5 @@
 #include "json_editor.h"
-#include "../core/debug.h"
+#include "core/debug.h"
 #include <cjson/cJSON.h>
 #include <SDL2/SDL.h>
 #include <stdio.h>
