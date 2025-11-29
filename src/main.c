@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     load_config(&config);
 
     // === INITIALISATION ===
-    if (!initialize_app(&app, "Respiration guidée", "../img/nenuphar.jpg")) {
+    if (!initialize_app(&app, "Respiration guidée", IMG_NENUPHAR)) {
         fprintf(stderr, "Échec initialisation - arrêt\n");
         return EXIT_FAILURE;
     }
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
     int smallest_hex_radius = (int)(container_size * size_ratio * 0.5f);  // Rayon du plus petit hexagone
     int timer_font_size = smallest_hex_radius / 2;  // Police = moitié du rayon
 
-    app.session_timer = breathing_timer_create(timer_duration, "../fonts/arial/ARIALBD.TTF", timer_font_size);
+    app.session_timer = breathing_timer_create(timer_duration, FONT_ARIAL_BOLD, timer_font_size);
     if (!app.session_timer) {
         fprintf(stderr, "⚠️  Échec création timer - démarrage direct de l'animation\n");
         app.timer_phase = false;
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
         app.renderer,                   // Renderer SDL (pour créer le cache)
         config.Nb_respiration,          // Nombre max de respirations
         config.retention_type,          // Type de rétention (0=pleins, 1=vides)
-        "../fonts/arial/ARIALBD.TTF",   // Police (Arial Bold)
+        FONT_ARIAL_BOLD,   // Police (Arial Bold)
         counter_font_size,              // Taille dynamique basée sur l'hexagone
         scale_min,                      // Scale min pour le cache
         scale_max,                      // Scale max pour le cache
@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
     // === CRÉATION DU CHRONOMÈTRE ===
     // Le chronomètre démarre après la session de respiration pour mesurer le temps de méditation
     // Utilise la même police et taille que le timer
-    app.session_stopwatch = stopwatch_create("../fonts/arial/ARIALBD.TTF", timer_font_size);
+    app.session_stopwatch = stopwatch_create(FONT_ARIAL_BOLD, timer_font_size);
     if (!app.session_stopwatch) {
         fprintf(stderr, "⚠️ Échec création chronomètre\n");
         app.reappear_phase = false;
@@ -227,7 +227,7 @@ int main(int argc, char **argv) {
 
     // === CRÉATION DU TIMER DE RÉTENTION (15 secondes) ===
     // Timer pour la phase de rétention après l'inspiration (poumons pleins)
-    app.retention_timer = breathing_timer_create(15, "../fonts/arial/ARIALBD.TTF", timer_font_size);
+    app.retention_timer = breathing_timer_create(15, FONT_ARIAL_BOLD, timer_font_size);
     if (!app.retention_timer) {
         fprintf(stderr, "⚠️ Échec création timer de rétention\n");
         app.retention_phase = false;
@@ -245,7 +245,7 @@ int main(int argc, char **argv) {
         app.current_session,
         app.screen_width,
         app.screen_height,
-        "../fonts/arial/ARIALBD.TTF",
+        FONT_ARIAL_BOLD,
         app.scale_factor
     );
 

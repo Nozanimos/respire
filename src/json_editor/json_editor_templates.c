@@ -4,6 +4,7 @@
 
 #include "json_editor.h"
 #include "core/debug.h"
+#include "core/paths.h"
 #include <cjson/cJSON.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,11 +44,10 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
     // ─────────────────────────────────────────────────────────────────────────
     // 1. CHARGER LE FICHIER templates.json
     // ─────────────────────────────────────────────────────────────────────────
-    const char* template_file = "../src/json_editor/templates.json";
-    FILE* file = fopen(template_file, "r");
+    FILE* file = fopen(GENERATED_TEMPLATES_JSON, "r");
 
     if (!file) {
-        debug_printf("⚠️ Impossible d'ouvrir %s\n", template_file);
+        debug_printf("⚠️ Impossible d'ouvrir %s\n", GENERATED_TEMPLATES_JSON);
         return NULL;
     }
 
@@ -72,7 +72,7 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
     free(json_string);
 
     if (!root) {
-        debug_printf("❌ JSON invalide dans %s\n", template_file);
+        debug_printf("❌ JSON invalide dans %s\n", GENERATED_TEMPLATES_JSON);
         return NULL;
     }
 

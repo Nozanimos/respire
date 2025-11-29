@@ -6,6 +6,7 @@
 #include "session_card.h"
 #include "debug.h"
 #include "constants.h"
+#include "paths.h"
 #include "instances/technique_instance.h"
 #include "instances/whm/whm.h"
 #include <SDL2/SDL_image.h>
@@ -221,8 +222,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     debug_section("INITIALISATION POLICES");
 
     // Initialiser le gestionnaire avec le chemin de la police
-    const char* font_path = "../fonts/arial/ARIAL.TTF";
-    init_font_manager(font_path);
+    init_font_manager(FONT_ARIAL_REGULAR);
 
     // Fallback si la police n'existe pas
     if (!get_font_for_size(18)) {
@@ -335,11 +335,8 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     // Générer templates.json si absent ou obsolète
     // Ce fichier contient des templates vierges pour chaque type de widget
     // utilisables dans l'éditeur JSON
-    const char* widgets_config_path = "../config/widgets_config.json";
-    const char* templates_output_path = "../src/json_editor/templates.json";
-
     // Toujours régénérer au démarrage pour garantir la synchronisation
-    if (!generer_templates_json(widgets_config_path, templates_output_path)) {
+    if (!generer_templates_json(CONFIG_WIDGETS, GENERATED_TEMPLATES_JSON)) {
         debug_printf("⚠️ Impossible de générer templates.json (non bloquant)\n");
     }
 
@@ -397,7 +394,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
 
     // Créer la fenêtre avec la position calculée
     app->json_editor = creer_json_editor(
-        "../config/widgets_config.json",
+        CONFIG_WIDGETS,
         editor_pos_x,
         editor_pos_y
     );
@@ -423,7 +420,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     app->waiting_to_start = true;  // Commence sur l'écran d'accueil
 
     // Charger l'image wim.png
-    SDL_Surface* wim_surface = IMG_Load("../img/wim.png");
+    SDL_Surface* wim_surface = IMG_Load(IMG_WIM);
     if (!wim_surface) {
         debug_printf("⚠️  Impossible de charger wim.png: %s\n", IMG_GetError());
         app->wim_image = NULL;
@@ -437,7 +434,7 @@ bool initialize_app(AppState* app, const char* title, const char* image_path) {
     }
 
     // Créer le titre "Technique\nWim Hof" en Cairo
-    app->wim_title = create_wim_title_texture(app->renderer, font_path);
+    app->wim_title = create_wim_title_texture(app->renderer, FONT_ARIAL_REGULAR);
     if (!app->wim_title) {
         debug_printf("⚠️  Impossible de créer titre Wim Hof\n");
     }

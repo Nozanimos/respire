@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include "constants.h"
+#include "paths.h"
 
 
 // nombre d'hexagones
@@ -20,9 +21,6 @@
 // Configuration animation
 #define TARGET_FPS          60
 #define BREATH_DURATION     3.0f
-
-// Fichier de configuration
-#define CONFIG_FILE "../config/respiration.conf"
 
 // Tableaux pour les angles et directions des hexagones (utilisant les defines ci-dessus)
 static const double HEXAGON_ANGLES[] = {ANGLE_1, ANGLE_2, ANGLE_3, ANGLE_4};

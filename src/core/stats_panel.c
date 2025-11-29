@@ -2,6 +2,7 @@
 // stats_panel.c - Panneau de statistiques avec graphique
 #include "stats_panel.h"
 #include "debug.h"
+#include "paths.h"
 #include "button_widget.h"
 #include "widget_base.h"
 #include <stdio.h>
@@ -17,7 +18,6 @@
 // ════════════════════════════════════════════════════════════════════════
 // CONSTANTES
 // ════════════════════════════════════════════════════════════════════════
-#define STATS_DIR "../config/stats"
 #define ANIMATION_SPEED 3.0f    // Vitesse d'animation (unités par seconde)
 #define GRAPH_MARGIN 60         // Marge pour les axes et labels
 #define GRAPH_EXERCISES 5       // Nombre d'exercices affichés
@@ -43,8 +43,8 @@ static const SDL_Color RAINBOW_COLORS[] = {
 // Créer le dossier stats s'il n'existe pas
 static void ensure_stats_dir(void) {
     struct stat st = {0};
-    if (stat(STATS_DIR, &st) == -1) {
-        mkdir(STATS_DIR, 0700);
+    if (stat(CONFIG_STATS_DIR, &st) == -1) {
+        mkdir(CONFIG_STATS_DIR, 0700);
     }
 }
 
@@ -53,7 +53,7 @@ static void generate_filename(char* buffer, size_t size) {
     time_t now = time(NULL);
     struct tm* tm_info = localtime(&now);
     snprintf(buffer, size, "%s/stats_%04d%02d%02d_%02d%02d%02d.bin",
-             STATS_DIR,
+             CONFIG_STATS_DIR,
              tm_info->tm_year + 1900,
              tm_info->tm_mon + 1,
              tm_info->tm_mday,
@@ -154,7 +154,7 @@ int load_exercise_history(ExerciseHistory* history) {
     }
 
     // Lire tous les fichiers .bin du dossier
-    DIR* dir = opendir(STATS_DIR);
+    DIR* dir = opendir(CONFIG_STATS_DIR);
     if (!dir) {
         // BUG FIX: libérer entries si opendir échoue
         free(history->entries);
@@ -172,7 +172,7 @@ int load_exercise_history(ExerciseHistory* history) {
 
         // Construire le chemin complet
         char filepath[512];
-        snprintf(filepath, sizeof(filepath), "%s/%s", STATS_DIR, entry->d_name);
+        snprintf(filepath, sizeof(filepath), "%s/%s", CONFIG_STATS_DIR, entry->d_name);
 
         // Lire le fichier
         FILE* file = fopen(filepath, "rb");
@@ -235,7 +235,7 @@ int load_exercise_history(ExerciseHistory* history) {
 }
 
 bool reset_exercise_history(void) {
-    DIR* dir = opendir(STATS_DIR);
+    DIR* dir = opendir(CONFIG_STATS_DIR);
     if (!dir) return true; // Pas de dossier = déjà vide
 
     struct dirent* entry;
@@ -250,7 +250,7 @@ bool reset_exercise_history(void) {
 
         // Supprimer le fichier
         char filepath[512];
-        snprintf(filepath, sizeof(filepath), "%s/%s", STATS_DIR, entry->d_name);
+        snprintf(filepath, sizeof(filepath), "%s/%s", CONFIG_STATS_DIR, entry->d_name);
         if (remove(filepath) == 0) {
             deleted++;
         }

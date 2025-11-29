@@ -3,6 +3,7 @@
 // Génération de code C à partir de la configuration JSON des widgets
 
 #include "json_editor.h"
+#include "core/paths.h"
 #include <stdio.h>
 #include <string.h>
 #include <cjson/cJSON.h>
@@ -447,9 +448,9 @@ bool generer_code_c_depuis_json(JsonEditor* editor) {
     collecter_callbacks_depuis_json(widgets, &callbacks);
 
     // Ouvrir le fichier de sortie
-    FILE* f = fopen("../src/generated_widgets.c", "w");
+    FILE* f = fopen(GENERATED_WIDGETS_C, "w");
     if (!f) {
-        fprintf(stderr, "❌ Impossible de créer le fichier ../src/generated_widgets.c\n");
+        fprintf(stderr, "❌ Impossible de créer le fichier %s\n", GENERATED_WIDGETS_C);
         liberer_callback_collection(&callbacks);
         cJSON_Delete(root);
         return false;
@@ -533,7 +534,7 @@ bool generer_code_c_depuis_json(JsonEditor* editor) {
     liberer_callback_collection(&callbacks);
     cJSON_Delete(root);
 
-    printf("✅ Code C généré avec succès : ../src/generated_widgets.c\n");
+    printf("✅ Code C généré avec succès : %s\n", GENERATED_WIDGETS_C);
     printf("   %d widgets générés\n", widget_count);
     printf("   %d callbacks INT, %d callbacks BOOL, %d callbacks VOID\n",
            callbacks.count_int, callbacks.count_bool, callbacks.count_void);

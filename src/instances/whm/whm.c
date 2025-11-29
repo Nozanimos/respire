@@ -88,7 +88,7 @@ void whm_set_screen_info(TechniqueInstance* instance, int width, int height, flo
             data->session_controller->current_session,
             width,
             height,
-            "../fonts/arial/ARIALBD.TTF",
+            FONT_ARIAL_BOLD,
             scale_factor
         );
         debug_printf("✅ [WHM] Carte de session créée\n");
@@ -151,7 +151,7 @@ void whm_create_counter(TechniqueInstance* instance, SDL_Renderer* renderer) {
         renderer,
         config.Nb_respiration,
         retention_type_for_counter,
-        "../fonts/arial/ARIALBD.TTF",
+        FONT_ARIAL_BOLD,
         counter_font_size,
         scale_min,
         scale_max,
@@ -188,7 +188,7 @@ static void whm_init(TechniqueInstance* self, SDL_Renderer* renderer) {
     int timer_duration = config.start_duration;
     int timer_font_size = 48;  // Sera ajusté plus tard avec screen_info
 
-    data->session_timer = breathing_timer_create(timer_duration, "../fonts/arial/ARIALBD.TTF", timer_font_size);
+    data->session_timer = breathing_timer_create(timer_duration, FONT_ARIAL_BOLD, timer_font_size);
     if (data->session_timer) {
         timer_start(data->session_timer);
         data->timer_phase = true;
@@ -210,14 +210,14 @@ static void whm_init(TechniqueInstance* self, SDL_Renderer* renderer) {
     // CRÉATION DU CHRONOMÈTRE
     // ════════════════════════════════════════════════════════════════════
     int chrono_font_size = 36;
-    data->session_stopwatch = stopwatch_create("../fonts/arial/ARIALBD.TTF", chrono_font_size);
+    data->session_stopwatch = stopwatch_create(FONT_ARIAL_BOLD, chrono_font_size);
     data->chrono_phase = false;
 
     // ════════════════════════════════════════════════════════════════════
     // CRÉATION DU TIMER DE RÉTENTION (15 secondes par défaut)
     // ════════════════════════════════════════════════════════════════════
     int retention_duration = 15;  // Durée fixe de rétention
-    data->retention_timer = breathing_timer_create(retention_duration, "../fonts/arial/ARIALBD.TTF", timer_font_size);
+    data->retention_timer = breathing_timer_create(retention_duration, FONT_ARIAL_BOLD, timer_font_size);
     data->retention_phase = false;
 
     // ════════════════════════════════════════════════════════════════════

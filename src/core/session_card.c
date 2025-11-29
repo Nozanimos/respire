@@ -2,6 +2,7 @@
 // session_card.c - Carte de session animée avec Cairo
 #include "session_card.h"
 #include "debug.h"
+#include "paths.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +33,7 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
                                        int width, int height,
                                        const char* font_path) {
     // 1. Charger l'image de fond (vert.jpg)
-    SDL_Surface* bg_surface = IMG_Load("../img/vert.jpg");
+    SDL_Surface* bg_surface = IMG_Load(IMG_VERT);
     if (!bg_surface) {
         debug_printf("❌ Erreur chargement vert.jpg: %s\n", IMG_GetError());
         return NULL;

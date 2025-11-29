@@ -7,6 +7,7 @@
 #include "button_widget.h"
 #include "debug.h"
 #include "constants.h"
+#include "paths.h"
 #include "json_config_loader.h"
 #include "timer.h"
 #include "chronometre.h"
@@ -371,7 +372,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->screen_height = screen_height;
 
     // Initialisation du hot reload
-    panel->json_config_path = "../config/widgets_config.json";
+    panel->json_config_path = CONFIG_WIDGETS;
     panel->json_check_interval = 0.5f;  // Vérifier toutes les 0.5 secondes
     panel->time_since_last_check = 0.0f;
     panel->last_json_mtime = 0;
@@ -451,7 +452,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     // ════════════════════════════════════════════════════════════════════════
     // CHARGEMENT DU FOND ET DE L'ICÔNE
     // ════════════════════════════════════════════════════════════════════════
-    SDL_Surface* bg_surface = IMG_Load("../img/settings_bg.png");
+    SDL_Surface* bg_surface = IMG_Load(IMG_SETTINGS_BG);
     if (!bg_surface) {
         bg_surface = SDL_CreateRGBSurface(0, BASE_PANEL_WIDTH, screen_height, 32, 0, 0, 0, 0);
         SDL_FillRect(bg_surface, NULL, SDL_MapRGBA(bg_surface->format, 240, 240, 240, 255));
@@ -459,7 +460,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->background = SDL_CreateTextureFromSurface(renderer, bg_surface);
     SDL_FreeSurface(bg_surface);
 
-    SDL_Surface* gear_surface = IMG_Load("../img/settings.png");
+    SDL_Surface* gear_surface = IMG_Load(IMG_SETTINGS_ICON);
     if (!gear_surface) {
         gear_surface = SDL_CreateRGBSurface(0, 40, 40, 32, 0, 0, 0, 0);
         SDL_FillRect(gear_surface, NULL, SDL_MapRGBA(gear_surface->format, 128, 128, 128, 255));
