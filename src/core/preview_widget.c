@@ -6,11 +6,12 @@
 //#include "animation.h"
 #include "config.h"
 #include "debug.h"
+#include "core/memory/memory.h"
 
 //  CRÉATION DU WIDGET PREVIEW
 PreviewWidget* create_preview_widget(int x, int y, int frame_size,
                                      float size_ratio, float breath_duration) {
-    PreviewWidget* preview = malloc(sizeof(PreviewWidget));
+    PreviewWidget* preview = SAFE_MALLOC(sizeof(PreviewWidget));
     if (!preview) {
         debug_printf("❌ Erreur allocation PreviewWidget\n");
         return NULL;
@@ -49,7 +50,7 @@ PreviewWidget* create_preview_widget(int x, int y, int frame_size,
 
     if (!preview->hex_list) {
         debug_printf("❌ ERREUR: Impossible de créer les hexagones du preview\n");
-        free(preview);
+        SAFE_FREE(preview);
         return NULL;
     }
 
@@ -266,6 +267,6 @@ void free_preview_widget(PreviewWidget* preview) {
         free_hexagone_list(preview->hex_list);
     }
 
-    free(preview);
+    SAFE_FREE(preview);
     debug_printf("🗑️ Preview libéré\n");
 }

@@ -12,6 +12,7 @@
 #include <cairo/cairo-ft.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "core/memory/memory.h"
 
 // CONSTANTES
 #define CARD_WIDTH_BASE  200    // Largeur de base (ratio carte de poker ~2.5:3.5)
@@ -236,7 +237,7 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
 SessionCardState* session_card_create(int session_number, int screen_width,
                                       int screen_height, const char* font_path,
                                       float scale_factor) {
-    SessionCardState* card = malloc(sizeof(SessionCardState));
+    SessionCardState* card = SAFE_MALLOC(sizeof(SessionCardState));
     if (!card) {
         debug_printf("❌ Erreur allocation SessionCardState\n");
         return NULL;
@@ -484,6 +485,6 @@ void session_card_destroy(SessionCardState* card) {
         SDL_DestroyTexture(card->card_texture);
     }
 
-    free(card);
+    SAFE_FREE(card);
     debug_printf("🗑️ Carte de session détruite\n");
 }

@@ -11,6 +11,7 @@
 #include "counter_cache.h"
 #include "precompute_list.h"  // Pour sinusoidal_movement
 #include "debug.h"
+#include "core/memory/memory.h"
 
 // UTILITAIRE : Convertir surface Cairo vers texture SDL
 static SDL_Texture* texture_from_cairo_surface(SDL_Renderer* renderer, cairo_surface_t* surface) {
@@ -153,7 +154,7 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
     }
 
     // Allouer la structure
-    CounterTextureCache* cache = malloc(sizeof(CounterTextureCache));
+    CounterTextureCache* cache = SAFE_MALLOC(sizeof(CounterTextureCache));
     if (!cache) {
         fprintf(stderr, "❌ Erreur allocation CounterTextureCache\n");
         return NULL;
@@ -179,23 +180,23 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
     debug_printf("   Police : %s (taille base %d)\n", font_path, base_font_size);
 
     // Allouer le tableau 2D de textures [number][frame_index]
-    cache->textures = malloc(max_numbers * sizeof(SDL_Texture**));
+    cache->textures = SAFE_MALLOC(max_numbers * sizeof(SDL_Texture**));
     if (!cache->textures) {
         fprintf(stderr, "❌ Erreur allocation tableau de textures\n");
-        free(cache);
+        SAFE_FREE(cache);
         return NULL;
     }
 
     for (int i = 0; i < max_numbers; i++) {
-        cache->textures[i] = malloc(cache->frames_per_cycle * sizeof(SDL_Texture*));
+        cache->textures[i] = SAFE_MALLOC(cache->frames_per_cycle * sizeof(SDL_Texture*));
         if (!cache->textures[i]) {
             fprintf(stderr, "❌ Erreur allocation sous-tableau de textures\n");
             // Libérer les tableaux déjà alloués
             for (int j = 0; j < i; j++) {
-                free(cache->textures[j]);
+                SAFE_FREE(cache->textures[j]);
             }
-            free(cache->textures);
-            free(cache);
+            SAFE_FREE(cache->textures);
+            SAFE_FREE(cache);
             return NULL;
         }
     }
@@ -286,12 +287,12 @@ void counter_cache_destroy(CounterTextureCache* cache) {
                 SDL_DestroyTexture(cache->textures[i][j]);
             }
         }
-        free(cache->textures[i]);
+        SAFE_FREE(cache->textures[i]);
     }
-    free(cache->textures);
+    SAFE_FREE(cache->textures);
 
     // Libérer la structure
-    free(cache);
+    SAFE_FREE(cache);
 
     debug_printf("🧹 Cache de textures du compteur détruit\n");
 }

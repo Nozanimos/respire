@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include "core/memory/memory.h"
 
 //  TABLE DE CORRESPONDANCE : NOM CALLBACK → POINTEUR FONCTION
 // PROBLÈME : Dans le JSON on a des strings comme "duration_value_changed"
@@ -690,7 +691,7 @@ bool charger_widgets_depuis_json(const char* filename,
     fseek(file, 0, SEEK_SET);
 
     // Allouer un buffer pour tout le contenu
-    char* json_string = malloc(file_size + 1);
+    char* json_string = SAFE_MALLOC(file_size + 1);
     if (!json_string) {
         debug_printf("❌ Erreur allocation mémoire pour JSON\n");
         fclose(file);
@@ -708,7 +709,7 @@ bool charger_widgets_depuis_json(const char* filename,
     // 2. PARSING DU JSON
     // ─────────────────────────────────────────────────────────────────────────
     cJSON* root = cJSON_Parse(json_string);
-    free(json_string);
+    SAFE_FREE(json_string);
 
     if (!root) {
         const char* error_ptr = cJSON_GetErrorPtr();
@@ -837,7 +838,7 @@ bool generer_templates_json(const char* config_file, const char* output_file) {
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    char* json_string = malloc(file_size + 1);
+    char* json_string = SAFE_MALLOC(file_size + 1);
     if (!json_string) {
         fclose(file);
         debug_printf("❌ Erreur allocation mémoire\n");
@@ -850,7 +851,7 @@ bool generer_templates_json(const char* config_file, const char* output_file) {
 
     // Parser le JSON
     cJSON* root = cJSON_Parse(json_string);
-    free(json_string);
+    SAFE_FREE(json_string);
 
     if (!root) {
         debug_printf("❌ JSON invalide dans %s\n", config_file);
@@ -918,7 +919,7 @@ bool generer_templates_json(const char* config_file, const char* output_file) {
     FILE* output = fopen(output_file, "w");
     if (!output) {
         debug_printf("❌ Impossible de créer %s\n", output_file);
-        free(json_output);
+        SAFE_FREE(json_output);
         cJSON_Delete(output_root);
         return false;
     }
@@ -926,7 +927,7 @@ bool generer_templates_json(const char* config_file, const char* output_file) {
     fprintf(output, "%s", json_output);
     fclose(output);
 
-    free(json_output);
+    SAFE_FREE(json_output);
     cJSON_Delete(output_root);
 
     debug_printf("✅ Templates générés avec succès dans %s\n", output_file);

@@ -3,6 +3,7 @@
 #include "core/debug.h"
 #include <stdlib.h>
 #include <string.h>
+#include "core/memory/memory.h"
 
 
 
@@ -11,16 +12,16 @@ void sauvegarder_etat_undo(JsonEditor* editor) {
     if (!editor) return;
 
     // Créer un nouveau nœud
-    UndoNode* nouveau = malloc(sizeof(UndoNode));
+    UndoNode* nouveau = SAFE_MALLOC(sizeof(UndoNode));
     if (!nouveau) {
         debug_printf("❌ UNDO: Erreur allocation mémoire\n");
         return;
     }
 
     // Copier le buffer actuel
-    nouveau->buffer_snapshot = malloc(strlen(editor->buffer) + 1);
+    nouveau->buffer_snapshot = SAFE_MALLOC(strlen(editor->buffer) + 1);
     if (!nouveau->buffer_snapshot) {
-        free(nouveau);
+        SAFE_FREE(nouveau);
         debug_printf("❌ UNDO: Erreur allocation buffer\n");
         return;
     }
@@ -40,8 +41,8 @@ void sauvegarder_etat_undo(JsonEditor* editor) {
         UndoNode* temp = editor->current_undo->next;
         while (temp) {
             UndoNode* suivant = temp->next;
-            free(temp->buffer_snapshot);
-            free(temp);
+            SAFE_FREE(temp->buffer_snapshot);
+            SAFE_FREE(temp);
             temp = suivant;
             editor->undo_count--;
         }
@@ -65,8 +66,8 @@ void sauvegarder_etat_undo(JsonEditor* editor) {
         // Supprimer le premier
         if (premier->next) {
             premier->next->prev = NULL;
-            free(premier->buffer_snapshot);
-            free(premier);
+            SAFE_FREE(premier->buffer_snapshot);
+            SAFE_FREE(premier);
             editor->undo_count--;
         }
     }

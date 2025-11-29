@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "core/memory/memory.h"
 
 // PROTOTYPES PRIVÉS
 static void whm_init(TechniqueInstance* self, SDL_Renderer* renderer);
@@ -19,16 +20,16 @@ static void whm_cleanup(TechniqueInstance* self);
  * Créer une instance de la technique Wim Hof
  */
 TechniqueInstance* whm_create(SDL_Renderer* renderer) {
-    TechniqueInstance* instance = malloc(sizeof(TechniqueInstance));
+    TechniqueInstance* instance = SAFE_MALLOC(sizeof(TechniqueInstance));
     if (!instance) {
         fprintf(stderr, "Échec allocation mémoire pour instance WHM\n");
         return NULL;
     }
 
-    WHMData* data = malloc(sizeof(WHMData));
+    WHMData* data = SAFE_MALLOC(sizeof(WHMData));
     if (!data) {
         fprintf(stderr, "Échec allocation mémoire pour WHMData\n");
-        free(instance);
+        SAFE_FREE(instance);
         return NULL;
     }
 
@@ -833,6 +834,6 @@ static void whm_cleanup(TechniqueInstance* self) {
     }
 
     // Libérer la structure de données
-    free(data);
+    SAFE_FREE(data);
     self->technique_data = NULL;
 }

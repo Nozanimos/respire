@@ -39,6 +39,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)  # Crée le dossier si inexistant
 	$(CC) $(CFLAGS) `sdl2-config --cflags` `pkg-config --cflags cairo freetype2` -c $< -o $@
 
+# Règles pour bear/compile_commands.json
+compile_commands.json:
+	bear -- make clean
+	bear -- make
+
+compiledb: compile_commands.json
+
 # Nettoyage
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
@@ -55,4 +62,4 @@ help:
 	@echo "  make re     - Recompile tout"
 	@echo "  make help   - Affiche cette aide"
 
-.PHONY: all clean re help
+.PHONY: all clean re help compile_commands compiledb

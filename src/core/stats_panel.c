@@ -5,6 +5,8 @@
 #include "paths.h"
 #include "button_widget.h"
 #include "widget_base.h"
+#include "core/error/error.h"
+#include "core/memory/memory.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -133,6 +135,9 @@ bool save_exercise_to_file(StatsPanel* panel) {
 }
 
 int load_exercise_history(ExerciseHistory* history) {
+    Error err;
+    error_init(&err);
+
     if (!history) return 0;
 
     // Initialiser
@@ -141,9 +146,10 @@ int load_exercise_history(ExerciseHistory* history) {
     history->capacity = 10;
 
     // Allocation initiale
-    history->entries = malloc(history->capacity * sizeof(ExerciseEntry));
+    history->entries = SAFE_MALLOC(history->capacity * sizeof(ExerciseEntry));
     if (!history->entries) {
-        debug_printf("❌ Erreur allocation entries\n");
+        SET_ERROR(&err, ERR_ALLOC, "Échec allocation entries");
+        error_print(&err);
         return 0;
     }
 
@@ -151,7 +157,7 @@ int load_exercise_history(ExerciseHistory* history) {
     DIR* dir = opendir(CONFIG_STATS_DIR);
     if (!dir) {
         // BUG FIX: libérer entries si opendir échoue
-        free(history->entries);
+        SAFE_FREE(history->entries);
         history->entries = NULL;
         return 0;
     }
@@ -178,7 +184,8 @@ int load_exercise_history(ExerciseHistory* history) {
             ExerciseEntry* new_entries = realloc(history->entries,
                                                  history->capacity * sizeof(ExerciseEntry));
             if (!new_entries) {
-                debug_printf("❌ Erreur realloc entries\n");
+                SET_ERROR(&err, ERR_ALLOC, "Échec realloc entries");
+                error_print(&err);
                 fclose(file);
                 break;  // Sortir de la boucle, les entries existantes sont OK
             }
@@ -203,16 +210,17 @@ int load_exercise_history(ExerciseHistory* history) {
         }
 
         // Lire les temps - allocation critique
-        e->session_times = malloc(e->session_count * sizeof(float));
+        e->session_times = SAFE_MALLOC(e->session_count * sizeof(float));
         if (!e->session_times) {
-            debug_printf("❌ Erreur allocation session_times pour exercice\n");
+            SET_ERROR(&err, ERR_ALLOC, "Échec allocation session_times pour exercice");
+            error_print(&err);
             fclose(file);
             continue;  // Passer à l'exercice suivant
         }
 
         if (fread(e->session_times, sizeof(float), e->session_count, file) != (size_t)e->session_count) {
             // Échec lecture: libérer session_times de CET exercice
-            free(e->session_times);
+            SAFE_FREE(e->session_times);
             e->session_times = NULL;
             fclose(file);
             continue;  // Passer à l'exercice suivant
@@ -269,6 +277,9 @@ typedef struct {
 // Créer la texture du graphique
 static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* panel,
                                          int width, int height) {
+    Error err;
+    error_init(&err);
+
     // Créer surface Cairo
     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cairo_t* cr = cairo_create(surface);
@@ -297,7 +308,8 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     if (panel->scroll_offset > max_offset) panel->scroll_offset = max_offset;
 
     // Créer la liste temporaire de tous les exercices (historique + actuel)
-    DisplayExercise* all_exercises = malloc(total_exercises * sizeof(DisplayExercise));
+    DisplayExercise* all_exercises = SAFE_MALLOC(total_exercises * sizeof(DisplayExercise));
+    CHECK_ALLOC(all_exercises, &err, "Échec allocation all_exercises");
     int all_count = 0;
 
     // Ajouter l'historique (du plus ancien au plus récent)
@@ -507,14 +519,21 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
 
         cairo_destroy(cr);
         cairo_surface_destroy(surface);
-        free(all_exercises);
+        SAFE_FREE(all_exercises);
 
         return texture;
     }
 
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
-    free(all_exercises);
+    SAFE_FREE(all_exercises);
+    return NULL;
+
+cleanup:
+    error_print(&err);
+    if (all_exercises) SAFE_FREE(all_exercises);
+    if (cr) cairo_destroy(cr);
+    if (surface) cairo_surface_destroy(surface);
     return NULL;
 }
 
@@ -522,8 +541,11 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
 
 StatsPanel* create_stats_panel(int screen_width, int screen_height,
                                 float* session_times, int session_count) {
-    StatsPanel* panel = malloc(sizeof(StatsPanel));
-    if (!panel) return NULL;
+    Error err;
+    error_init(&err);
+
+    StatsPanel* panel = SAFE_MALLOC(sizeof(StatsPanel));
+    CHECK_ALLOC(panel, &err, "Échec allocation StatsPanel");
 
     // État initial
     panel->state = STATS_CLOSED;
@@ -544,10 +566,9 @@ StatsPanel* create_stats_panel(int screen_width, int screen_height,
 
     // Copier les données de l'exercice actuel
     panel->current_session_count = session_count;
-    panel->current_session_times = malloc(session_count * sizeof(float));
-    if (panel->current_session_times) {
-        memcpy(panel->current_session_times, session_times, session_count * sizeof(float));
-    }
+    panel->current_session_times = SAFE_MALLOC(session_count * sizeof(float));
+    CHECK_ALLOC(panel->current_session_times, &err, "Échec allocation current_session_times");
+    memcpy(panel->current_session_times, session_times, session_count * sizeof(float));
 
     // Charger l'historique
     load_exercise_history(&panel->history);
@@ -577,13 +598,21 @@ StatsPanel* create_stats_panel(int screen_width, int screen_height,
                  panel->panel_width, panel->panel_height, panel->history.count);
 
     return panel;
+
+cleanup:
+    error_print(&err);
+    if (panel) {
+        if (panel->current_session_times) SAFE_FREE(panel->current_session_times);
+        SAFE_FREE(panel);
+    }
+    return NULL;
 }
 
 void destroy_stats_panel(StatsPanel* panel) {
     if (!panel) return;
 
     if (panel->current_session_times) {
-        free(panel->current_session_times);
+        SAFE_FREE(panel->current_session_times);
     }
 
     if (panel->graph_texture) {
@@ -593,14 +622,14 @@ void destroy_stats_panel(StatsPanel* panel) {
     // Libérer l'historique
     for (int i = 0; i < panel->history.count; i++) {
         if (panel->history.entries[i].session_times) {
-            free(panel->history.entries[i].session_times);
+            SAFE_FREE(panel->history.entries[i].session_times);
         }
     }
     if (panel->history.entries) {
-        free(panel->history.entries);
+        SAFE_FREE(panel->history.entries);
     }
 
-    free(panel);
+    SAFE_FREE(panel);
     debug_printf("🗑️ Panneau stats détruit\n");
 }
 
@@ -861,11 +890,11 @@ void handle_stats_panel_event(StatsPanel* panel, SDL_Event* event) {
                 // Recharger l'historique et redessiner
                 for (int i = 0; i < panel->history.count; i++) {
                     if (panel->history.entries[i].session_times) {
-                        free(panel->history.entries[i].session_times);
+                        SAFE_FREE(panel->history.entries[i].session_times);
                     }
                 }
                 if (panel->history.entries) {
-                    free(panel->history.entries);
+                    SAFE_FREE(panel->history.entries);
                 }
                 load_exercise_history(&panel->history);
                 panel->needs_redraw = true;
@@ -881,11 +910,11 @@ void handle_stats_panel_event(StatsPanel* panel, SDL_Event* event) {
                 // Vider l'historique en mémoire
                 for (int i = 0; i < panel->history.count; i++) {
                     if (panel->history.entries[i].session_times) {
-                        free(panel->history.entries[i].session_times);
+                        SAFE_FREE(panel->history.entries[i].session_times);
                     }
                 }
                 if (panel->history.entries) {
-                    free(panel->history.entries);
+                    SAFE_FREE(panel->history.entries);
                 }
                 panel->history.entries = NULL;
                 panel->history.count = 0;

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "core/memory/memory.h"
 
 //  CHARGEMENT DES TEMPLATES DEPUIS LE FICHIER JSON
 
@@ -24,7 +25,7 @@ static char* json_object_to_string(cJSON* obj) {
 
     // Dupliquer la string pour la stocker
     char* result = strdup(json_str);
-    free(json_str);
+    SAFE_FREE(json_str);
 
     return result;
 }
@@ -54,7 +55,7 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    char* json_string = malloc(file_size + 1);
+    char* json_string = SAFE_MALLOC(file_size + 1);
     if (!json_string) {
         fclose(file);
         debug_printf("❌ Erreur allocation mémoire\n");
@@ -67,7 +68,7 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
 
     // Parser le JSON
     cJSON* root = cJSON_Parse(json_string);
-    free(json_string);
+    SAFE_FREE(json_string);
 
     if (!root) {
         debug_printf("❌ JSON invalide dans %s\n", GENERATED_TEMPLATES_JSON);
@@ -94,7 +95,7 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
     // ─────────────────────────────────────────────────────────────────────────
     // 3. CRÉER LE SOUS-MENU
     // ─────────────────────────────────────────────────────────────────────────
-    ContextMenu* sous_menu = malloc(sizeof(ContextMenu));
+    ContextMenu* sous_menu = SAFE_MALLOC(sizeof(ContextMenu));
     if (!sous_menu) {
         debug_printf("❌ Erreur allocation sous-menu\n");
         cJSON_Delete(root);
@@ -126,7 +127,7 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
 
         // Créer le label (capitaliser la première lettre)
         const char* type_name = type_field->valuestring;
-        char* label = malloc(strlen(type_name) + 1);
+        char* label = SAFE_MALLOC(strlen(type_name) + 1);
         strcpy(label, type_name);
 
         // Capitaliser la première lettre
@@ -139,7 +140,7 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
 
         if (!template_str) {
             debug_printf("⚠️ Impossible de convertir le template '%s' en string\n", type_name);
-            free(label);
+            SAFE_FREE(label);
             continue;
         }
 
@@ -179,10 +180,10 @@ void detruire_sous_menu(ContextMenu* menu) {
     // Libérer tous les labels et template_data
     for (int i = 0; i < menu->item_count; i++) {
         if (menu->items[i].label) {
-            free(menu->items[i].label);
+            SAFE_FREE(menu->items[i].label);
         }
         if (menu->items[i].template_data) {
-            free(menu->items[i].template_data);
+            SAFE_FREE(menu->items[i].template_data);
         }
         // Libérer récursivement les sous-menus (si besoin plus tard)
         if (menu->items[i].sous_menu) {
@@ -190,7 +191,7 @@ void detruire_sous_menu(ContextMenu* menu) {
         }
     }
 
-    free(menu);
+    SAFE_FREE(menu);
     debug_printf("🗑️ Sous-menu détruit\n");
 }
 

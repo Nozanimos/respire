@@ -8,12 +8,13 @@
 #include "debug.h"
 #include "constants.h"
 #include "core/error/error.h"
+#include "core/memory/memory.h"
 
 
 /*------------------------------ Nouvelle Liste ------------------------------------*/
 
 HexagoneList* new_hexagone_list(void){
-    HexagoneList* list = malloc(sizeof(HexagoneList));
+    HexagoneList* list = SAFE_MALLOC(sizeof(HexagoneList));
     if (!list) return NULL;
 
     list->first = NULL;
@@ -40,7 +41,7 @@ int hexagone_list_count(HexagoneList *li){
 void add_hexagone(HexagoneList* list, Hexagon* hex, Animation* anim) {
     if (!list || !hex) return;
 
-    HexagoneNode* new_node = malloc(sizeof(HexagoneNode));
+    HexagoneNode* new_node = SAFE_MALLOC(sizeof(HexagoneNode));
     if (!new_node) return;
 
     new_node->data = hex;
@@ -138,15 +139,15 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
             node->precomputed_counter_frames = NULL;
 
             // Allocation 1: vx
-            node->precomputed_vx = malloc(total_frames * NB_SIDE * sizeof(Sint16));
+            node->precomputed_vx = SAFE_MALLOC(total_frames * NB_SIDE * sizeof(Sint16));
             CHECK_ALLOC(node->precomputed_vx, &err, "Erreur allocation precomputed_vx");
 
             // Allocation 2: vy
-            node->precomputed_vy = malloc(total_frames * NB_SIDE * sizeof(Sint16));
+            node->precomputed_vy = SAFE_MALLOC(total_frames * NB_SIDE * sizeof(Sint16));
             CHECK_ALLOC(node->precomputed_vy, &err, "Erreur allocation precomputed_vy");
 
             // Allocation 3: counter frames
-            node->precomputed_counter_frames = malloc(total_frames * sizeof(CounterFrame));
+            node->precomputed_counter_frames = SAFE_MALLOC(total_frames * sizeof(CounterFrame));
             CHECK_ALLOC(node->precomputed_counter_frames, &err, "Erreur allocation precomputed_counter_frames");
 
             debug_printf("📦 ALLOCATION precomputed_counter_frames pour Hexagone %d (%d frames, %zu bytes)\n",
@@ -209,15 +210,15 @@ cleanup:
             error_print(&err);
             // Libération sécurisée en cas d'erreur d'allocation
             if (node->precomputed_vx) {
-                free(node->precomputed_vx);
+                SAFE_FREE(node->precomputed_vx);
                 node->precomputed_vx = NULL;
             }
             if (node->precomputed_vy) {
-                free(node->precomputed_vy);
+                SAFE_FREE(node->precomputed_vy);
                 node->precomputed_vy = NULL;
             }
             if (node->precomputed_counter_frames) {
-                free(node->precomputed_counter_frames);
+                SAFE_FREE(node->precomputed_counter_frames);
                 node->precomputed_counter_frames = NULL;
             }
             debug_printf("⚠️ Hexagone %d: échec allocation, nœud ignoré\n", node->data->element_id);
@@ -286,18 +287,18 @@ void free_hexagone_list(HexagoneList* list) {
         HexagoneNode* next = current->next;
 
         // Libération des tableaux précalculés
-        free(current->precomputed_vx);
-        free(current->precomputed_vy);
-        free(current->precomputed_counter_frames);
+        SAFE_FREE(current->precomputed_vx);
+        SAFE_FREE(current->precomputed_vy);
+        SAFE_FREE(current->precomputed_counter_frames);
 
         if (current->animation) {
             free_animation(current->animation);
         }
         free_hexagon(current->data);
-        free(current);
+        SAFE_FREE(current);
         current = next;
     }
-    free(list);
+    SAFE_FREE(list);
 }
 
 /*---------------------------- Print de débogage ------------------------------------------*/
@@ -494,20 +495,20 @@ void free_precomputed_data(HexagoneList* list) {
         // Libérer les coordonnées précompilées
         if (node->precomputed_vx) {
             total_freed += node->total_cycles * sizeof(Sint16);
-            free(node->precomputed_vx);
+            SAFE_FREE(node->precomputed_vx);
             node->precomputed_vx = NULL;
         }
 
         if (node->precomputed_vy) {
             total_freed += node->total_cycles * sizeof(Sint16);
-            free(node->precomputed_vy);
+            SAFE_FREE(node->precomputed_vy);
             node->precomputed_vy = NULL;
         }
 
         // Libérer les frames du compteur
         if (node->precomputed_counter_frames) {
             total_freed += node->total_cycles * sizeof(CounterFrame);
-            free(node->precomputed_counter_frames);
+            SAFE_FREE(node->precomputed_counter_frames);
             node->precomputed_counter_frames = NULL;
         }
 

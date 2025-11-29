@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "core/memory/memory.h"
 
 //  COULEURS POUR CHAQUE TYPE DE TOKEN
 SDL_Color obtenir_couleur_token(TypeToken type) {
@@ -54,7 +55,7 @@ static bool est_mot_cle(const char* str, int* longueur) {
 LigneColoree* parser_ligne_json(const char* ligne) {
     if (!ligne) return NULL;
 
-    LigneColoree* resultat = malloc(sizeof(LigneColoree));
+    LigneColoree* resultat = SAFE_MALLOC(sizeof(LigneColoree));
     if (!resultat) return NULL;
 
     resultat->nb_segments = 0;
@@ -202,6 +203,6 @@ LigneColoree* parser_ligne_json(const char* ligne) {
 //  LIBÉRATION MÉMOIRE
 void liberer_ligne_coloree(LigneColoree* ligne) {
     if (ligne) {
-        free(ligne);
+        SAFE_FREE(ligne);
     }
 }

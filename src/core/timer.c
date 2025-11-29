@@ -9,11 +9,12 @@
 #include <cairo/cairo-ft.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "core/memory/memory.h"
 
 // CRÉATION DU TIMER
 TimerState* breathing_timer_create(int duration_seconds, const char* font_path, int font_size) {
     // Allocation de la structure
-    TimerState* timer = malloc(sizeof(TimerState));
+    TimerState* timer = SAFE_MALLOC(sizeof(TimerState));
     if (!timer) {
         fprintf(stderr, "❌ Erreur allocation TimerState\n");
         return NULL;
@@ -36,7 +37,7 @@ TimerState* breathing_timer_create(int duration_seconds, const char* font_path, 
     timer->font = TTF_OpenFont(font_path, font_size);
     if (!timer->font) {
         fprintf(stderr, "❌ Erreur chargement police: %s\n", TTF_GetError());
-        free(timer);
+        SAFE_FREE(timer);
         return NULL;
     }
     timer->font_size = font_size;
@@ -46,7 +47,7 @@ TimerState* breathing_timer_create(int duration_seconds, const char* font_path, 
     if (!timer->font_path) {
         fprintf(stderr, "❌ Erreur allocation font_path\n");
         TTF_CloseFont(timer->font);
-        free(timer);
+        SAFE_FREE(timer);
         return NULL;
     }
 
@@ -277,12 +278,12 @@ void timer_destroy(TimerState* timer) {
 
     // Libérer le chemin de la police
     if (timer->font_path) {
-        free(timer->font_path);
+        SAFE_FREE(timer->font_path);
         timer->font_path = NULL;
     }
 
     // Libérer la structure
-    free(timer);
+    SAFE_FREE(timer);
 
     debug_printf("🗑️  Timer détruit\n");
 }

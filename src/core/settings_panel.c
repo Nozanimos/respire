@@ -12,6 +12,8 @@
 #include "timer.h"
 #include "chronometre.h"
 #include "counter.h"
+#include "core/error/error.h"
+#include "core/memory/memory.h"
 #define ANIMATION_DURATION 0.3f
 #define BUTTON_WIDTH 120
 #define BUTTON_HEIGHT 40
@@ -36,12 +38,16 @@ void init_panel_callback_context(SettingsPanel* panel, AppConfig* main_config,
                                  TimerState** retention_timer, BreathCounter** breath_counter,
                                  int* total_sessions, HexagoneList** hexagones,
                                  int* screen_width, int* screen_height) {
+    Error err;
+    error_init(&err);
+
     if (!panel) return;
 
     // Allouer le contexte
-    panel->callback_ctx = malloc(sizeof(CallbackContext));
+    panel->callback_ctx = SAFE_MALLOC(sizeof(CallbackContext));
     if (!panel->callback_ctx) {
-        fprintf(stderr, "❌ Erreur allocation CallbackContext\n");
+        SET_ERROR(&err, ERR_ALLOC, "Échec allocation CallbackContext");
+        error_print(&err);
         return;
     }
 
@@ -340,8 +346,11 @@ static void precalculate_label_dimensions(SettingsPanel* panel);
 //  CRÉATION DU PANNEAU
 
 SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window, int screen_width, int screen_height, float scale_factor) {
-    SettingsPanel* panel = malloc(sizeof(SettingsPanel));
-    if (!panel) return NULL;
+    Error err;
+    error_init(&err);
+
+    SettingsPanel* panel = SAFE_MALLOC(sizeof(SettingsPanel));
+    CHECK_ALLOC(panel, &err, "Échec allocation SettingsPanel");
 
     memset(panel, 0, sizeof(SettingsPanel));
     panel->scale_factor = scale_factor;
@@ -384,9 +393,8 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     panel->font_small = get_font_for_size(font_small_size);
 
     if (!panel->font_title || !panel->font || !panel->font_small) {
-        debug_printf("❌ Impossible d'obtenir les polices pour le panneau\n");
-        free(panel);
-        return NULL;
+        SET_ERROR(&err, ERR_INIT, "Impossible d'obtenir les polices pour le panneau");
+        goto cleanup;
     }
 
     debug_subsection("Polices du panneau");
@@ -399,6 +407,8 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     // CHARGEMENT DES WIDGETS DEPUIS JSON
     // ════════════════════════════════════════════════════════════════════════
     panel->widget_list = create_widget_list();
+    CHECK_PTR(panel->widget_list, &err, "Échec création widget_list");
+
     load_config(&panel->temp_config);
 
     LoaderContext ctx = {
@@ -439,6 +449,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     }
     panel->background = SDL_CreateTextureFromSurface(renderer, bg_surface);
     SDL_FreeSurface(bg_surface);
+    CHECK_PTR(panel->background, &err, "Échec création texture background");
 
     SDL_Surface* gear_surface = IMG_Load(IMG_SETTINGS_ICON);
     if (!gear_surface) {
@@ -447,6 +458,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     }
     panel->gear_icon = SDL_CreateTextureFromSurface(renderer, gear_surface);
     SDL_FreeSurface(gear_surface);
+    CHECK_PTR(panel->gear_icon, &err, "Échec création texture gear_icon");
 
     int gear_size = scale_value(40, scale_factor);
     int gear_margin = scale_value(20, scale_factor);
@@ -473,6 +485,22 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
 
     debug_printf("✅ Panneau de configuration créé avec widgets\n");
     return panel;
+
+cleanup:
+    error_print(&err);
+    if (panel) {
+        if (panel->widget_list) {
+            free_widget_list(panel->widget_list);
+        }
+        if (panel->background) {
+            SDL_DestroyTexture(panel->background);
+        }
+        if (panel->gear_icon) {
+            SDL_DestroyTexture(panel->gear_icon);
+        }
+        SAFE_FREE(panel);
+    }
+    return NULL;
 }
 
 //  MISE À JOUR DU PANNEAU (animation)
@@ -1854,8 +1882,7 @@ void free_settings_panel(SettingsPanel* panel) {
 
     // Libérer le contexte de callback
     if (panel->callback_ctx) {
-        free(panel->callback_ctx);
-        panel->callback_ctx = NULL;
+        SAFE_FREE(panel->callback_ctx);
     }
 
     if (panel->preview_system.hex_list) {
@@ -1871,7 +1898,7 @@ void free_settings_panel(SettingsPanel* panel) {
     if (panel->apply_button_texture) SDL_DestroyTexture(panel->apply_button_texture);
     if (panel->cancel_button_texture) SDL_DestroyTexture(panel->cancel_button_texture);
 
-    free(panel);
+    SAFE_FREE(panel);
 }
 
 //  INITIALISATION DES WIDGETS EN DUR (VERSION FINALE SANS JSON)

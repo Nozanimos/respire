@@ -6,6 +6,7 @@
 #include "counter.h"
 #include "counter_cache.h"
 #include "debug.h"
+#include "core/memory/memory.h"
 
 // CRÉATION DU COMPTEUR
 CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int retention_type,
@@ -18,7 +19,7 @@ CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int rete
     }
 
     // Allocation de la structure
-    CounterState* counter = malloc(sizeof(CounterState));
+    CounterState* counter = SAFE_MALLOC(sizeof(CounterState));
     if (!counter) {
         fprintf(stderr, "❌ Erreur allocation CounterState\n");
         return NULL;
@@ -53,7 +54,7 @@ CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int rete
 
     if (!counter->cache) {
         fprintf(stderr, "❌ Erreur création cache de textures\n");
-        free(counter);
+        SAFE_FREE(counter);
         return NULL;
     }
 
@@ -201,6 +202,6 @@ void counter_destroy(CounterState* counter) {
         counter_cache_destroy(counter->cache);
     }
 
-    free(counter);
+    SAFE_FREE(counter);
     debug_printf("🧹 Compteur détruit\n");
 }

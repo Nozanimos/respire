@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "core/widget_base.h"
+#include "core/memory/memory.h"
 
 //  CALLBACKS DES BOUTONS
 // Ces fonctions sont appelées quand on clique sur les boutons
@@ -159,7 +160,7 @@ void detruire_boutons(JsonEditor* editor) {
     if (!editor) return;
 
     if (editor->boutons) {
-        free(editor->boutons);
+        SAFE_FREE(editor->boutons);
         editor->boutons = NULL;
     }
 
@@ -169,7 +170,7 @@ void detruire_boutons(JsonEditor* editor) {
 
 //  CRÉATION DE L'ÉDITEUR
 JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
-    JsonEditor* editor = malloc(sizeof(JsonEditor));
+    JsonEditor* editor = SAFE_MALLOC(sizeof(JsonEditor));
     if (!editor) {
         debug_printf("❌ Erreur allocation JsonEditor\n");
         return NULL;
@@ -193,7 +194,7 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
 
     if (!editor->window) {
         debug_printf("❌ Erreur création fenêtre éditeur: %s\n", SDL_GetError());
-        free(editor);
+        SAFE_FREE(editor);
         return NULL;
     }
 
@@ -208,7 +209,7 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
     if (!editor->renderer) {
         debug_printf("❌ Erreur création renderer éditeur: %s\n", SDL_GetError());
         SDL_DestroyWindow(editor->window);
-        free(editor);
+        SAFE_FREE(editor);
         return NULL;
     }
 
@@ -221,7 +222,7 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y) {
 
     if (!editor->font_mono || !editor->font_ui) {
         debug_printf("❌ JSON Editor: impossible d'obtenir les polices\n");
-        free(editor);
+        SAFE_FREE(editor);
         return NULL;
     }
 
@@ -848,6 +849,6 @@ void detruire_json_editor(JsonEditor* editor) {
     if (editor->window) SDL_DestroyWindow(editor->window);
 
     detruire_boutons(editor);
-    free(editor);
+    SAFE_FREE(editor);
     debug_printf("🗑️ Éditeur JSON détruit\n");
 }

@@ -3,6 +3,7 @@
 #include "selector_widget.h"
 #include "debug.h"
 #include "core/error/error.h"
+#include "core/memory/memory.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,7 +14,7 @@ WidgetList* create_widget_list(void) {
     error_init(&err);
     WidgetList* list = NULL;
 
-    list = malloc(sizeof(WidgetList));
+    list = SAFE_MALLOC(sizeof(WidgetList));
     CHECK_ALLOC(list, &err, "Erreur allocation liste de widgets");
 
     list->first = NULL;
@@ -25,7 +26,7 @@ WidgetList* create_widget_list(void) {
 
 cleanup:
     error_print(&err);
-    free(list);
+    SAFE_FREE(list);
     return NULL;
 }
 
@@ -66,7 +67,7 @@ bool add_increment_widget(WidgetList* list,
     CHECK_PTR(display_name, &err, "Nom d'affichage NULL");
 
     // CRÉATION DU NŒUD
-    node = malloc(sizeof(WidgetNode));
+    node = SAFE_MALLOC(sizeof(WidgetNode));
     CHECK_ALLOC(node, &err, "Erreur allocation nœud widget");
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
@@ -127,10 +128,10 @@ cleanup:
     error_print(&err);
     // Libération sécurisée en cas d'erreur
     if (node) {
-        if (node->id) free((void*)node->id);
-        if (node->display_name) free((void*)node->display_name);
+        if (node->id) SAFE_FREE(node->id);
+        if (node->display_name) SAFE_FREE(node->display_name);
         if (node->widget.increment_widget) free_config_widget(node->widget.increment_widget);
-        free(node);
+        SAFE_FREE(node);
     }
     return false;
 }
@@ -166,7 +167,7 @@ bool add_toggle_widget(WidgetList* list,
     CHECK_PTR(display_name, &err, "Nom d'affichage NULL");
 
     // CRÉATION DU NŒUD
-    node = malloc(sizeof(WidgetNode));
+    node = SAFE_MALLOC(sizeof(WidgetNode));
     CHECK_ALLOC(node, &err, "Erreur allocation nœud widget");
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
@@ -229,10 +230,10 @@ cleanup:
     error_print(&err);
     // Libération sécurisée en cas d'erreur
     if (node) {
-        if (node->id) free((void*)node->id);
-        if (node->display_name) free((void*)node->display_name);
+        if (node->id) SAFE_FREE(node->id);
+        if (node->display_name) SAFE_FREE(node->display_name);
         if (node->widget.toggle_widget) free_toggle_widget(node->widget.toggle_widget);
-        free(node);
+        SAFE_FREE(node);
     }
     return false;
 }
@@ -832,7 +833,7 @@ bool add_label_widget(WidgetList* list,
                       LabelAlignment alignment) {
     if (!list || !id || !display_name) return false;
 
-    WidgetNode* node = malloc(sizeof(WidgetNode));
+    WidgetNode* node = SAFE_MALLOC(sizeof(WidgetNode));
     if (!node) return false;
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
@@ -868,10 +869,10 @@ bool add_label_widget(WidgetList* list,
 
 cleanup:
     if (node) {
-        if (node->id) free((void*)node->id);
-        if (node->display_name) free((void*)node->display_name);
+        if (node->id) SAFE_FREE(node->id);
+        if (node->display_name) SAFE_FREE(node->display_name);
         if (node->widget.label_widget) free_label_widget(node->widget.label_widget);
-        free(node);
+        SAFE_FREE(node);
     }
     return false;
 }
@@ -881,7 +882,7 @@ bool add_separator_widget(WidgetList* list, const char* id, int y,
                           int start_margin, int end_margin, int thickness, SDL_Color color) {
     if (!list || !id) return false;
 
-    WidgetNode* node = malloc(sizeof(WidgetNode));
+    WidgetNode* node = SAFE_MALLOC(sizeof(WidgetNode));
     if (!node) return false;
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
@@ -917,10 +918,10 @@ bool add_separator_widget(WidgetList* list, const char* id, int y,
 
 cleanup:
     if (node) {
-        if (node->id) free((void*)node->id);
-        if (node->display_name) free((void*)node->display_name);
+        if (node->id) SAFE_FREE(node->id);
+        if (node->display_name) SAFE_FREE(node->display_name);
         if (node->widget.separator_widget) free_separator_widget(node->widget.separator_widget);
-        free(node);
+        SAFE_FREE(node);
     }
     return false;
 }
@@ -930,7 +931,7 @@ bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
                         int frame_size, float size_ratio, float breath_duration) {
     if (!list || !id) return false;
 
-    WidgetNode* node = malloc(sizeof(WidgetNode));
+    WidgetNode* node = SAFE_MALLOC(sizeof(WidgetNode));
     if (!node) return false;
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
@@ -966,10 +967,10 @@ bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
 
 cleanup:
     if (node) {
-        if (node->id) free((void*)node->id);
-        if (node->display_name) free((void*)node->display_name);
+        if (node->id) SAFE_FREE(node->id);
+        if (node->display_name) SAFE_FREE(node->display_name);
         if (node->widget.preview_widget) free_preview_widget(node->widget.preview_widget);
-        free(node);
+        SAFE_FREE(node);
     }
     return false;
 }
@@ -980,7 +981,7 @@ bool add_button_widget(WidgetList* list, const char* id, const char* display_nam
                        SDL_Color bg_color, ButtonYAnchor y_anchor, void (*callback)(void)) {
     if (!list || !id || !display_name) return false;
 
-    WidgetNode* node = malloc(sizeof(WidgetNode));
+    WidgetNode* node = SAFE_MALLOC(sizeof(WidgetNode));
     if (!node) return false;
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
@@ -1019,10 +1020,10 @@ bool add_button_widget(WidgetList* list, const char* id, const char* display_nam
 
 cleanup:
     if (node) {
-        if (node->id) free((void*)node->id);
-        if (node->display_name) free((void*)node->display_name);
+        if (node->id) SAFE_FREE(node->id);
+        if (node->display_name) SAFE_FREE(node->display_name);
         if (node->widget.button_widget) free_button_widget(node->widget.button_widget);
-        free(node);
+        SAFE_FREE(node);
     }
     return false;
 }
@@ -1051,7 +1052,7 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
     CHECK_PTR(display_name, &err, "Nom d'affichage NULL");
 
     // CRÉATION DU NŒUD
-    node = malloc(sizeof(WidgetNode));
+    node = SAFE_MALLOC(sizeof(WidgetNode));
     CHECK_ALLOC(node, &err, "Erreur allocation nœud widget");
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
@@ -1108,10 +1109,10 @@ cleanup:
     error_print(&err);
     // Libération sécurisée en cas d'erreur
     if (node) {
-        if (node->id) free((void*)node->id);
-        if (node->display_name) free((void*)node->display_name);
+        if (node->id) SAFE_FREE(node->id);
+        if (node->display_name) SAFE_FREE(node->display_name);
         if (node->widget.selector_widget) free_selector_widget(node->widget.selector_widget);
-        free(node);
+        SAFE_FREE(node);
     }
     return false;
 }
@@ -1217,14 +1218,14 @@ void free_widget_list(WidgetList* list) {
         // ─────────────────────────────────────────────────────────────────────
         // LIBÉRATION DES CHAÎNES ET DU NŒUD
         // ─────────────────────────────────────────────────────────────────────
-        free((void*)current->id);
-        free((void*)current->display_name);
-        free(current);
+        SAFE_FREE(current->id);
+        SAFE_FREE(current->display_name);
+        SAFE_FREE(current);
 
         current = next;
     }
 
-    free(list);
+    SAFE_FREE(list);
     debug_printf("🗑️ Liste de widgets libérée\n");
 }
 

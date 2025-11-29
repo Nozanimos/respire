@@ -9,11 +9,12 @@
 #include <cairo/cairo-ft.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "core/memory/memory.h"
 
 // CRÉATION DU CHRONOMÈTRE
 StopwatchState* stopwatch_create(const char* font_path, int font_size) {
     // Allocation de la structure
-    StopwatchState* stopwatch = malloc(sizeof(StopwatchState));
+    StopwatchState* stopwatch = SAFE_MALLOC(sizeof(StopwatchState));
     if (!stopwatch) {
         fprintf(stderr, "❌ Erreur allocation StopwatchState\n");
         return NULL;
@@ -36,7 +37,7 @@ StopwatchState* stopwatch_create(const char* font_path, int font_size) {
     stopwatch->font = TTF_OpenFont(font_path, font_size);
     if (!stopwatch->font) {
         fprintf(stderr, "❌ Erreur chargement police: %s\n", TTF_GetError());
-        free(stopwatch);
+        SAFE_FREE(stopwatch);
         return NULL;
     }
     stopwatch->font_size = font_size;
@@ -46,7 +47,7 @@ StopwatchState* stopwatch_create(const char* font_path, int font_size) {
     if (!stopwatch->font_path) {
         fprintf(stderr, "❌ Erreur allocation font_path\n");
         TTF_CloseFont(stopwatch->font);
-        free(stopwatch);
+        SAFE_FREE(stopwatch);
         return NULL;
     }
 
@@ -290,12 +291,12 @@ void stopwatch_destroy(StopwatchState* stopwatch) {
 
     // Libérer le chemin de la police
     if (stopwatch->font_path) {
-        free(stopwatch->font_path);
+        SAFE_FREE(stopwatch->font_path);
         stopwatch->font_path = NULL;
     }
 
     // Libérer la structure
-    free(stopwatch);
+    SAFE_FREE(stopwatch);
 
     debug_printf("🗑️  Chronomètre détruit\n");
 }

@@ -90,20 +90,23 @@ void memory_cleanup_tracking(void);
 #endif
 
 // Macros utilitaires pour gestion d'erreurs avec cleanup
-#define CHECK_ALLOC(ptr) \
-    do { \
-        if (!(ptr)) { \
-            goto cleanup; \
-        } \
-    } while(0)
+// Note: Si error.h est inclus, utiliser ses macros CHECK_ALLOC plus complètes
+#ifndef CHECK_ALLOC
+    #define CHECK_ALLOC(ptr) \
+        do { \
+            if (!(ptr)) { \
+                goto cleanup; \
+            } \
+        } while(0)
 
-#define CHECK_ALLOC_MSG(ptr, msg) \
-    do { \
-        if (!(ptr)) { \
-            debug_printf("❌ Allocation échouée: %s\n", (msg)); \
-            goto cleanup; \
-        } \
-    } while(0)
+    #define CHECK_ALLOC_MSG(ptr, msg) \
+        do { \
+            if (!(ptr)) { \
+                debug_printf("❌ Allocation échouée: %s\n", (msg)); \
+                goto cleanup; \
+            } \
+        } while(0)
+#endif
 
 #ifdef __cplusplus
 }

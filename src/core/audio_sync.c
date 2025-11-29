@@ -5,6 +5,7 @@
 #include <string.h>
 #include "audio_sync.h"
 #include "debug.h"
+#include "core/memory/memory.h"
 
 // CRÉATION DU GESTIONNAIRE AUDIO
 AudioSyncManager* audio_sync_create(const char** audio_files, int num_files, float master_volume) {
@@ -14,7 +15,7 @@ AudioSyncManager* audio_sync_create(const char** audio_files, int num_files, flo
     }
 
     // Allouer la structure
-    AudioSyncManager* manager = malloc(sizeof(AudioSyncManager));
+    AudioSyncManager* manager = SAFE_MALLOC(sizeof(AudioSyncManager));
     if (!manager) {
         fprintf(stderr, "❌ Erreur allocation AudioSyncManager\n");
         return NULL;
@@ -29,10 +30,10 @@ AudioSyncManager* audio_sync_create(const char** audio_files, int num_files, flo
     manager->master_volume = master_volume;
 
     // Allouer le tableau de chunks
-    manager->preloaded_chunks = malloc(num_files * sizeof(Mix_Chunk*));
+    manager->preloaded_chunks = SAFE_MALLOC(num_files * sizeof(Mix_Chunk*));
     if (!manager->preloaded_chunks) {
         fprintf(stderr, "❌ Erreur allocation tableau de chunks\n");
-        free(manager);
+        SAFE_FREE(manager);
         return NULL;
     }
 
@@ -176,16 +177,16 @@ void audio_sync_destroy(AudioSyncManager* manager) {
                 Mix_FreeChunk(manager->preloaded_chunks[i]);
             }
         }
-        free(manager->preloaded_chunks);
+        SAFE_FREE(manager->preloaded_chunks);
     }
 
     // Libérer les sync points
     if (manager->sync_points) {
-        free(manager->sync_points);
+        SAFE_FREE(manager->sync_points);
     }
 
     // Libérer la structure
-    free(manager);
+    SAFE_FREE(manager);
 
     debug_printf("🧹 Gestionnaire audio détruit\n");
 }

@@ -5,12 +5,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include "core/memory/memory.h"
 
 //  CRÉATION D'UN WIDGET TOGGLE
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,
                                    int toggle_width, int toggle_height, int thumb_size,
                                    int text_size) {
-    ToggleWidget* widget = malloc(sizeof(ToggleWidget));
+    ToggleWidget* widget = SAFE_MALLOC(sizeof(ToggleWidget));
     if (!widget) {
         debug_printf("❌ Erreur allocation ToggleWidget: %s\n", name);
         return NULL;
@@ -370,5 +371,5 @@ void rescale_toggle_widget(ToggleWidget* widget, float panel_ratio) {
 //  LIBÉRATION DU WIDGET
 void free_toggle_widget(ToggleWidget* widget) {
     if (!widget) return;
-    free(widget);
+    SAFE_FREE(widget);
 }

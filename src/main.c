@@ -18,6 +18,7 @@
 #include "core/session_card.h"
 #include "instances/technique_instance.h"
 #include "instances/whm/whm.h"
+#include "core/memory/memory.h"
 
 
 
@@ -195,7 +196,7 @@ int main(int argc, char **argv) {
     // === INITIALISATION TABLEAU DES TEMPS DE SESSION ===
     // Tableau dynamique qui va stocker les temps de chaque session
     // Capacité initiale : 10 sessions, puis réallocation si besoin
-    app.session_times = malloc(10 * sizeof(float));
+    app.session_times = SAFE_MALLOC(10 * sizeof(float));
     if (!app.session_times) {
         fprintf(stderr, "⚠️ Échec allocation tableau sessions\n");
         app.session_count = 0;
@@ -326,7 +327,7 @@ int main(int argc, char **argv) {
                     whm_data->session_controller->session_count > 0) {
                     // Copier les temps de session depuis le controller
                     session_count = whm_data->session_controller->session_count;
-                    session_times = malloc(sizeof(float) * session_count);
+                    session_times = SAFE_MALLOC(sizeof(float) * session_count);
                     if (session_times) {
                         memcpy(session_times, whm_data->session_controller->session_times,
                                sizeof(float) * session_count);
@@ -351,7 +352,7 @@ int main(int argc, char **argv) {
                         debug_printf("📊 [MAIN] Panneau de statistiques ouvert\n");
                     }
 
-                    free(session_times);
+                    SAFE_FREE(session_times);
                 } else {
                     // Pas de sessions → retour direct à l'écran d'accueil
                     app.waiting_to_start = true;
@@ -1107,7 +1108,7 @@ int main(int argc, char **argv) {
 
     // Libérer le tableau des temps de session
     if (app.session_times) {
-        free(app.session_times);
+        SAFE_FREE(app.session_times);
         app.session_times = NULL;
     }
 

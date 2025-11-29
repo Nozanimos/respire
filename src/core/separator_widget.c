@@ -3,11 +3,12 @@
 #include "separator_widget.h"
 #include "geometry.h"
 #include "debug.h"
+#include "core/memory/memory.h"
 
 //  CRÉATION DU WIDGET SEPARATOR
 SeparatorWidget* create_separator_widget(int y, int start_margin, int end_margin,
                                          int thickness, SDL_Color color) {
-    SeparatorWidget* sep = malloc(sizeof(SeparatorWidget));
+    SeparatorWidget* sep = SAFE_MALLOC(sizeof(SeparatorWidget));
     if (!sep) {
         debug_printf("❌ Erreur allocation SeparatorWidget\n");
         return NULL;
@@ -81,7 +82,7 @@ void rescale_separator_widget(SeparatorWidget* sep, float panel_ratio, int panel
 //  LIBÉRATION
 void free_separator_widget(SeparatorWidget* sep) {
     if (sep) {
-        free(sep);
+        SAFE_FREE(sep);
         debug_printf("🗑️ Separator libéré\n");
     }
 }

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include "core/memory/memory.h"
 
 //  GESTIONNAIRE DE CACHE DE POLICES - Variables globales
 CachedFont g_font_cache[MAX_CACHED_FONTS] = {0};
@@ -107,7 +108,7 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
                                    TTF_Font* font, const char* display_type) {
     (void)font;        // Paramètre conservé pour compatibilité mais non utilisé
 
-    ConfigWidget* widget = malloc(sizeof(ConfigWidget));
+    ConfigWidget* widget = SAFE_MALLOC(sizeof(ConfigWidget));
     if (!widget) {
         debug_printf("❌ Erreur allocation ConfigWidget: %s\n", name);
         return NULL;
@@ -771,5 +772,5 @@ void rescale_config_widget(ConfigWidget* widget, float panel_ratio) {
 //  LIBÉRATION DU WIDGET
 void free_config_widget(ConfigWidget* widget) {
     if (!widget) return;
-    free(widget);
+    SAFE_FREE(widget);
 }

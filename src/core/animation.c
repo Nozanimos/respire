@@ -2,9 +2,10 @@
 #include "animation.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "core/memory/memory.h"
 
 Animation* create_animation(bool clockwise, double angle_per_cycle) {
-    Animation* anim = malloc(sizeof(Animation));
+    Animation* anim = SAFE_MALLOC(sizeof(Animation));
     if (!anim) {
         fprintf(stderr,"Problème d'allocation dynamique (create_animation)\n");
         return NULL;
@@ -21,5 +22,5 @@ Animation* create_animation(bool clockwise, double angle_per_cycle) {
 }
 
 void free_animation(Animation* anim) {
-    free(anim);
+    SAFE_FREE(anim);
 }

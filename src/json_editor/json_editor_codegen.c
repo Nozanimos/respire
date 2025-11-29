@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <cjson/cJSON.h>
+#include "core/memory/memory.h"
 
 // Structure pour collecter les callbacks uniques
 typedef struct {
@@ -67,13 +68,13 @@ static void collecter_callbacks_depuis_json(cJSON* widgets, CallbackCollection* 
 // Fonction pour libérer la mémoire de la collection
 static void liberer_callback_collection(CallbackCollection* collection) {
     for (int i = 0; i < collection->count_int; i++) {
-        free(collection->callbacks_int[i]);
+        SAFE_FREE(collection->callbacks_int[i]);
     }
     for (int i = 0; i < collection->count_bool; i++) {
-        free(collection->callbacks_bool[i]);
+        SAFE_FREE(collection->callbacks_bool[i]);
     }
     for (int i = 0; i < collection->count_void; i++) {
-        free(collection->callbacks_void[i]);
+        SAFE_FREE(collection->callbacks_void[i]);
     }
 }
 

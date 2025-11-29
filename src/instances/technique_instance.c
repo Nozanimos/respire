@@ -1,4 +1,5 @@
 #include "technique_instance.h"
+#include "core/memory/memory.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,5 +28,5 @@ void technique_destroy(TechniqueInstance* instance) {
         instance->cleanup(instance);
     }
 
-    free(instance);
+    SAFE_FREE(instance);
 }

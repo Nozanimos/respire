@@ -6,12 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "core/memory/memory.h"
 
 // CRÉATION DU WIDGET SELECTOR
 SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
                                        int default_index, int arrow_size, int text_size,
                                        TTF_Font* font) {
-    SelectorWidget* widget = malloc(sizeof(SelectorWidget));
+    SelectorWidget* widget = SAFE_MALLOC(sizeof(SelectorWidget));
     if (!widget) {
         fprintf(stderr, "❌ Erreur allocation SelectorWidget\n");
         return NULL;
@@ -827,5 +828,5 @@ void free_selector_widget(SelectorWidget* widget) {
     if (widget->right_arrow) free_triangle(widget->right_arrow);
 
     debug_printf("🗑️ Libération SelectorWidget '%s'\n", widget->nom_affichage);
-    free(widget);
+    SAFE_FREE(widget);
 }

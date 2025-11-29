@@ -4,12 +4,13 @@
 #include "label_widget.h"
 #include "renderer.h"
 #include "debug.h"
+#include "core/memory/memory.h"
 
 //  CRÉATION DU WIDGET LABEL
 LabelWidget* create_label_widget(const char* text, int x, int y,
                                  int text_size, SDL_Color color, bool underlined,
                                  LabelAlignment alignment) {
-    LabelWidget* label = malloc(sizeof(LabelWidget));
+    LabelWidget* label = SAFE_MALLOC(sizeof(LabelWidget));
     if (!label) {
         debug_printf("❌ Erreur allocation LabelWidget\n");
         return NULL;
@@ -134,7 +135,7 @@ void set_label_text(LabelWidget* label, const char* new_text) {
 //  LIBÉRATION
 void free_label_widget(LabelWidget* label) {
     if (label) {
-        free(label);
+        SAFE_FREE(label);
         debug_printf("🗑️ Label libéré\n");
     }
 }

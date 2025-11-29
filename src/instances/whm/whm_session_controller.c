@@ -2,12 +2,13 @@
 #include "whm_session_controller.h"
 #include <stdlib.h>
 #include <string.h>
+#include "core/memory/memory.h"
 
 /**
  * Créer un contrôleur de session
  */
 SessionController* session_controller_create(int total_sessions, RetentionConfig retention_config) {
-    SessionController* ctrl = malloc(sizeof(SessionController));
+    SessionController* ctrl = SAFE_MALLOC(sizeof(SessionController));
     if (!ctrl) {
         return NULL;
     }
@@ -23,7 +24,7 @@ SessionController* session_controller_create(int total_sessions, RetentionConfig
     ctrl->session_count = 0;
 
     if (!ctrl->session_times) {
-        free(ctrl);
+        SAFE_FREE(ctrl);
         return NULL;
     }
 
@@ -172,8 +173,8 @@ void session_controller_destroy(SessionController* ctrl) {
     if (!ctrl) return;
 
     if (ctrl->session_times) {
-        free(ctrl->session_times);
+        SAFE_FREE(ctrl->session_times);
     }
 
-    free(ctrl);
+    SAFE_FREE(ctrl);
 }

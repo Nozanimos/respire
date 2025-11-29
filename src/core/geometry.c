@@ -12,6 +12,8 @@
 #include "config.h"
 #include "debug.h"
 #include "constants.h"
+#include "core/error/error.h"
+#include "core/memory/memory.h"
 
 #define ADJUST 0.05f
 
@@ -125,11 +127,11 @@ void make_hexagone(SDL_Renderer *renderer, Hexagon* hex) {
 /*----------------------------------------------------*/
 
 Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, float size_ratio, unsigned char element_id) {
-    Hexagon* hex = malloc(sizeof(Hexagon));
-    if (!hex) {
-        fprintf(stderr,"❌ Problème d'allocation structure Hexagon\n");
-        return NULL;
-    }
+    Error err;
+    error_init(&err);
+
+    Hexagon* hex = SAFE_MALLOC(sizeof(Hexagon));
+    CHECK_ALLOC(hex, &err, "Échec allocation structure Hexagon");
 
     // Initialiser les pointeurs à NULL pour cleanup sécurisé
     hex->vx = NULL;
@@ -139,18 +141,12 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
     hex->element_id = element_id;
 
     // Allocation 1: vx
-    hex->vx = malloc(NB_SIDE * sizeof(Sint16));
-    if (!hex->vx) {
-        fprintf(stderr,"❌ Problème d'allocation vx (create_single_hexagon)\n");
-        goto cleanup;
-    }
+    hex->vx = SAFE_MALLOC(NB_SIDE * sizeof(Sint16));
+    CHECK_ALLOC(hex->vx, &err, "Échec allocation vx (create_single_hexagon)");
 
     // Allocation 2: vy
-    hex->vy = malloc(NB_SIDE * sizeof(Sint16));
-    if (!hex->vy) {
-        fprintf(stderr,"❌ Problème d'allocation vy (create_single_hexagon)\n");
-        goto cleanup;
-    }
+    hex->vy = SAFE_MALLOC(NB_SIDE * sizeof(Sint16));
+    CHECK_ALLOC(hex->vy, &err, "Échec allocation vy (create_single_hexagon)");
 
     // Stocker la position et l'échelle
     hex->center_x = center_x;
@@ -181,11 +177,12 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
     return hex;
 
 cleanup:
+    error_print(&err);
     // Libération sécurisée en cas d'erreur
     if (hex) {
-        if (hex->vx) free(hex->vx);
-        if (hex->vy) free(hex->vy);
-        free(hex);
+        if (hex->vx) SAFE_FREE(hex->vx);
+        if (hex->vy) SAFE_FREE(hex->vy);
+        SAFE_FREE(hex);
     }
     return NULL;
 }
@@ -287,20 +284,20 @@ void recalculer_sommets(Hexagon* hex, int container_size) {
 
 void free_hexagon(Hexagon* hex) {
     if (!hex) return;
-    free(hex->vx);
-    free(hex->vy);
-    free(hex);
+    SAFE_FREE(hex->vx);
+    SAFE_FREE(hex->vy);
+    SAFE_FREE(hex);
 }
 
 /*----------------------------------------------------*/
 
 // Crée un triangle isocèle générique avec Cairo
 Triangle* create_triangle(int center_x, int center_y, int height, bool points_up, SDL_Color color) {
-    Triangle* tri = malloc(sizeof(Triangle));
-    if (!tri) {
-        debug_printf("❌ Erreur allocation triangle\n");
-        return NULL;
-    }
+    Error err;
+    error_init(&err);
+
+    Triangle* tri = SAFE_MALLOC(sizeof(Triangle));
+    CHECK_ALLOC(tri, &err, "Échec allocation triangle");
 
     // Selon ta spécification : base = 2 × hauteur
     int base_half = height;  // base/2 = hauteur, donc base = 2 × hauteur
@@ -335,6 +332,11 @@ Triangle* create_triangle(int center_x, int center_y, int height, bool points_up
                  center_x, center_y, height, points_up ? "haut" : "bas");
 
     return tri;
+
+cleanup:
+    error_print(&err);
+    SAFE_FREE(tri);
+    return NULL;
 }
 
 /*----------------------------------------------------*/
@@ -423,11 +425,11 @@ Triangle* create_down_arrow(int center_x, int center_y, int size, SDL_Color colo
 
 // Crée une flèche vers la gauche (triangle pointant à gauche)
 Triangle* create_left_arrow(int center_x, int center_y, int size, SDL_Color color) {
-    Triangle* tri = malloc(sizeof(Triangle));
-    if (!tri) {
-        debug_printf("❌ Erreur allocation triangle\n");
-        return NULL;
-    }
+    Error err;
+    error_init(&err);
+
+    Triangle* tri = SAFE_MALLOC(sizeof(Triangle));
+    CHECK_ALLOC(tri, &err, "Échec allocation triangle (left arrow)");
 
     int base_half = size;
     tri->center_x = center_x;
@@ -448,15 +450,20 @@ Triangle* create_left_arrow(int center_x, int center_y, int size, SDL_Color colo
                  center_x, center_y, size);
 
     return tri;
+
+cleanup:
+    error_print(&err);
+    SAFE_FREE(tri);
+    return NULL;
 }
 
 // Crée une flèche vers la droite (triangle pointant à droite)
 Triangle* create_right_arrow(int center_x, int center_y, int size, SDL_Color color) {
-    Triangle* tri = malloc(sizeof(Triangle));
-    if (!tri) {
-        debug_printf("❌ Erreur allocation triangle\n");
-        return NULL;
-    }
+    Error err;
+    error_init(&err);
+
+    Triangle* tri = SAFE_MALLOC(sizeof(Triangle));
+    CHECK_ALLOC(tri, &err, "Échec allocation triangle (right arrow)");
 
     int base_half = size;
     tri->center_x = center_x;
@@ -477,6 +484,11 @@ Triangle* create_right_arrow(int center_x, int center_y, int size, SDL_Color col
                  center_x, center_y, size);
 
     return tri;
+
+cleanup:
+    error_print(&err);
+    SAFE_FREE(tri);
+    return NULL;
 }
 
 /*----------------------------------------------------*/
@@ -484,7 +496,7 @@ Triangle* create_right_arrow(int center_x, int center_y, int size, SDL_Color col
 // Libère un triangle
 void free_triangle(Triangle* tri) {
     if (tri) {
-        free(tri);
+        SAFE_FREE(tri);
         debug_printf("🔻 Triangle libéré\n");
     }
 }

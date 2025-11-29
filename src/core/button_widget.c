@@ -6,12 +6,13 @@
 //#include "renderer.h"
 #include "widget_base.h"
 #include "debug.h"
+#include "core/memory/memory.h"
 
 //  CRÉATION DU WIDGET BUTTON
 ButtonWidget* create_button_widget(const char* text, int x, int y,
                                    int width, int height, int text_size,
                                    SDL_Color bg_color, ButtonYAnchor y_anchor) {
-    ButtonWidget* button = malloc(sizeof(ButtonWidget));
+    ButtonWidget* button = SAFE_MALLOC(sizeof(ButtonWidget));
     if (!button) {
         debug_printf("❌ Erreur allocation ButtonWidget\n");
         return NULL;
@@ -187,7 +188,7 @@ void set_button_click_callback(ButtonWidget* button, void (*callback)(void)) {
 //  LIBÉRATION
 void free_button_widget(ButtonWidget* button) {
     if (button) {
-        free(button);
+        SAFE_FREE(button);
         debug_printf("🗑️ Bouton libéré\n");
     }
 }
