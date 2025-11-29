@@ -129,32 +129,37 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
             int original_center_x = node->data->center_x;
             int original_center_y = node->data->center_y;
 
-            // Allocation contiguë pour les transformations
+            // Initialiser à NULL pour cleanup sécurisé
+            node->precomputed_vx = NULL;
+            node->precomputed_vy = NULL;
+            node->precomputed_counter_frames = NULL;
+
+            // Allocation 1: vx
             node->precomputed_vx = malloc(total_frames * NB_SIDE * sizeof(Sint16));
-            node->precomputed_vy = malloc(total_frames * NB_SIDE * sizeof(Sint16));
-
-            // 🆕 Allocation pour les frames du compteur (synchronisées avec l'hexagone)
-            node->precomputed_counter_frames = malloc(total_frames * sizeof(CounterFrame));
-
-            if (node->precomputed_counter_frames) {
-                debug_printf("📦 ALLOCATION precomputed_counter_frames pour Hexagone %d (%d frames, %zu bytes)\n",
-                           node->data->element_id, total_frames, total_frames * sizeof(CounterFrame));
+            if (!node->precomputed_vx) {
+                fprintf(stderr, "❌ Erreur allocation precomputed_vx pour hexagone %d\n", node->data->element_id);
+                goto cleanup_precompute;
             }
+
+            // Allocation 2: vy
+            node->precomputed_vy = malloc(total_frames * NB_SIDE * sizeof(Sint16));
+            if (!node->precomputed_vy) {
+                fprintf(stderr, "❌ Erreur allocation precomputed_vy pour hexagone %d\n", node->data->element_id);
+                goto cleanup_precompute;
+            }
+
+            // Allocation 3: counter frames
+            node->precomputed_counter_frames = malloc(total_frames * sizeof(CounterFrame));
+            if (!node->precomputed_counter_frames) {
+                fprintf(stderr, "❌ Erreur allocation precomputed_counter_frames pour hexagone %d\n", node->data->element_id);
+                goto cleanup_precompute;
+            }
+
+            debug_printf("📦 ALLOCATION precomputed_counter_frames pour Hexagone %d (%d frames, %zu bytes)\n",
+                       node->data->element_id, total_frames, total_frames * sizeof(CounterFrame));
 
             node->total_cycles = total_frames;
             node->current_cycle = 0;
-            // 🐛 FIX: NE PAS écraser current_scale ici !
-            // current_scale est le scale RESPONSIVE (scale_factor), il doit persister
-            // Les scales d'animation (0.1→1.0) sont déjà inclus dans les vx/vy précompilés
-            // Si current_scale n'a jamais été initialisé, le laisser tel quel (sera initialisé ailleurs)
-
-            if (!node->precomputed_vx || !node->precomputed_vy || !node->precomputed_counter_frames) {
-                fprintf(stderr, "Erreur d'allocation pour hexagone %d\n", node->data->element_id);
-            free(node->precomputed_vx);
-            free(node->precomputed_vy);
-            free(node->precomputed_counter_frames);
-            continue;
-                }
 
             // UTILISATION DE LA STRUCTURE GÉNÉRIQUE
             SinusoidalConfig config = {
@@ -202,6 +207,27 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
 
             debug_printf("✅ Hexagone %d: %d frames pré-calculées (système relatif)\n",
                    node->data->element_id, total_frames);
+
+            // Succès - passer au nœud suivant
+            goto next_node;
+
+cleanup_precompute:
+            // Libération sécurisée en cas d'erreur d'allocation
+            if (node->precomputed_vx) {
+                free(node->precomputed_vx);
+                node->precomputed_vx = NULL;
+            }
+            if (node->precomputed_vy) {
+                free(node->precomputed_vy);
+                node->precomputed_vy = NULL;
+            }
+            if (node->precomputed_counter_frames) {
+                free(node->precomputed_counter_frames);
+                node->precomputed_counter_frames = NULL;
+            }
+            debug_printf("⚠️ Hexagone %d: échec allocation, nœud ignoré\n", node->data->element_id);
+
+next_node:
         }
         node = node->next;
     }

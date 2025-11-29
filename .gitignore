@@ -22,4 +22,5 @@ cppcheck
 debug.txt
 package-lock.json
 package.json
-
+PHASE*
+MEMORY*

@@ -13,6 +13,8 @@ BIN_DIR = bin
 # Trouve tous les fichiers .c dans src/
 SRCS = $(wildcard $(SRC_DIR)/*.c) \
        $(wildcard $(SRC_DIR)/core/*.c) \
+       $(wildcard $(SRC_DIR)/core/memory/*.c) \
+       $(wildcard $(SRC_DIR)/core/error/*.c) \
        $(wildcard $(SRC_DIR)/instances/*.c) \
        $(wildcard $(SRC_DIR)/instances/whm/*.c) \
        $(wildcard $(SRC_DIR)/json_editor/*.c)

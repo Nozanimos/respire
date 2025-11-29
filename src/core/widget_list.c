@@ -61,25 +61,34 @@ bool add_increment_widget(WidgetList* list,
         return false;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
     // CRÉATION DU NŒUD
-    // ─────────────────────────────────────────────────────────────────────────
     WidgetNode* node = malloc(sizeof(WidgetNode));
     if (!node) {
         debug_printf("❌ Erreur allocation nœud widget\n");
         return false;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // CONFIGURATION DU NŒUD
-    // ─────────────────────────────────────────────────────────────────────────
-    node->type = WIDGET_TYPE_INCREMENT;
-    node->id = strdup(id);              // Copie de la chaîne
-    node->display_name = strdup(display_name);
+    // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
+    node->id = NULL;
+    node->display_name = NULL;
+    node->widget.increment_widget = NULL;
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // CONFIGURATION DU NŒUD
+    node->type = WIDGET_TYPE_INCREMENT;
+
+    node->id = strdup(id);
+    if (!node->id) {
+        debug_printf("❌ Échec allocation id pour widget '%s'\n", id);
+        goto cleanup;
+    }
+
+    node->display_name = strdup(display_name);
+    if (!node->display_name) {
+        debug_printf("❌ Échec allocation display_name pour widget '%s'\n", id);
+        goto cleanup;
+    }
+
     // CRÉATION DU WIDGET CONCRET
-    // ─────────────────────────────────────────────────────────────────────────
     node->widget.increment_widget = create_config_widget(
         display_name, x, y,
         min_val, max_val, start_val, increment,
@@ -88,10 +97,7 @@ bool add_increment_widget(WidgetList* list,
 
     if (!node->widget.increment_widget) {
         debug_printf("❌ Échec création ConfigWidget '%s'\n", id);
-        free((void*)node->id);
-        free((void*)node->display_name);
-        free(node);
-        return false;
+        goto cleanup;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -125,6 +131,16 @@ bool add_increment_widget(WidgetList* list,
                  id, display_name, list->count);
 
     return true;
+
+cleanup:
+    // Libération sécurisée en cas d'erreur
+    if (node) {
+        if (node->id) free((void*)node->id);
+        if (node->display_name) free((void*)node->display_name);
+        if (node->widget.increment_widget) free_config_widget(node->widget.increment_widget);
+        free(node);
+    }
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -156,25 +172,34 @@ bool add_toggle_widget(WidgetList* list,
         return false;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
     // CRÉATION DU NŒUD
-    // ─────────────────────────────────────────────────────────────────────────
     WidgetNode* node = malloc(sizeof(WidgetNode));
     if (!node) {
         debug_printf("❌ Erreur allocation nœud widget\n");
         return false;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // CONFIGURATION DU NŒUD
-    // ─────────────────────────────────────────────────────────────────────────
-    node->type = WIDGET_TYPE_TOGGLE;
-    node->id = strdup(id);
-    node->display_name = strdup(display_name);
+    // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
+    node->id = NULL;
+    node->display_name = NULL;
+    node->widget.toggle_widget = NULL;
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // CONFIGURATION DU NŒUD
+    node->type = WIDGET_TYPE_TOGGLE;
+
+    node->id = strdup(id);
+    if (!node->id) {
+        debug_printf("❌ Échec allocation id pour widget '%s'\n", id);
+        goto cleanup;
+    }
+
+    node->display_name = strdup(display_name);
+    if (!node->display_name) {
+        debug_printf("❌ Échec allocation display_name pour widget '%s'\n", id);
+        goto cleanup;
+    }
+
     // CRÉATION DU WIDGET CONCRET
-    // ─────────────────────────────────────────────────────────────────────────
     node->widget.toggle_widget = create_toggle_widget(
         display_name, x, y,
         start_state,
@@ -184,10 +209,7 @@ bool add_toggle_widget(WidgetList* list,
 
     if (!node->widget.toggle_widget) {
         debug_printf("❌ Échec création ToggleWidget '%s'\n", id);
-        free((void*)node->id);
-        free((void*)node->display_name);
-        free(node);
-        return false;
+        goto cleanup;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -222,6 +244,16 @@ bool add_toggle_widget(WidgetList* list,
                  id, display_name, list->count);
 
     return true;
+
+cleanup:
+    // Libération sécurisée en cas d'erreur
+    if (node) {
+        if (node->id) free((void*)node->id);
+        if (node->display_name) free((void*)node->display_name);
+        if (node->widget.toggle_widget) free_toggle_widget(node->widget.toggle_widget);
+        free(node);
+    }
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -841,17 +873,21 @@ bool add_label_widget(WidgetList* list,
     WidgetNode* node = malloc(sizeof(WidgetNode));
     if (!node) return false;
 
-    node->type = WIDGET_TYPE_LABEL;
-    node->id = strdup(id);
-    node->display_name = strdup(display_name);
-    node->widget.label_widget = create_label_widget(display_name, x, y, text_size, color, underlined, alignment);
+    // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
+    node->id = NULL;
+    node->display_name = NULL;
+    node->widget.label_widget = NULL;
 
-    if (!node->widget.label_widget) {
-        free((void*)node->id);
-        free((void*)node->display_name);
-        free(node);
-        return false;
-    }
+    node->type = WIDGET_TYPE_LABEL;
+
+    node->id = strdup(id);
+    if (!node->id) goto cleanup;
+
+    node->display_name = strdup(display_name);
+    if (!node->display_name) goto cleanup;
+
+    node->widget.label_widget = create_label_widget(display_name, x, y, text_size, color, underlined, alignment);
+    if (!node->widget.label_widget) goto cleanup;
 
     node->on_int_value_changed = NULL;
     node->on_bool_value_changed = NULL;
@@ -867,6 +903,15 @@ bool add_label_widget(WidgetList* list,
 
     debug_printf("✅ Widget LABEL '%s' ajouté (total: %d)\n", id, list->count);
     return true;
+
+cleanup:
+    if (node) {
+        if (node->id) free((void*)node->id);
+        if (node->display_name) free((void*)node->display_name);
+        if (node->widget.label_widget) free_label_widget(node->widget.label_widget);
+        free(node);
+    }
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -879,17 +924,21 @@ bool add_separator_widget(WidgetList* list, const char* id, int y,
     WidgetNode* node = malloc(sizeof(WidgetNode));
     if (!node) return false;
 
-    node->type = WIDGET_TYPE_SEPARATOR;
-    node->id = strdup(id);
-    node->display_name = strdup("separator");
-    node->widget.separator_widget = create_separator_widget(y, start_margin, end_margin, thickness, color);
+    // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
+    node->id = NULL;
+    node->display_name = NULL;
+    node->widget.separator_widget = NULL;
 
-    if (!node->widget.separator_widget) {
-        free((void*)node->id);
-        free((void*)node->display_name);
-        free(node);
-        return false;
-    }
+    node->type = WIDGET_TYPE_SEPARATOR;
+
+    node->id = strdup(id);
+    if (!node->id) goto cleanup;
+
+    node->display_name = strdup("separator");
+    if (!node->display_name) goto cleanup;
+
+    node->widget.separator_widget = create_separator_widget(y, start_margin, end_margin, thickness, color);
+    if (!node->widget.separator_widget) goto cleanup;
 
     node->on_int_value_changed = NULL;
     node->on_bool_value_changed = NULL;
@@ -905,6 +954,15 @@ bool add_separator_widget(WidgetList* list, const char* id, int y,
 
     debug_printf("✅ Widget SEPARATOR '%s' ajouté (total: %d)\n", id, list->count);
     return true;
+
+cleanup:
+    if (node) {
+        if (node->id) free((void*)node->id);
+        if (node->display_name) free((void*)node->display_name);
+        if (node->widget.separator_widget) free_separator_widget(node->widget.separator_widget);
+        free(node);
+    }
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -917,17 +975,21 @@ bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
     WidgetNode* node = malloc(sizeof(WidgetNode));
     if (!node) return false;
 
-    node->type = WIDGET_TYPE_PREVIEW;
-    node->id = strdup(id);
-    node->display_name = strdup("preview");
-    node->widget.preview_widget = create_preview_widget(x, y, frame_size, size_ratio, breath_duration);
+    // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
+    node->id = NULL;
+    node->display_name = NULL;
+    node->widget.preview_widget = NULL;
 
-    if (!node->widget.preview_widget) {
-        free((void*)node->id);
-        free((void*)node->display_name);
-        free(node);
-        return false;
-    }
+    node->type = WIDGET_TYPE_PREVIEW;
+
+    node->id = strdup(id);
+    if (!node->id) goto cleanup;
+
+    node->display_name = strdup("preview");
+    if (!node->display_name) goto cleanup;
+
+    node->widget.preview_widget = create_preview_widget(x, y, frame_size, size_ratio, breath_duration);
+    if (!node->widget.preview_widget) goto cleanup;
 
     node->on_int_value_changed = NULL;
     node->on_bool_value_changed = NULL;
@@ -943,6 +1005,15 @@ bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
 
     debug_printf("✅ Widget PREVIEW '%s' ajouté (total: %d)\n", id, list->count);
     return true;
+
+cleanup:
+    if (node) {
+        if (node->id) free((void*)node->id);
+        if (node->display_name) free((void*)node->display_name);
+        if (node->widget.preview_widget) free_preview_widget(node->widget.preview_widget);
+        free(node);
+    }
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -956,17 +1027,21 @@ bool add_button_widget(WidgetList* list, const char* id, const char* display_nam
     WidgetNode* node = malloc(sizeof(WidgetNode));
     if (!node) return false;
 
-    node->type = WIDGET_TYPE_BUTTON;
-    node->id = strdup(id);
-    node->display_name = strdup(display_name);
-    node->widget.button_widget = create_button_widget(display_name, x, y, width, height, text_size, bg_color, y_anchor);
+    // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
+    node->id = NULL;
+    node->display_name = NULL;
+    node->widget.button_widget = NULL;
 
-    if (!node->widget.button_widget) {
-        free((void*)node->id);
-        free((void*)node->display_name);
-        free(node);
-        return false;
-    }
+    node->type = WIDGET_TYPE_BUTTON;
+
+    node->id = strdup(id);
+    if (!node->id) goto cleanup;
+
+    node->display_name = strdup(display_name);
+    if (!node->display_name) goto cleanup;
+
+    node->widget.button_widget = create_button_widget(display_name, x, y, width, height, text_size, bg_color, y_anchor);
+    if (!node->widget.button_widget) goto cleanup;
 
     node->on_int_value_changed = NULL;
     node->on_bool_value_changed = NULL;
@@ -985,6 +1060,15 @@ bool add_button_widget(WidgetList* list, const char* id, const char* display_nam
 
     debug_printf("✅ Widget BUTTON '%s' ajouté (total: %d)\n", id, list->count);
     return true;
+
+cleanup:
+    if (node) {
+        if (node->id) free((void*)node->id);
+        if (node->display_name) free((void*)node->display_name);
+        if (node->widget.button_widget) free_button_widget(node->widget.button_widget);
+        free(node);
+    }
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1009,25 +1093,34 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
         return false;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
     // CRÉATION DU NŒUD
-    // ─────────────────────────────────────────────────────────────────────────
     WidgetNode* node = malloc(sizeof(WidgetNode));
     if (!node) {
         debug_printf("❌ Erreur allocation nœud widget\n");
         return false;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // CONFIGURATION DU NŒUD
-    // ─────────────────────────────────────────────────────────────────────────
-    node->type = WIDGET_TYPE_SELECTOR;
-    node->id = strdup(id);
-    node->display_name = strdup(display_name);
+    // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
+    node->id = NULL;
+    node->display_name = NULL;
+    node->widget.selector_widget = NULL;
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // CONFIGURATION DU NŒUD
+    node->type = WIDGET_TYPE_SELECTOR;
+
+    node->id = strdup(id);
+    if (!node->id) {
+        debug_printf("❌ Échec allocation id pour widget '%s'\n", id);
+        goto cleanup;
+    }
+
+    node->display_name = strdup(display_name);
+    if (!node->display_name) {
+        debug_printf("❌ Échec allocation display_name pour widget '%s'\n", id);
+        goto cleanup;
+    }
+
     // CRÉATION DU WIDGET CONCRET
-    // ─────────────────────────────────────────────────────────────────────────
     node->widget.selector_widget = create_selector_widget(
         display_name, x, y,
         default_index,
@@ -1037,10 +1130,7 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
 
     if (!node->widget.selector_widget) {
         debug_printf("❌ Échec création SelectorWidget '%s'\n", id);
-        free((void*)node->id);
-        free((void*)node->display_name);
-        free(node);
-        return false;
+        goto cleanup;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1069,6 +1159,16 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
                  id, display_name, list->count);
 
     return true;
+
+cleanup:
+    // Libération sécurisée en cas d'erreur
+    if (node) {
+        if (node->id) free((void*)node->id);
+        if (node->display_name) free((void*)node->display_name);
+        if (node->widget.selector_widget) free_selector_widget(node->widget.selector_widget);
+        free(node);
+    }
+    return false;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
