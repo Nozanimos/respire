@@ -6,18 +6,14 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  ALIGNEMENT DU LABEL
-// ════════════════════════════════════════════════════════════════════════════
 typedef enum {
     LABEL_ALIGN_LEFT,      // Aligné à gauche
     LABEL_ALIGN_CENTER,    // Centré dans le panneau
     LABEL_ALIGN_RIGHT      // Aligné à droite
 } LabelAlignment;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DU WIDGET LABEL
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct {
     // ─────────────────────────────────────────────────────────────────────────
     // BASE (position et dimensions relatives)
@@ -49,9 +45,7 @@ typedef struct {
 
 } LabelWidget;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════════
 
 // Crée un nouveau label
 // x, y : position relative au panneau

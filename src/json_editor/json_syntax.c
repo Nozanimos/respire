@@ -4,9 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  COULEURS POUR CHAQUE TYPE DE TOKEN
-// ════════════════════════════════════════════════════════════════════════════
 SDL_Color obtenir_couleur_token(TypeToken type) {
     switch (type) {
         case TOKEN_CLE:
@@ -27,9 +25,7 @@ SDL_Color obtenir_couleur_token(TypeToken type) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  HELPERS
-// ════════════════════════════════════════════════════════════════════════════
 
 // Vérifie si un caractère est un délimiteur JSON
 static bool est_delimiteur(char c) {
@@ -54,9 +50,7 @@ static bool est_mot_cle(const char* str, int* longueur) {
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING DE LIGNE JSON
-// ════════════════════════════════════════════════════════════════════════════
 LigneColoree* parser_ligne_json(const char* ligne) {
     if (!ligne) return NULL;
 
@@ -205,9 +199,7 @@ LigneColoree* parser_ligne_json(const char* ligne) {
     return resultat;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION MÉMOIRE
-// ════════════════════════════════════════════════════════════════════════════
 void liberer_ligne_coloree(LigneColoree* ligne) {
     if (ligne) {
         free(ligne);

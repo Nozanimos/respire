@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // config_registry.h
-// ════════════════════════════════════════════════════════════════════════════
 // TABLE DE MAPPING CENTRALISÉE : ID widget <-> Champ AppConfig
-// ════════════════════════════════════════════════════════════════════════════
 // Ajouter un nouveau paramètre = ajouter UNE SEULE LIGNE dans cette table !
 
 #ifndef __CONFIG_REGISTRY_H__
@@ -13,18 +11,14 @@
 #include <stdbool.h>
 #include "config.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 // TYPES DE PARAMÈTRES
-// ════════════════════════════════════════════════════════════════════════════
 typedef enum {
     CONFIG_TYPE_INT,
     CONFIG_TYPE_FLOAT,
     CONFIG_TYPE_BOOL,
 } ConfigParamType;
 
-// ════════════════════════════════════════════════════════════════════════════
 // ENTRÉE DANS LA TABLE DE MAPPING
-// ════════════════════════════════════════════════════════════════════════════
 // NOTE : Les limites min/max sont DANS LE JSON (widgets_config.json)
 //        Cette table sert UNIQUEMENT à faire le lien entre :
 //        - widget_id (du JSON) ↔ champ dans AppConfig ↔ clé dans respiration.conf
@@ -42,11 +36,8 @@ typedef struct {
     } default_value;
 } ConfigParamEntry;
 
-// ════════════════════════════════════════════════════════════════════════════
 // TABLE DE MAPPING CENTRALISÉE
-// ════════════════════════════════════════════════════════════════════════════
 // 🎯 AJOUTER UN NOUVEAU PARAMÈTRE = AJOUTER UNE LIGNE ICI !
-// ════════════════════════════════════════════════════════════════════════════
 
 static const ConfigParamEntry CONFIG_PARAM_TABLE[] = {
     // ID widget             Clé fichier           Type              Offset                                    Défaut
@@ -66,9 +57,7 @@ static const ConfigParamEntry CONFIG_PARAM_TABLE[] = {
 
 static const int CONFIG_PARAMS_COUNT = sizeof(CONFIG_PARAM_TABLE) / sizeof(ConfigParamEntry);
 
-// ════════════════════════════════════════════════════════════════════════════
 // FONCTIONS UTILITAIRES
-// ════════════════════════════════════════════════════════════════════════════
 
 // Trouve une entrée par widget_id
 static inline const ConfigParamEntry* find_param_by_widget_id(const char* id) {

@@ -17,15 +17,11 @@
 static inline int min_int(int a, int b) { return a < b ? a : b; }
 static inline int max_int(int a, int b) { return a > b ? a : b; }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  FORWARD DECLARATION
-// ════════════════════════════════════════════════════════════════════════════
 // Déclaration anticipée pour éviter les dépendances circulaires
 typedef struct JsonEditor_s JsonEditor;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE POUR LE MENU CONTEXTUEL ET SOUS-MENUS
-// ════════════════════════════════════════════════════════════════════════════
 
 // Forward declaration pour permettre les références croisées
 typedef struct ContextMenu_s ContextMenu;
@@ -55,9 +51,7 @@ struct ContextMenu_s {
     int hovered_item;                    // Index de l'item survolé (-1 si aucun)
 };
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE POUR UN BOUTON GÉNÉRIQUE
-// ════════════════════════════════════════════════════════════════════════════
 // Fonction callback : sera appelée quand on clique sur le bouton
 typedef void (*BoutonCallback)(JsonEditor*);
 
@@ -70,9 +64,7 @@ typedef struct {
     BoutonCallback callback;        // Fonction à appeler au clic
 } EditorButton;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE POUR L'HISTORIQUE UNDO/REDO
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct UndoNode {
     char* buffer_snapshot;          // Copie du buffer à cet état
     int curseur_position;           // Position du curseur
@@ -83,9 +75,7 @@ typedef struct UndoNode {
 } UndoNode;
 
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DE L'ÉDITEUR JSON
-// ════════════════════════════════════════════════════════════════════════════
 struct JsonEditor_s {
     // ─────────────────────────────────────────────────────────────────────────
     // MENU CONTEXTUEL (CLIC DROIT)
@@ -155,13 +145,9 @@ struct JsonEditor_s {
 };
 typedef struct JsonEditor_s JsonEditor;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES DES FONCTIONS
-// ════════════════════════════════════════════════════════════════════════════
 
-// ─────────────────────────────────────────────────────────────────────────
 // CYCLE DE VIE
-// ─────────────────────────────────────────────────────────────────────────
 
 // Crée et ouvre la fenêtre d'édition
 // PARAMÈTRES :
@@ -172,9 +158,7 @@ JsonEditor* creer_json_editor(const char* filepath, int pos_x, int pos_y);
 // Libère toutes les ressources de l'éditeur
 void detruire_json_editor(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // SYSTÈME DE BOUTONS
-// ─────────────────────────────────────────────────────────────────────────
 
 // Crée un nouveau bouton avec ses paramètres
 // PARAMÈTRES :
@@ -208,9 +192,7 @@ void rendre_tous_boutons(JsonEditor* editor);
 // Libère la mémoire des boutons
 void detruire_boutons(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // FICHIER
-// ─────────────────────────────────────────────────────────────────────────
 
 // Charge le contenu du fichier dans le buffer
 bool charger_fichier_json(JsonEditor* editor);
@@ -221,9 +203,7 @@ bool sauvegarder_fichier_json(JsonEditor* editor);
 // Valide la syntaxe JSON du buffer
 bool valider_json(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // ÉDITION
-// ─────────────────────────────────────────────────────────────────────────
 
 // Insère un caractère à la position du curseur
 void inserer_caractere(JsonEditor* editor, char c);
@@ -273,9 +253,7 @@ void selectionner_tout(JsonEditor* editor);
 // Duplique la ligne courante (Ctrl+D)
 void dupliquer_ligne_courante(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // MENU CONTEXTUEL
-// ─────────────────────────────────────────────────────────────────────────
 
 // Initialise le menu contextuel
 void initialiser_menu_contextuel(JsonEditor* editor);
@@ -309,14 +287,10 @@ void action_reindenter_contextuel(JsonEditor* editor);
 void action_inserer_template_contextuel(JsonEditor* editor);
 void action_generer_code_c_contextuel(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // FORMATAGE
-// ─────────────────────────────────────────────────────────────────────────
 void reindenter_json(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // GÉNÉRATION DE CODE C
-// ─────────────────────────────────────────────────────────────────────────
 
 // Génère un fichier C contenant tous les appels add_*_widget()
 // à partir de la configuration JSON actuelle.
@@ -324,9 +298,7 @@ void reindenter_json(JsonEditor* editor);
 // RETOUR : true si succès, false si erreur
 bool generer_code_c_depuis_json(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // RENDU
-// ─────────────────────────────────────────────────────────────────────────
 
 // Rend toute la fenêtre de l'éditeur
 void rendre_json_editor(JsonEditor* editor);
@@ -337,17 +309,13 @@ void rendre_ligne_texte(JsonEditor* editor, const char* ligne, int numero, int y
 // Rend les boutons
 void rendre_boutons(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // ÉVÉNEMENTS
-// ─────────────────────────────────────────────────────────────────────────
 
 // Gère les événements de la fenêtre d'édition
 // RETOUR : true si l'événement concerne cette fenêtre
 bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event);
 
-// ─────────────────────────────────────────────────────────────────────────
 // UTILITAIRES
-// ─────────────────────────────────────────────────────────────────────────
 
 // Marque qu'une modification a eu lieu (pour auto-save)
 void marquer_modification(JsonEditor* editor);
@@ -382,9 +350,7 @@ void recalculer_positions_boutons(JsonEditor* editor);
 // Calcule le nombre de lignes visibles selon la taille actuelle de la fenêtre
 int obtenir_nb_lignes_visibles(JsonEditor* editor);
 
-// ─────────────────────────────────────────────────────────────────────────
 // UTILITAIRES UTF-8
-// ─────────────────────────────────────────────────────────────────────────
 
 // Retourne le nombre de caractères UTF-8 dans une chaîne
 int utf8_strlen(const char* str);
@@ -395,9 +361,7 @@ int utf8_advance(const char* str, int n_chars);
 // Copie n caractères UTF-8 (pas n octets!) dans dest
 void utf8_strncpy(char* dest, const char* src, int n_chars, int max_bytes);
 
-// ─────────────────────────────────────────────────────────────────────────
 // GESTION DES TEMPLATES
-// ─────────────────────────────────────────────────────────────────────────
 
 // Charge les templates depuis templates.json et crée le sous-menu
 // RETOUR : pointeur vers le sous-menu créé (NULL si erreur)

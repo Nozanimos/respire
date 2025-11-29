@@ -5,9 +5,7 @@
 #include <string.h>
 #include <cjson/cJSON.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CHARGEMENT DU FICHIER
-// ════════════════════════════════════════════════════════════════════════════
 bool charger_fichier_json(JsonEditor* editor) {
     if (!editor) return false;
 
@@ -42,9 +40,7 @@ bool charger_fichier_json(JsonEditor* editor) {
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  SAUVEGARDE DU FICHIER
-// ════════════════════════════════════════════════════════════════════════════
 bool sauvegarder_fichier_json(JsonEditor* editor) {
     if (!editor) return false;
 
@@ -68,9 +64,7 @@ bool sauvegarder_fichier_json(JsonEditor* editor) {
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  VALIDATION JSON
-// ════════════════════════════════════════════════════════════════════════════
 bool valider_json(JsonEditor* editor) {
     if (!editor) return false;
 

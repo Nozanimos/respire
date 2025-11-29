@@ -3,9 +3,7 @@
 #include "core/debug.h"
 
 
-// ════════════════════════════════════════════════════════════════════════════
 //  DÉPLACEMENT VERTICAL DU CURSEUR
-// ════════════════════════════════════════════════════════════════════════════
 void deplacer_curseur_vertical(JsonEditor* editor, int direction) {
     if (!editor) return;
 
@@ -61,9 +59,7 @@ void deplacer_curseur_vertical(JsonEditor* editor, int direction) {
                      ligne_actuelle, ligne_cible, colonne_actuelle, pos);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AUTO-SCROLL POUR SUIVRE LE CURSEUR (VERTICAL ET HORIZONTAL)
-// ════════════════════════════════════════════════════════════════════════════
 void auto_scroll_curseur(JsonEditor* editor) {
     if (!editor) return;
 

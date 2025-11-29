@@ -7,9 +7,7 @@
 #include "counter_cache.h"
 #include "debug.h"
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU COMPTEUR
-// ════════════════════════════════════════════════════════════════════════
 CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int retention_type,
                              const char* font_path, int base_font_size,
                              double scale_min, double scale_max,
@@ -68,9 +66,7 @@ CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int rete
 
 
 
-// ════════════════════════════════════════════════════════════════════════
 // RENDU DU COMPTEUR AVEC CACHE DE TEXTURES (ULTRA-LIGHT)
-// ════════════════════════════════════════════════════════════════════════
 // Le chiffre "respire" avec l'hexagone : sa taille vient du cache précompilé
 // Scale max (inspire) = texte agrandi (poumons pleins)
 // Scale min (expire) = texte réduit (poumons vides)
@@ -81,7 +77,6 @@ CounterState* counter_create(SDL_Renderer* renderer, int total_breaths, int rete
 // 3. Après le 10ème scale_min, passer en mode "attente"
 // 4. Continuer à afficher le dernier chiffre jusqu'à la position finale
 // 5. Signaler que la session est terminée
-// ════════════════════════════════════════════════════════════════════════
 
 void counter_render(CounterState* counter, SDL_Renderer* renderer,
                     int center_x, int center_y, int hex_radius, HexagoneNode* hex_node,
@@ -197,9 +192,7 @@ void counter_render(CounterState* counter, SDL_Renderer* renderer,
     SDL_RenderCopy(renderer, cached_texture, NULL, &dest_rect);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // LIBÉRATION MÉMOIRE
-// ════════════════════════════════════════════════════════════════════════
 void counter_destroy(CounterState* counter) {
     if (!counter) return;
 

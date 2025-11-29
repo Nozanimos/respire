@@ -10,9 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CHARGEMENT DES TEMPLATES DEPUIS LE FICHIER JSON
-// ════════════════════════════════════════════════════════════════════════════
 
 // Fonction helper : convertit un objet cJSON en string formaté
 // Cette fonction prend un objet JSON et le convertit en texte bien indenté
@@ -172,9 +170,7 @@ ContextMenu* creer_sous_menu_templates(JsonEditor* editor) {
     return sous_menu;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION DE LA MÉMOIRE
-// ════════════════════════════════════════════════════════════════════════════
 
 // Libère un sous-menu et toutes ses ressources
 void detruire_sous_menu(ContextMenu* menu) {
@@ -198,9 +194,7 @@ void detruire_sous_menu(ContextMenu* menu) {
     debug_printf("🗑️ Sous-menu détruit\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  ACTION D'INSERTION DE TEMPLATE
-// ════════════════════════════════════════════════════════════════════════════
 
 // Insère le template sélectionné à la position du curseur
 void action_inserer_template_contextuel(JsonEditor* editor) {

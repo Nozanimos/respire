@@ -7,9 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "geometry.h"
 
-// ════════════════════════════════════════════════════════════════════════
 // STRUCTURE STOPWATCH STATE (CHRONOMÈTRE)
-// ════════════════════════════════════════════════════════════════════════
 // Gère le chronomètre qui INCRÉMENTE le temps après la session de respiration
 // Contrairement au timer (countdown), le chronomètre part de 00:00 et monte
 typedef struct StopwatchState {
@@ -31,9 +29,7 @@ typedef struct StopwatchState {
 
 } StopwatchState;
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer et initialiser un nouveau chronomètre

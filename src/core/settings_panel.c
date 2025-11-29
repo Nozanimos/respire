@@ -25,16 +25,12 @@ extern int calculate_panel_width(int screen_width, float scale);
 // Fonction utilitaire pour calculer largeur minimale
 static int calculate_required_width_for_json_layout(SettingsPanel* panel);
 
-// ════════════════════════════════════════════════════════════════════════════
 //  VARIABLE GLOBALE UNIQUE POUR LE PANNEAU ACTIF
-// ════════════════════════════════════════════════════════════════════════════
 // Remplace les 10 variables globales par une seule pointant vers le panel actif
 // Thread-safe car un seul panneau de settings peut être actif à la fois
 static SettingsPanel* g_active_panel = NULL;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  INITIALISATION DU CALLBACK CONTEXT
-// ════════════════════════════════════════════════════════════════════════════
 void init_panel_callback_context(SettingsPanel* panel, AppConfig* main_config,
                                  TimerState** session_timer, StopwatchState** session_stopwatch,
                                  TimerState** retention_timer, BreathCounter** breath_counter,
@@ -67,9 +63,7 @@ void init_panel_callback_context(SettingsPanel* panel, AppConfig* main_config,
     debug_printf("✅ CallbackContext initialisé (10 variables globales → 1 seule)\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LES WIDGETS
-// ════════════════════════════════════════════════════════════════════════════
 
 void duration_value_changed(int new_value) {
     if (!g_active_panel || !g_active_panel->callback_ctx) return;
@@ -116,7 +110,6 @@ void cycles_value_changed(int new_value) {
     // Modification stockée dans temp_config uniquement
     ctx->panel->temp_config.nb_session = new_value;
 
-    // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
 
     debug_printf("✅ Cycles changés: %d (en attente de validation)\n", new_value);
@@ -132,7 +125,6 @@ void nb_breath(int new_value) {
     ctx->main_config->Nb_respiration = new_value;
     ctx->panel->temp_config.Nb_respiration = new_value;
 
-    // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
 
     debug_printf("✅ Nombre de respirations changé: %d (en attente de validation)\n", new_value);
@@ -148,7 +140,6 @@ void start_value_changed(int new_value) {
     // Modification stockée dans temp_config uniquement
     ctx->panel->temp_config.start_duration = new_value;
 
-    // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
 
     debug_printf("✅ Durée de démarrage changée: %d secondes (en attente de validation)\n", new_value);
@@ -176,15 +167,12 @@ void alternate_cycles_changed(bool new_value) {
     // Modification stockée dans temp_config uniquement
     ctx->panel->temp_config.alternate_cycles = new_value;
 
-    // Sauvegarder immédiatement
     // Sauvegarde uniquement lors du clic sur "Appliquer"
 
     debug_printf("✅ Cycles alternés changés: %s (en attente de validation)\n", new_value ? "ACTIF" : "INACTIF");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LE SELECTOR PATTERN DE RÉTENTION (NOUVEAU SYSTÈME)
-// ════════════════════════════════════════════════════════════════════════════
 void retention_pattern_changed(int new_index) {
     if (!g_active_panel || !g_active_panel->callback_ctx) return;
 
@@ -246,9 +234,7 @@ void retention_roller_changed(int seq1_type, int seq1_count, int seq2_type, int 
                  seq1_count, type1_str, seq2_count, type2_str);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  ANCIENS CALLBACKS (COMPATIBILITÉ ASCENDANTE)
-// ════════════════════════════════════════════════════════════════════════════
 void retention_full(void) {
     retention_pattern_changed(0);
 }
@@ -261,9 +247,7 @@ void retention_alternate(void) {
     retention_pattern_changed(2);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALLBACKS POUR LES BOUTONS APPLIQUER/ANNULER
-// ════════════════════════════════════════════════════════════════════════════
 
 /**
  * APPLIQUER : Sauvegarde les modifications dans respiration.conf
@@ -350,14 +334,10 @@ void cancel_button_clicked(void) {
     ctx->panel->state = PANEL_CLOSING;
     debug_printf("✅ Modifications annulées\n");
 }
-// ════════════════════════════════════════════════════════════════════════════
 //  FORWARD DECLARATIONS (fonctions définies plus bas)
-// ════════════════════════════════════════════════════════════════════════════
 static void precalculate_label_dimensions(SettingsPanel* panel);
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU PANNEAU
-// ════════════════════════════════════════════════════════════════════════════
 
 SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window, int screen_width, int screen_height, float scale_factor) {
     SettingsPanel* panel = malloc(sizeof(SettingsPanel));
@@ -495,9 +475,7 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
     return panel;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DU PANNEAU (animation)
-// ════════════════════════════════════════════════════════════════════════════
 
 void update_settings_panel(SettingsPanel* panel, float delta_time) {
     if (!panel) return;
@@ -566,9 +544,7 @@ void update_settings_panel(SettingsPanel* panel, float delta_time) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU PANNEAU
-// ════════════════════════════════════════════════════════════════════════════
 
 void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
     if (!panel) return;
@@ -590,9 +566,7 @@ void render_settings_panel(SDL_Renderer* renderer, SettingsPanel* panel) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES ÉVÉNEMENTS
-// ════════════════════════════════════════════════════════════════════════════
 
 void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConfig* main_config) {
     if (!panel || !event) return;
@@ -683,9 +657,7 @@ void handle_settings_panel_event(SettingsPanel* panel, SDL_Event* event, AppConf
     // jusqu'à la destruction du panel dans free_settings_panel()
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DU SCALE (resize fenêtre)
-// ════════════════════════════════════════════════════════════════════════════
 
 void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_height, float scale_factor) {
     if (!panel) return;
@@ -914,29 +886,22 @@ void update_panel_scale(SettingsPanel* panel, int screen_width, int screen_heigh
     recalculate_widget_layout(panel);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RECALCUL DU LAYOUT RESPONSIVE DES WIDGETS
-// ════════════════════════════════════════════════════════════════════════════
 // Cette fonction repositionne automatiquement les widgets en fonction de la
 // largeur disponible:
 //   - Mode large (>= threshold): preview à gauche, widgets à droite
 //   - Mode étroit (< threshold): preview en haut centré, widgets en dessous centrés
 //
 // Calcule également la hauteur totale du contenu pour le scroll
-// ════════════════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE POUR STOCKER LES RECTANGLES DE COLLISION
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct {
     WidgetNode* node;
     WidgetType type;
     int x, y, width, height;
 } WidgetRect;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  DÉTECTION DE COLLISION ENTRE DEUX RECTANGLES (avec marge de tolérance)
-// ════════════════════════════════════════════════════════════════════════════
 // MARGE DE TOLÉRANCE : Les rectangles doivent se chevaucher de 10px minimum
 // pour déclencher une collision. Cela évite l'empilement prématuré quand les
 // widgets sont juste proches mais ne se touchent pas vraiment.
@@ -945,7 +910,6 @@ typedef struct {
 //   - Sans marge : x1+w1=150, x2=160 → pas de collision (OK)
 //   - Avec marge -10px : x1+w1=140, x2=170 → pas de collision (OK)
 //   - Si Widget2 à x=145 : x1+w1=140, x2=155 → collision détectée ✅
-// ════════════════════════════════════════════════════════════════════════════
 static bool rects_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
     // Marge de tolérance : réduire les rectangles de 10px de chaque côté
     const int MARGIN = 10;
@@ -965,9 +929,7 @@ static bool rects_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2
     return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  OBTENIR LE RECTANGLE DE COLLISION D'UN WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 static bool get_widget_rect(WidgetNode* node, WidgetRect* rect) {
     if (!node || !rect) return false;
 
@@ -1122,9 +1084,7 @@ static int calculate_required_width_for_json_layout(SettingsPanel* panel) {
     return required_width;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
 // FONCTIONS HELPER POUR LE LAYOUT
-// ═══════════════════════════════════════════════════════════════════════════
 /**
  * Pré-calcule les dimensions (width/height) de tous les LABEL
  * Nécessaire pour que apply_label_alignment() fonctionne correctement au chargement
@@ -1882,9 +1842,7 @@ void handle_panel_scroll(SettingsPanel* panel, SDL_Event* event) {
     debug_printf("🖱️ Scroll: offset=%d, max=%d\n", panel->scroll_offset, panel->max_scroll);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION DE LA MÉMOIRE
-// ════════════════════════════════════════════════════════════════════════════
 
 void free_settings_panel(SettingsPanel* panel) {
     if (!panel) return;
@@ -1916,9 +1874,7 @@ void free_settings_panel(SettingsPanel* panel) {
     free(panel);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  INITIALISATION DES WIDGETS EN DUR (VERSION FINALE SANS JSON)
-// ════════════════════════════════════════════════════════════════════════════
 // ⚠️  FONCTION POUR LA VERSION FINALE DU PROJET
 // ⚠️  Cette fonction sera utilisée quand on débranchera le JSON Editor
 //
@@ -1962,9 +1918,7 @@ void free_settings_panel(SettingsPanel* panel) {
      }
      */
 
-// ════════════════════════════════════════════════════════════════════════════
 //  HOT RELOAD DES WIDGETS DEPUIS LE JSON
-// ════════════════════════════════════════════════════════════════════════════
 void reload_widgets_from_json(SettingsPanel* panel, int screen_width, int screen_height) {
     if (!panel) return;
 
@@ -2014,9 +1968,7 @@ void reload_widgets_from_json(SettingsPanel* panel, int screen_width, int screen
     debug_print_widget_list(panel->widget_list);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DE LA LARGEUR MINIMALE DE FENÊTRE
-// ════════════════════════════════════════════════════════════════════════════
 void update_window_minimum_size(SettingsPanel* panel, SDL_Window* window) {
     if (!panel || !window) return;
 
@@ -2027,9 +1979,7 @@ void update_window_minimum_size(SettingsPanel* panel, SDL_Window* window) {
     debug_printf("🔄 Taille minimale fenêtre mise à jour: %dx%d\n", min_width, MIN_PANEL_HEIGHT);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  VÉRIFICATION PÉRIODIQUE DU FICHIER JSON
-// ════════════════════════════════════════════════════════════════════════════
 void check_json_hot_reload(SettingsPanel* panel, float delta_time, int screen_width, int screen_height) {
     if (!panel) return;
 
@@ -2058,9 +2008,7 @@ void check_json_hot_reload(SettingsPanel* panel, float delta_time, int screen_wi
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALCUL DE LA LARGEUR MINIMALE DE FENÊTRE
-// ════════════════════════════════════════════════════════════════════════════
 int get_minimum_window_width(SettingsPanel* panel) {
     if (!panel || !panel->widget_list) {
         return MIN_PANEL_HEIGHT;  // Valeur par défaut minimale

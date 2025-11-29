@@ -7,9 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "geometry.h"
 
-// ════════════════════════════════════════════════════════════════════════
 // STRUCTURE TIMER STATE
-// ════════════════════════════════════════════════════════════════════════
 // Gère l'état du countdown avant le démarrage de la session
 typedef struct TimerState {
     int total_seconds;          // Durée totale en secondes (ex: 10s)
@@ -30,9 +28,7 @@ typedef struct TimerState {
 
 } TimerState;
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer et initialiser un nouveau timer

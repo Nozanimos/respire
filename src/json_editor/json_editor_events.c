@@ -5,9 +5,7 @@
 #include <SDL2/SDL_mouse.h>
 
 
-// ════════════════════════════════════════════════════════════════════════════
 //  DÉCLARATIONS DES FONCTIONS INTERNES DES AUTRES MODULES
-// ════════════════════════════════════════════════════════════════════════════
 // Depuis json_editor_edit.c
 extern void inserer_caractere(JsonEditor* editor, char c);
 extern void supprimer_caractere(JsonEditor* editor);
@@ -32,9 +30,7 @@ void auto_scroll_curseur(JsonEditor* editor);
 extern bool charger_fichier_json(JsonEditor* editor);
 extern bool sauvegarder_fichier_json(JsonEditor* editor);
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES ÉVÉNEMENTS
-// ════════════════════════════════════════════════════════════════════════════
 
 bool gerer_evenements_json_editor(JsonEditor* editor, SDL_Event* event) {
     if (!editor || !event) return false;

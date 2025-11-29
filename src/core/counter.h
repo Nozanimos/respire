@@ -8,9 +8,7 @@
 #include "precompute_list.h"
 #include "counter_cache.h"
 
-// ════════════════════════════════════════════════════════════════════════
 // STRUCTURE COUNTER STATE
-// ════════════════════════════════════════════════════════════════════════
 // Gère l'affichage du compteur de respirations au centre de l'hexagone
 // Les données (numéro de respiration, scale) viennent du précomputing
 typedef struct CounterState {
@@ -40,9 +38,7 @@ typedef struct CounterState {
 // Alias pour BreathCounter (utilisé dans d'autres modules)
 typedef CounterState BreathCounter;
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer et initialiser un nouveau compteur de respirations

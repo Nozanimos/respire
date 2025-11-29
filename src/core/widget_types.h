@@ -6,9 +6,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  TYPES D'ÉLÉMENTS DANS LE PANNEAU
-// ════════════════════════════════════════════════════════════════════════════
 typedef enum {
     // ─── ÉLÉMENTS NON-INTERACTIFS ───
     WIDGET_TYPE_LABEL,          // Label / Titre statique (ex: "Configuration")
@@ -23,9 +21,7 @@ typedef enum {
     WIDGET_TYPE_SELECTOR        // Liste déroulante (pour plus tard)
 } WidgetType;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CONFIGURATION GÉNÉRIQUE D'UN ÉLÉMENT
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct {
     WidgetType type;
     char id[50];              // Identifiant unique (pour callbacks)

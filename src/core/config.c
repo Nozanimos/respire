@@ -9,9 +9,7 @@
 #include <string.h>
 
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CHARGEMENT DEPUIS LE FICHIER (GÉNÉRIQUE)
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt la table CONFIG_PARAM_TABLE pour charger tous les paramètres
 // Pour ajouter un nouveau paramètre : ajouter 1 ligne dans config_registry.h
 
@@ -81,9 +79,7 @@ void load_config(AppConfig* config) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  SAUVEGARDE DANS LE FICHIER (GÉNÉRIQUE)
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt la table CONFIG_PARAM_TABLE pour sauvegarder tous les paramètres
 // Pour ajouter un nouveau paramètre : ajouter 1 ligne dans config_registry.h
 
@@ -113,9 +109,7 @@ void save_config(const AppConfig* config) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  SYNCHRONISATION CONFIG → WIDGETS (GÉNÉRIQUE)
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt la table CONFIG_PARAM_TABLE et synchronise automatiquement
 // Pour ajouter un nouveau paramètre : ajouter 1 ligne dans config_registry.h
 
@@ -164,9 +158,7 @@ void sync_config_to_widgets(AppConfig* config, WidgetList* list) {
     debug_blank_line();
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  SYNCHRONISATION WIDGETS → CONFIG (GÉNÉRIQUE)
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt la table CONFIG_PARAM_TABLE et synchronise automatiquement
 // Pour ajouter un nouveau paramètre : ajouter 1 ligne dans config_registry.h
 

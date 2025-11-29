@@ -5,9 +5,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
-// ════════════════════════════════════════════════════════════════════════
 // PHASES D'ANIMATION DE LA CARTE
-// ════════════════════════════════════════════════════════════════════════
 typedef enum {
     CARD_ENTERING,      // Carte entre depuis la gauche (0-1s)
     CARD_PAUSED,        // Carte au centre (1-4s)
@@ -15,9 +13,7 @@ typedef enum {
     CARD_FINISHED       // Animation terminée
 } SessionCardPhase;
 
-// ════════════════════════════════════════════════════════════════════════
 // STRUCTURE SESSION CARD STATE
-// ════════════════════════════════════════════════════════════════════════
 // Gère l'affichage animé de la carte de session
 typedef struct {
     // État de l'animation
@@ -50,9 +46,7 @@ typedef struct {
 
 } SessionCardState;
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer et initialiser une nouvelle carte de session

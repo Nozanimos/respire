@@ -2,19 +2,19 @@
 #include "widget_list.h"
 #include "selector_widget.h"
 #include "debug.h"
+#include "core/error/error.h"
 #include <stdlib.h>
 #include <string.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION D'UNE LISTE DE WIDGETS VIDE
-// ════════════════════════════════════════════════════════════════════════════
 // Alloue une nouvelle liste vide prête à recevoir des widgets
 WidgetList* create_widget_list(void) {
-    WidgetList* list = malloc(sizeof(WidgetList));
-    if (!list) {
-        debug_printf("❌ Erreur allocation liste de widgets\n");
-        return NULL;
-    }
+    Error err;
+    error_init(&err);
+    WidgetList* list = NULL;
+
+    list = malloc(sizeof(WidgetList));
+    CHECK_ALLOC(list, &err, "Erreur allocation liste de widgets");
 
     list->first = NULL;
     list->last = NULL;
@@ -22,18 +22,19 @@ WidgetList* create_widget_list(void) {
 
     debug_printf("✅ Liste de widgets créée\n");
     return list;
+
+cleanup:
+    error_print(&err);
+    free(list);
+    return NULL;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  VÉRIFICATION SI LA LISTE EST VIDE
-// ════════════════════════════════════════════════════════════════════════════
 bool is_widget_list_empty(WidgetList* list) {
     return (list == NULL || list->first == NULL);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET INCREMENT (avec flèches ↑↓)
-// ════════════════════════════════════════════════════════════════════════════
 // Crée un widget numérique et l'ajoute à la fin de la liste
 //
 // PARAMÈTRES :
@@ -56,17 +57,17 @@ bool add_increment_widget(WidgetList* list,
                          TTF_Font* font,
                          void (*callback)(int),
                          const char* display_type) {
-    if (!list || !id || !display_name) {
-        debug_printf("❌ Paramètres invalides pour add_increment_widget\n");
-        return false;
-    }
+    Error err;
+    error_init(&err);
+    WidgetNode* node = NULL;
+
+    CHECK_PTR(list, &err, "Liste de widgets NULL");
+    CHECK_PTR(id, &err, "ID widget NULL");
+    CHECK_PTR(display_name, &err, "Nom d'affichage NULL");
 
     // CRÉATION DU NŒUD
-    WidgetNode* node = malloc(sizeof(WidgetNode));
-    if (!node) {
-        debug_printf("❌ Erreur allocation nœud widget\n");
-        return false;
-    }
+    node = malloc(sizeof(WidgetNode));
+    CHECK_ALLOC(node, &err, "Erreur allocation nœud widget");
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
     node->id = NULL;
@@ -77,16 +78,10 @@ bool add_increment_widget(WidgetList* list,
     node->type = WIDGET_TYPE_INCREMENT;
 
     node->id = strdup(id);
-    if (!node->id) {
-        debug_printf("❌ Échec allocation id pour widget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_ALLOC(node->id, &err, "Échec allocation id widget");
 
     node->display_name = strdup(display_name);
-    if (!node->display_name) {
-        debug_printf("❌ Échec allocation display_name pour widget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_ALLOC(node->display_name, &err, "Échec allocation nom d'affichage widget");
 
     // CRÉATION DU WIDGET CONCRET
     node->widget.increment_widget = create_config_widget(
@@ -94,11 +89,7 @@ bool add_increment_widget(WidgetList* list,
         min_val, max_val, start_val, increment,
         text_size, font, display_type
     );
-
-    if (!node->widget.increment_widget) {
-        debug_printf("❌ Échec création ConfigWidget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_PTR(node->widget.increment_widget, &err, "Échec création ConfigWidget");
 
     // ─────────────────────────────────────────────────────────────────────────
     // ASSIGNATION DU CALLBACK
@@ -133,6 +124,7 @@ bool add_increment_widget(WidgetList* list,
     return true;
 
 cleanup:
+    error_print(&err);
     // Libération sécurisée en cas d'erreur
     if (node) {
         if (node->id) free((void*)node->id);
@@ -143,9 +135,7 @@ cleanup:
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET TOGGLE (interrupteur ON/OFF)
-// ════════════════════════════════════════════════════════════════════════════
 // Crée un widget toggle et l'ajoute à la fin de la liste
 //
 // PARAMÈTRES :
@@ -167,17 +157,17 @@ bool add_toggle_widget(WidgetList* list,
                       int toggle_width, int toggle_height, int thumb_size,
                       int text_size,
                       void (*callback)(bool)) {
-    if (!list || !id || !display_name) {
-        debug_printf("❌ Paramètres invalides pour add_toggle_widget\n");
-        return false;
-    }
+    Error err;
+    error_init(&err);
+    WidgetNode* node = NULL;
+
+    CHECK_PTR(list, &err, "Liste de widgets NULL");
+    CHECK_PTR(id, &err, "ID widget NULL");
+    CHECK_PTR(display_name, &err, "Nom d'affichage NULL");
 
     // CRÉATION DU NŒUD
-    WidgetNode* node = malloc(sizeof(WidgetNode));
-    if (!node) {
-        debug_printf("❌ Erreur allocation nœud widget\n");
-        return false;
-    }
+    node = malloc(sizeof(WidgetNode));
+    CHECK_ALLOC(node, &err, "Erreur allocation nœud widget");
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
     node->id = NULL;
@@ -188,16 +178,10 @@ bool add_toggle_widget(WidgetList* list,
     node->type = WIDGET_TYPE_TOGGLE;
 
     node->id = strdup(id);
-    if (!node->id) {
-        debug_printf("❌ Échec allocation id pour widget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_ALLOC(node->id, &err, "Échec allocation id widget");
 
     node->display_name = strdup(display_name);
-    if (!node->display_name) {
-        debug_printf("❌ Échec allocation display_name pour widget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_ALLOC(node->display_name, &err, "Échec allocation nom d'affichage widget");
 
     // CRÉATION DU WIDGET CONCRET
     node->widget.toggle_widget = create_toggle_widget(
@@ -206,11 +190,7 @@ bool add_toggle_widget(WidgetList* list,
         toggle_width, toggle_height, thumb_size,
         text_size
     );
-
-    if (!node->widget.toggle_widget) {
-        debug_printf("❌ Échec création ToggleWidget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_PTR(node->widget.toggle_widget, &err, "Échec création ToggleWidget");
 
     // ─────────────────────────────────────────────────────────────────────────
     // ASSIGNATION DU CALLBACK
@@ -246,6 +226,7 @@ bool add_toggle_widget(WidgetList* list,
     return true;
 
 cleanup:
+    error_print(&err);
     // Libération sécurisée en cas d'erreur
     if (node) {
         if (node->id) free((void*)node->id);
@@ -256,9 +237,7 @@ cleanup:
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DE TOUS LES WIDGETS (FACTORISATION ✨)
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt toute la liste et appelle la fonction de rendu appropriée
 // selon le type de chaque widget
 //
@@ -468,9 +447,7 @@ void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES ÉVÉNEMENTS POUR TOUS LES WIDGETS (FACTORISATION ✨)
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt toute la liste et transmet l'événement à chaque widget
 // selon son type
 //
@@ -650,9 +627,7 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DES ANIMATIONS DE TOUS LES WIDGETS
-// ════════════════════════════════════════════════════════════════════════════
 // Certains widgets ont des animations (comme le toggle). Cette fonction
 // parcourt la liste et met à jour toutes les animations en cours.
 //
@@ -696,9 +671,7 @@ void update_widget_list_animations(WidgetList* list, float delta_time) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RECHERCHE D'UN WIDGET PAR SON ID
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt la liste pour trouver un widget avec l'ID donné
 //
 // RETOURNE :
@@ -718,9 +691,7 @@ WidgetNode* find_widget_by_id(WidgetList* list, const char* id) {
     return NULL;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RÉCUPÉRATION DE LA VALEUR INT D'UN WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 // Récupère la valeur actuelle d'un widget INCREMENT
 //
 // RETOURNE :
@@ -750,9 +721,7 @@ bool get_widget_int_value(WidgetList* list, const char* id, int* out_value) {
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RÉCUPÉRATION DE LA VALEUR BOOL D'UN WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 // Récupère l'état actuel d'un widget TOGGLE
 //
 // RETOURNE :
@@ -775,9 +744,7 @@ bool get_widget_bool_value(WidgetList* list, const char* id, bool* out_value) {
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MODIFICATION DE LA VALEUR INT D'UN WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 // Change la valeur d'un widget INCREMENT par programmation
 // (sans interaction utilisateur)
 //
@@ -829,9 +796,7 @@ bool set_widget_int_value(WidgetList* list, const char* id, int new_value) {
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MODIFICATION DE LA VALEUR BOOL D'UN WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 // Change l'état d'un widget TOGGLE par programmation
 //
 // RETOURNE :
@@ -855,11 +820,8 @@ bool set_widget_bool_value(WidgetList* list, const char* id, bool new_value) {
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AFFICHAGE DEBUG DE LA LISTE
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET LABEL (texte/titre)
-// ════════════════════════════════════════════════════════════════════════════
 bool add_label_widget(WidgetList* list,
                       const char* id,
                       const char* display_name,
@@ -914,9 +876,7 @@ cleanup:
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET SEPARATOR (barre de séparation)
-// ════════════════════════════════════════════════════════════════════════════
 bool add_separator_widget(WidgetList* list, const char* id, int y,
                           int start_margin, int end_margin, int thickness, SDL_Color color) {
     if (!list || !id) return false;
@@ -965,9 +925,7 @@ cleanup:
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET PREVIEW (zone d'animation)
-// ════════════════════════════════════════════════════════════════════════════
 bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
                         int frame_size, float size_ratio, float breath_duration) {
     if (!list || !id) return false;
@@ -1016,9 +974,7 @@ cleanup:
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET BUTTON (bouton cliquable)
-// ════════════════════════════════════════════════════════════════════════════
 bool add_button_widget(WidgetList* list, const char* id, const char* display_name,
                        int x, int y, int width, int height, int text_size,
                        SDL_Color bg_color, ButtonYAnchor y_anchor, void (*callback)(void)) {
@@ -1071,9 +1027,7 @@ cleanup:
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  AJOUT D'UN WIDGET SELECTOR (liste avec flèches)
-// ════════════════════════════════════════════════════════════════════════════
 // Crée un widget selector et l'ajoute à la fin de la liste
 //
 // PARAMÈTRES :
@@ -1088,17 +1042,17 @@ cleanup:
 bool add_selector_widget(WidgetList* list, const char* id, const char* display_name,
                          int x, int y, int default_index, int arrow_size, int text_size,
                          TTF_Font* font) {
-    if (!list || !id || !display_name) {
-        debug_printf("❌ Paramètres invalides pour add_selector_widget\n");
-        return false;
-    }
+    Error err;
+    error_init(&err);
+    WidgetNode* node = NULL;
+
+    CHECK_PTR(list, &err, "Liste de widgets NULL");
+    CHECK_PTR(id, &err, "ID widget NULL");
+    CHECK_PTR(display_name, &err, "Nom d'affichage NULL");
 
     // CRÉATION DU NŒUD
-    WidgetNode* node = malloc(sizeof(WidgetNode));
-    if (!node) {
-        debug_printf("❌ Erreur allocation nœud widget\n");
-        return false;
-    }
+    node = malloc(sizeof(WidgetNode));
+    CHECK_ALLOC(node, &err, "Erreur allocation nœud widget");
 
     // Initialiser tous les pointeurs à NULL pour cleanup sécurisé
     node->id = NULL;
@@ -1109,16 +1063,10 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
     node->type = WIDGET_TYPE_SELECTOR;
 
     node->id = strdup(id);
-    if (!node->id) {
-        debug_printf("❌ Échec allocation id pour widget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_ALLOC(node->id, &err, "Échec allocation id widget");
 
     node->display_name = strdup(display_name);
-    if (!node->display_name) {
-        debug_printf("❌ Échec allocation display_name pour widget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_ALLOC(node->display_name, &err, "Échec allocation nom d'affichage widget");
 
     // CRÉATION DU WIDGET CONCRET
     node->widget.selector_widget = create_selector_widget(
@@ -1127,11 +1075,7 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
         arrow_size, text_size,
         font
     );
-
-    if (!node->widget.selector_widget) {
-        debug_printf("❌ Échec création SelectorWidget '%s'\n", id);
-        goto cleanup;
-    }
+    CHECK_PTR(node->widget.selector_widget, &err, "Échec création SelectorWidget");
 
     // ─────────────────────────────────────────────────────────────────────────
     // ASSIGNATION DES CALLBACKS (NULL pour le selector car chaque option a son callback)
@@ -1161,6 +1105,7 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
     return true;
 
 cleanup:
+    error_print(&err);
     // Libération sécurisée en cas d'erreur
     if (node) {
         if (node->id) free((void*)node->id);
@@ -1171,7 +1116,6 @@ cleanup:
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // Affiche le contenu de la liste pour debug
 void debug_print_widget_list(WidgetList* list) {
     if (is_widget_list_empty(list)) {
@@ -1212,9 +1156,7 @@ void debug_print_widget_list(WidgetList* list) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION DE LA LISTE ET DE TOUS SES WIDGETS
-// ════════════════════════════════════════════════════════════════════════════
 // Parcourt la liste, libère chaque widget et chaque nœud
 void free_widget_list(WidgetList* list) {
     if (!list) return;
@@ -1286,9 +1228,7 @@ void free_widget_list(WidgetList* list) {
     debug_printf("🗑️ Liste de widgets libérée\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALCUL DE LA LARGEUR MINIMALE DU PANNEAU
-// ════════════════════════════════════════════════════════════════════════════
 
 int calculate_min_panel_width(WidgetList* list) {
     if (!list) return 100;  // Valeur par défaut sécurisée

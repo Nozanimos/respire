@@ -7,9 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 // CRÉATION DU WIDGET SELECTOR
-// ════════════════════════════════════════════════════════════════════════════
 SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
                                        int default_index, int arrow_size, int text_size,
                                        TTF_Font* font) {
@@ -102,9 +100,7 @@ SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
     return widget;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // AJOUTER UNE OPTION
-// ════════════════════════════════════════════════════════════════════════════
 bool add_selector_option(SelectorWidget* widget, const char* option_text, const char* callback_name) {
     if (!widget || !option_text || !callback_name) return false;
 
@@ -129,9 +125,7 @@ bool add_selector_option(SelectorWidget* widget, const char* option_text, const 
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // DÉFINIR LE CALLBACK D'UNE OPTION
-// ════════════════════════════════════════════════════════════════════════════
 void set_selector_option_callback(SelectorWidget* widget, int option_index, void (*callback)(void)) {
     if (!widget || option_index < 0 || option_index >= widget->num_options) {
         fprintf(stderr, "⚠️ Index d'option invalide: %d\n", option_index);
@@ -143,9 +137,7 @@ void set_selector_option_callback(SelectorWidget* widget, int option_index, void
                  option_index, widget->options[option_index].text);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // CHANGER LA VALEUR SÉLECTIONNÉE (avec animation)
-// ════════════════════════════════════════════════════════════════════════════
 void set_selector_value(SelectorWidget* widget, int new_index) {
     if (!widget) return;
 
@@ -172,9 +164,7 @@ void set_selector_value(SelectorWidget* widget, int new_index) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // NAVIGUER VERS L'OPTION PRÉCÉDENTE
-// ════════════════════════════════════════════════════════════════════════════
 void selector_previous_option(SelectorWidget* widget) {
     if (!widget || widget->num_options == 0) return;
 
@@ -186,9 +176,7 @@ void selector_previous_option(SelectorWidget* widget) {
     set_selector_value(widget, new_index);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // NAVIGUER VERS L'OPTION SUIVANTE
-// ════════════════════════════════════════════════════════════════════════════
 void selector_next_option(SelectorWidget* widget) {
     if (!widget || widget->num_options == 0) return;
 
@@ -200,9 +188,7 @@ void selector_next_option(SelectorWidget* widget) {
     set_selector_value(widget, new_index);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // MISE À JOUR DE L'ANIMATION
-// ════════════════════════════════════════════════════════════════════════════
 void update_selector_animation(SelectorWidget* widget, float delta_time) {
     if (!widget || widget->animation_direction == 0) return;
 
@@ -215,9 +201,7 @@ void update_selector_animation(SelectorWidget* widget, float delta_time) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // MISE À JOUR DE L'ANIMATION DU SOUS-MENU (SLIDE DOWN/UP 0.5s)
-// ════════════════════════════════════════════════════════════════════════════
 void update_selector_submenu_animation(SelectorWidget* widget, float delta_time) {
     if (!widget || !widget->submenu_animating) return;
 
@@ -238,9 +222,7 @@ void update_selector_submenu_animation(SelectorWidget* widget, float delta_time)
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // RENDU DU WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 void render_selector_widget(SDL_Renderer* renderer, SelectorWidget* widget,
                             int offset_x, int offset_y) {
     if (!widget || !renderer || !widget->base.enabled) return;
@@ -521,9 +503,7 @@ void render_selector_widget(SDL_Renderer* renderer, SelectorWidget* widget,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // GESTION DES ÉVÉNEMENTS
-// ════════════════════════════════════════════════════════════════════════════
 void handle_selector_widget_events(SelectorWidget* widget, SDL_Event* event,
                                    int offset_x, int offset_y) {
     if (!widget || !event) return;
@@ -734,9 +714,7 @@ void handle_selector_widget_events(SelectorWidget* widget, SDL_Event* event,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // RESCALING DU WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 void rescale_selector_widget(SelectorWidget* widget, float panel_ratio) {
     if (!widget) return;
 
@@ -841,9 +819,7 @@ void rescale_selector_widget(SelectorWidget* widget, float panel_ratio) {
     debug_printf("   Label: %dpx, Selector Y: %d\n", label_height, selector_y);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // LIBÉRATION DE LA MÉMOIRE
-// ════════════════════════════════════════════════════════════════════════════
 void free_selector_widget(SelectorWidget* widget) {
     if (!widget) return;
 

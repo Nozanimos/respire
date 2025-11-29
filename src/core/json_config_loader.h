@@ -12,9 +12,7 @@
 
 
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CONTEXTE DE CHARGEMENT
-// ════════════════════════════════════════════════════════════════════════════
 // Cette structure contient tout ce dont on a besoin pour créer les widgets
 // depuis le JSON (polices, renderer, etc.)
 typedef struct {
@@ -30,13 +28,9 @@ typedef struct {
     // (on verra ça plus tard pour simplifier)
 } LoaderContext;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES DES FONCTIONS
-// ════════════════════════════════════════════════════════════════════════════
 
-// ─────────────────────────────────────────────────────────────────────────
 // FONCTION PRINCIPALE
-// ─────────────────────────────────────────────────────────────────────────
 // Charge tous les widgets depuis un fichier JSON
 //
 // PARAMÈTRES :
@@ -51,9 +45,7 @@ bool charger_widgets_depuis_json(const char* filename,
                                  LoaderContext* context,
                                  WidgetList* widget_list);
 
-// ─────────────────────────────────────────────────────────────────────────
 // FONCTIONS HELPER (utilisées en interne)
-// ─────────────────────────────────────────────────────────────────────────
 // Parse un objet JSON représentant un widget increment
 bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* list);
 
@@ -72,9 +64,7 @@ bool parser_widget_preview(cJSON* json_obj, LoaderContext* ctx, WidgetList* list
 // Parse un objet JSON représentant un bouton
 bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list);
 
-// ─────────────────────────────────────────────────────────────────────────
 // GÉNÉRATION DES TEMPLATES
-// ─────────────────────────────────────────────────────────────────────────
 // Génère automatiquement le fichier templates.json depuis widgets_config.json
 // Ce fichier contient des templates vierges pour chaque type de widget
 //

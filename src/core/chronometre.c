@@ -10,9 +10,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU CHRONOMÈTRE
-// ════════════════════════════════════════════════════════════════════════
 StopwatchState* stopwatch_create(const char* font_path, int font_size) {
     // Allocation de la structure
     StopwatchState* stopwatch = malloc(sizeof(StopwatchState));
@@ -57,9 +55,7 @@ StopwatchState* stopwatch_create(const char* font_path, int font_size) {
     return stopwatch;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // DÉMARRER LE CHRONOMÈTRE
-// ════════════════════════════════════════════════════════════════════════
 void stopwatch_start(StopwatchState* stopwatch) {
     if (!stopwatch) return;
 
@@ -72,9 +68,7 @@ void stopwatch_start(StopwatchState* stopwatch) {
     debug_printf("⏱️  Chronomètre démarré à 00:00\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // ARRÊTER LE CHRONOMÈTRE (garde le temps final)
-// ════════════════════════════════════════════════════════════════════════
 void stopwatch_stop(StopwatchState* stopwatch) {
     if (!stopwatch || !stopwatch->is_active) return;
 
@@ -84,9 +78,7 @@ void stopwatch_stop(StopwatchState* stopwatch) {
     debug_printf("⏹️  Chronomètre arrêté à %d secondes\n", stopwatch->elapsed_seconds);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // MISE À JOUR DU CHRONOMÈTRE (appelé à chaque frame)
-// ════════════════════════════════════════════════════════════════════════
 // Le chronomètre INCRÉMENTE (contrairement au timer qui décrémente)
 bool stopwatch_update(StopwatchState* stopwatch) {
     if (!stopwatch || !stopwatch->is_active || stopwatch->is_stopped) {
@@ -108,17 +100,13 @@ bool stopwatch_update(StopwatchState* stopwatch) {
     return true;  // Chronomètre toujours actif
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RÉCUPÉRER LE TEMPS ÉCOULÉ
-// ════════════════════════════════════════════════════════════════════════
 int stopwatch_get_elapsed_seconds(StopwatchState* stopwatch) {
     if (!stopwatch) return 0;
     return stopwatch->elapsed_seconds;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // FORMATER LE TEMPS AU FORMAT mm:ss
-// ════════════════════════════════════════════════════════════════════════
 void stopwatch_format(StopwatchState* stopwatch, char* buffer) {
     if (!stopwatch || !buffer) return;
 
@@ -138,9 +126,7 @@ void stopwatch_format(StopwatchState* stopwatch, char* buffer) {
     snprintf(buffer, 6, "%02d:%02d", minutes, seconds);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RENDU DU CHRONOMÈTRE CENTRÉ SUR L'HEXAGONE (avec Cairo - effet métallisé)
-// ════════════════════════════════════════════════════════════════════════
 void stopwatch_render(StopwatchState* stopwatch, SDL_Renderer* renderer,
                       int center_x, int center_y, int hex_radius) {
     if (!stopwatch || !renderer || !stopwatch->font_path) return;
@@ -279,9 +265,7 @@ void stopwatch_render(StopwatchState* stopwatch, SDL_Renderer* renderer,
     FT_Done_FreeType(ft_library);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RÉINITIALISER LE CHRONOMÈTRE
-// ════════════════════════════════════════════════════════════════════════
 void stopwatch_reset(StopwatchState* stopwatch) {
     if (!stopwatch) return;
 
@@ -294,9 +278,7 @@ void stopwatch_reset(StopwatchState* stopwatch) {
     debug_printf("🔄 Chronomètre réinitialisé à 00:00\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // DESTRUCTION DU CHRONOMÈTRE
-// ════════════════════════════════════════════════════════════════════════
 void stopwatch_destroy(StopwatchState* stopwatch) {
     if (!stopwatch) return;
 

@@ -7,6 +7,7 @@
 #include "config.h"
 #include "debug.h"
 #include "constants.h"
+#include "core/error/error.h"
 
 
 /*------------------------------ Nouvelle Liste ------------------------------------*/
@@ -117,6 +118,9 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
     HexagoneNode* node = list->first;
     while (node) {
         if (node->data && node->animation) {
+            Error err;
+            error_init(&err);
+
             // ✅ NOUVEAU : Sauvegarde des points RELATIFS de base
             Sint16 base_vx[NB_SIDE], base_vy[NB_SIDE];
             for (int i = 0; i < NB_SIDE; i++) {
@@ -135,24 +139,15 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
 
             // Allocation 1: vx
             node->precomputed_vx = malloc(total_frames * NB_SIDE * sizeof(Sint16));
-            if (!node->precomputed_vx) {
-                fprintf(stderr, "❌ Erreur allocation precomputed_vx pour hexagone %d\n", node->data->element_id);
-                goto cleanup_precompute;
-            }
+            CHECK_ALLOC(node->precomputed_vx, &err, "Erreur allocation precomputed_vx");
 
             // Allocation 2: vy
             node->precomputed_vy = malloc(total_frames * NB_SIDE * sizeof(Sint16));
-            if (!node->precomputed_vy) {
-                fprintf(stderr, "❌ Erreur allocation precomputed_vy pour hexagone %d\n", node->data->element_id);
-                goto cleanup_precompute;
-            }
+            CHECK_ALLOC(node->precomputed_vy, &err, "Erreur allocation precomputed_vy");
 
             // Allocation 3: counter frames
             node->precomputed_counter_frames = malloc(total_frames * sizeof(CounterFrame));
-            if (!node->precomputed_counter_frames) {
-                fprintf(stderr, "❌ Erreur allocation precomputed_counter_frames pour hexagone %d\n", node->data->element_id);
-                goto cleanup_precompute;
-            }
+            CHECK_ALLOC(node->precomputed_counter_frames, &err, "Erreur allocation precomputed_counter_frames");
 
             debug_printf("📦 ALLOCATION precomputed_counter_frames pour Hexagone %d (%d frames, %zu bytes)\n",
                        node->data->element_id, total_frames, total_frames * sizeof(CounterFrame));
@@ -210,7 +205,8 @@ void precompute_all_cycles(HexagoneList* list, int fps, float breath_duration) {
             // Succès - passer au nœud suivant
             goto next_node;
 
-cleanup_precompute:
+cleanup:
+            error_print(&err);
             // Libération sécurisée en cas d'erreur d'allocation
             if (node->precomputed_vx) {
                 free(node->precomputed_vx);
@@ -483,9 +479,7 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
                  node->data->element_id, total_frames);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // LIBÉRATION DES DONNÉES PRÉCOMPILÉES (~100 MB)
-// ════════════════════════════════════════════════════════════════════════════
 // Libère toutes les données précompilées de tous les hexagones SANS détruire
 // les hexagones eux-mêmes. Cela permet de récupérer ~100 MB de mémoire à la fin
 // de l'animation, tout en gardant les hexagones utilisables (pour la prochaine session).

@@ -6,9 +6,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "widget_base.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE D'UN WIDGET D'INCRÉMENTATION (ConfigWidget) - STYLE ROLLER
-// ════════════════════════════════════════════════════════════════════════════
 // Widget interactif type "roller" mobile permettant d'incrémenter/décrémenter
 //
 // LAYOUT VISUEL :
@@ -116,9 +114,7 @@ typedef struct ConfigWidget {
 
 } ConfigWidget;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES DES FONCTIONS
-// ════════════════════════════════════════════════════════════════════════════
 
 // Crée un nouveau widget de configuration (style roller)
 // display_type : "numeric" ou "time" (NULL = "numeric" par défaut)

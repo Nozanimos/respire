@@ -6,17 +6,13 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  ENUMÉRATION POUR L'ANCRAGE VERTICAL
-// ════════════════════════════════════════════════════════════════════════════
 typedef enum {
     BUTTON_ANCHOR_TOP,      // Position Y relative au haut du panneau
     BUTTON_ANCHOR_BOTTOM    // Position Y relative au bas du panneau
 } ButtonYAnchor;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DU WIDGET BUTTON
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct {
     // ─────────────────────────────────────────────────────────────────────────
     // BASE (position et dimensions relatives)
@@ -59,9 +55,7 @@ typedef struct {
 
 } ButtonWidget;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════════
 
 // Crée un nouveau bouton
 // x, y : position du CENTRE du bouton (relatif au panneau)

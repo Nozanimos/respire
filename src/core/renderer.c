@@ -20,15 +20,11 @@
 
 
 
-// ═════════════════════════════════════════════════════════════════════════════
 // SYSTÈME D'ÉCHELLE RESPONSIVE
-// ═════════════════════════════════════════════════════════════════════════════
 // Les constantes REFERENCE_WIDTH, REFERENCE_HEIGHT, MIN_SCALE, MAX_SCALE
 // sont définies dans constants.h
 
-// ─────────────────────────────────────────────────────────────────────────────
 // CALCULE LE FACTEUR D'ÉCHELLE EN FONCTION DE LA TAILLE D'ÉCRAN
-// ─────────────────────────────────────────────────────────────────────────────
 // Cette fonction calcule un facteur d'échelle uniforme basé sur la résolution
 // actuelle par rapport à la résolution de référence (1280x720).
 //
@@ -43,7 +39,6 @@
 //   - 3840x2160 → scale = 3.0  (4K, plafonné)
 //   - 800x480   → scale = 0.625 (petit écran)
 //   - 360x640   → scale = 0.28 (smartphone)
-// ─────────────────────────────────────────────────────────────────────────────
 float calculate_scale_factor(int width, int height) {
     // Calculer les ratios par rapport à la référence
     float width_ratio = (float)width / REFERENCE_WIDTH;
@@ -59,22 +54,16 @@ float calculate_scale_factor(int width, int height) {
     return scale;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // APPLIQUE LE FACTEUR D'ÉCHELLE À UNE VALEUR
-// ─────────────────────────────────────────────────────────────────────────────
 // Fonction utilitaire pour scaler n'importe quelle dimension
-// ─────────────────────────────────────────────────────────────────────────────
 int scale_value(int value, float scale) {
     return (int)(value * scale);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // CALCULE LA LARGEUR DU PANNEAU EN FONCTION DE L'ÉCRAN
-// ─────────────────────────────────────────────────────────────────────────────
 // Règles spéciales :
 //   - Téléphone (< MOBILE_WIDTH_THRESHOLD) : 100% de la largeur
 //   - Tablette/Desktop : BASE_PANEL_WIDTH * scale, max 80% de l'écran
-// ─────────────────────────────────────────────────────────────────────────────
 int calculate_panel_width(int screen_width, float scale) {
     // Cas 1 : Téléphone (écran très étroit)
     if (screen_width < MOBILE_WIDTH_THRESHOLD) {
@@ -89,9 +78,7 @@ int calculate_panel_width(int screen_width, float scale) {
     return (scaled_width < max_width) ? scaled_width : max_width;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // CRÉATION DU TITRE DE L'ÉCRAN D'ACCUEIL (Style Cairo métallisé)
-// ════════════════════════════════════════════════════════════════════════════
 static SDL_Texture* create_wim_title_texture(SDL_Renderer* renderer, const char* font_path) {
     // Initialiser FreeType
     FT_Library ft_library;
@@ -1224,9 +1211,7 @@ void cleanup_app(AppState* app) {
     debug_printf("Application nettoyée\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 // SYSTÈME FPS ADAPTATIF
-// ════════════════════════════════════════════════════════════════════════════
 // Détermine si on doit utiliser 60 FPS (true) ou 15 FPS (false)
 // Critères pour 60 FPS :
 //   - Animations actives (hexagones, compteur, timer, chrono, carte session)
@@ -1238,7 +1223,6 @@ void cleanup_app(AppState* app) {
 //   - Pas d'interaction récente
 //   - JSON Editor sans focus ou sans autosave et sans interaction
 //   - Panneaux fermés
-// ════════════════════════════════════════════════════════════════════════════
 bool should_use_high_fps(AppState* app) {
     if (!app) return true;  // Par sécurité
 
@@ -1325,9 +1309,7 @@ bool should_use_high_fps(AppState* app) {
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  NOTES IMPORTANTES
-// ════════════════════════════════════════════════════════════════════════════
 //
 // 🎯 FLUX DES ÉVÉNEMENTS :
 //    1. L'éditeur JSON a la priorité (si ouvert)

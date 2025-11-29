@@ -30,9 +30,7 @@ void debug_verbose(const char *format, ...) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  FONCTIONS D'AMÉLIORATION VISUELLE DU DEBUG
-// ════════════════════════════════════════════════════════════════════════════
 
 void debug_blank_line() {
     if (debug_file) {

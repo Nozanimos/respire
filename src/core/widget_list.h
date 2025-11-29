@@ -14,9 +14,7 @@
 #include "button_widget.h"
 #include "selector_widget.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE D'UN NŒUD DE LA LISTE DE WIDGETS
-// ════════════════════════════════════════════════════════════════════════════
 // Chaque nœud contient :
 //   - Le type de widget (INCREMENT, TOGGLE, etc.)
 //   - Un pointeur vers le widget concret (ConfigWidget* ou ToggleWidget*)
@@ -57,29 +55,21 @@ typedef struct WidgetNode {
     struct WidgetNode* prev;
 } WidgetNode;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DE LA LISTE DE WIDGETS
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct WidgetList {
     WidgetNode* first;
     WidgetNode* last;
     int count;
 } WidgetList;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES DES FONCTIONS
-// ════════════════════════════════════════════════════════════════════════════
 
-// ─────────────────────────────────────────────────────────────────────────
 // GESTION DE LA LISTE
-// ─────────────────────────────────────────────────────────────────────────
 WidgetList* create_widget_list(void);
 void free_widget_list(WidgetList* list);
 bool is_widget_list_empty(WidgetList* list);
 
-// ─────────────────────────────────────────────────────────────────────────
 // AJOUT DE WIDGETS
-// ─────────────────────────────────────────────────────────────────────────
 // Ajoute un widget INCREMENT (style roller)
 bool add_increment_widget(WidgetList* list,
                           const char* id,
@@ -149,9 +139,7 @@ bool add_selector_widget(WidgetList* list,
                          int text_size,
                          TTF_Font* font);
 
-// ─────────────────────────────────────────────────────────────────────────
 // RENDU ET ÉVÉNEMENTS (FACTORISATION MAGIQUE ✨)
-// ─────────────────────────────────────────────────────────────────────────
 // Ces fonctions parcourent TOUTE la liste et appellent les bonnes fonctions
 // pour chaque widget selon son type
 void render_all_widgets(SDL_Renderer* renderer, WidgetList* list,
@@ -162,9 +150,7 @@ void handle_widget_list_events(WidgetList* list, SDL_Event* event,
 
 void update_widget_list_animations(WidgetList* list, float delta_time);
 
-// ─────────────────────────────────────────────────────────────────────────
 // UTILITAIRES
-// ─────────────────────────────────────────────────────────────────────────
 // Trouve un widget par son ID
 WidgetNode* find_widget_by_id(WidgetList* list, const char* id);
 
@@ -179,9 +165,7 @@ bool set_widget_bool_value(WidgetList* list, const char* id, bool new_value);
 // Debug
 void debug_print_widget_list(WidgetList* list);
 
-// ─────────────────────────────────────────────────────────────────────────
 // SCALING ET POSITIONNEMENT CENTRALISÉ
-// ─────────────────────────────────────────────────────────────────────────
 // Calcule la largeur minimale requise pour le panneau
 // Retourne : MARGIN_LEFT + plus_grande_largeur_widget + MARGIN_RIGHT
 int calculate_min_panel_width(WidgetList* list);

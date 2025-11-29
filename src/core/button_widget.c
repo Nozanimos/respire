@@ -7,9 +7,7 @@
 #include "widget_base.h"
 #include "debug.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU WIDGET BUTTON
-// ════════════════════════════════════════════════════════════════════════════
 ButtonWidget* create_button_widget(const char* text, int x, int y,
                                    int width, int height, int text_size,
                                    SDL_Color bg_color, ButtonYAnchor y_anchor) {
@@ -70,9 +68,7 @@ ButtonWidget* create_button_widget(const char* text, int x, int y,
     return button;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU BUTTON
-// ════════════════════════════════════════════════════════════════════════════
 void render_button_widget(SDL_Renderer* renderer, ButtonWidget* button,
                           int offset_x, int offset_y) {
     if (!renderer || !button) return;
@@ -127,9 +123,7 @@ void render_button_widget(SDL_Renderer* renderer, ButtonWidget* button,
     SDL_FreeSurface(surface);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES ÉVÉNEMENTS
-// ════════════════════════════════════════════════════════════════════════════
 void handle_button_widget_events(ButtonWidget* button, SDL_Event* event,
                                  int offset_x, int offset_y) {
     if (!button || !event) return;
@@ -158,9 +152,7 @@ void handle_button_widget_events(ButtonWidget* button, SDL_Event* event,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RESCALING DU BUTTON
-// ════════════════════════════════════════════════════════════════════════════
 void rescale_button_widget(ButtonWidget* button, float panel_ratio) {
     if (!button) return;
 
@@ -185,18 +177,14 @@ void rescale_button_widget(ButtonWidget* button, float panel_ratio) {
                  button->current_text_size, panel_ratio);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  DÉFINIR LE CALLBACK
-// ════════════════════════════════════════════════════════════════════════════
 void set_button_click_callback(ButtonWidget* button, void (*callback)(void)) {
     if (button) {
         button->on_click = callback;
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION
-// ════════════════════════════════════════════════════════════════════════════
 void free_button_widget(ButtonWidget* button) {
     if (button) {
         free(button);

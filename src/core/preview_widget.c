@@ -7,9 +7,7 @@
 #include "config.h"
 #include "debug.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU WIDGET PREVIEW
-// ════════════════════════════════════════════════════════════════════════════
 PreviewWidget* create_preview_widget(int x, int y, int frame_size,
                                      float size_ratio, float breath_duration) {
     PreviewWidget* preview = malloc(sizeof(PreviewWidget));
@@ -70,9 +68,7 @@ PreviewWidget* create_preview_widget(int x, int y, int frame_size,
     return preview;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU PREVIEW
-// ════════════════════════════════════════════════════════════════════════════
 void render_preview_widget(SDL_Renderer* renderer, PreviewWidget* preview,
                            int offset_x, int offset_y) {
     if (!renderer || !preview) return;
@@ -121,9 +117,7 @@ void render_preview_widget(SDL_Renderer* renderer, PreviewWidget* preview,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DE L'ANIMATION
-// ════════════════════════════════════════════════════════════════════════════
 void update_preview_widget(PreviewWidget* preview, float delta_time) {
     if (!preview || !preview->hex_list) return;
 
@@ -149,9 +143,7 @@ void update_preview_widget(PreviewWidget* preview, float delta_time) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RESCALING DU PREVIEW
-// ════════════════════════════════════════════════════════════════════════════
 void rescale_preview_widget(PreviewWidget* preview, float panel_ratio,
                             float breath_duration) {
     if (!preview) return;
@@ -203,9 +195,7 @@ void rescale_preview_widget(PreviewWidget* preview, float panel_ratio,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CHANGER LA DURÉE DE RESPIRATION
-// ════════════════════════════════════════════════════════════════════════════
 void preview_set_breath_duration(PreviewWidget* preview, float new_duration) {
     if (!preview) return;
 
@@ -258,9 +248,7 @@ void preview_set_breath_duration(PreviewWidget* preview, float new_duration) {
     debug_printf("✅ Prévisualisation COMPLÈTEMENT réinitialisée avec nouvelle durée\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RÉINITIALISER LE PREVIEW
-// ════════════════════════════════════════════════════════════════════════════
 void reset_preview_widget(PreviewWidget* preview) {
     if (!preview) return;
 
@@ -270,9 +258,7 @@ void reset_preview_widget(PreviewWidget* preview) {
     debug_printf("🔄 Preview réinitialisé\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION
-// ════════════════════════════════════════════════════════════════════════════
 void free_preview_widget(PreviewWidget* preview) {
     if (!preview) return;
 

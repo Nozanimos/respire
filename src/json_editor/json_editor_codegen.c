@@ -34,9 +34,7 @@ static void ajouter_callback_unique(char** array, int* count, const char* callba
     (*count)++;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  COLLECTE DES CALLBACKS DEPUIS LE JSON
-// ════════════════════════════════════════════════════════════════════════════
 static void collecter_callbacks_depuis_json(cJSON* widgets, CallbackCollection* collection) {
     collection->count_int = 0;
     collection->count_bool = 0;
@@ -79,9 +77,7 @@ static void liberer_callback_collection(CallbackCollection* collection) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DES FONCTIONS HELPER POUR LES CALLBACKS
-// ════════════════════════════════════════════════════════════════════════════
 static void generer_helpers_callbacks(FILE* f, CallbackCollection* collection) {
     // Déclarations externes
     fprintf(f, "// ════════════════════════════════════════════════════════════════════════════\n");
@@ -136,9 +132,7 @@ static void generer_helpers_callbacks(FILE* f, CallbackCollection* collection) {
     fprintf(f, "}\n\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DE CODE C POUR UN WIDGET INCREMENT
-// ════════════════════════════════════════════════════════════════════════════
 static void generer_code_increment(FILE* f, cJSON* widget) {
     cJSON* id = cJSON_GetObjectItem(widget, "id");
     cJSON* nom = cJSON_GetObjectItem(widget, "nom_affichage");
@@ -179,9 +173,7 @@ static void generer_code_increment(FILE* f, cJSON* widget) {
     fprintf(f, "    );\n\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DE CODE C POUR UN WIDGET TOGGLE
-// ════════════════════════════════════════════════════════════════════════════
 static void generer_code_toggle(FILE* f, cJSON* widget) {
     cJSON* id = cJSON_GetObjectItem(widget, "id");
     cJSON* nom = cJSON_GetObjectItem(widget, "nom_affichage");
@@ -222,9 +214,7 @@ static void generer_code_toggle(FILE* f, cJSON* widget) {
     fprintf(f, "    );\n\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DE CODE C POUR UN TITRE (LABEL)
-// ════════════════════════════════════════════════════════════════════════════
 static void generer_code_titre(FILE* f, cJSON* widget) {
     cJSON* texte = cJSON_GetObjectItem(widget, "texte");
     cJSON* x = cJSON_GetObjectItem(widget, "x");
@@ -269,9 +259,7 @@ static void generer_code_titre(FILE* f, cJSON* widget) {
     fprintf(f, "    );\n\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DE CODE C POUR UN SÉPARATEUR
-// ════════════════════════════════════════════════════════════════════════════
 static void generer_code_separator(FILE* f, cJSON* widget) {
     cJSON* id = cJSON_GetObjectItem(widget, "id");
     cJSON* y = cJSON_GetObjectItem(widget, "y");
@@ -321,9 +309,7 @@ static void generer_code_separator(FILE* f, cJSON* widget) {
     fprintf(f, "    );\n\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DE CODE C POUR UN PREVIEW
-// ════════════════════════════════════════════════════════════════════════════
 static void generer_code_preview(FILE* f, cJSON* widget) {
     cJSON* id = cJSON_GetObjectItem(widget, "id");
     cJSON* x = cJSON_GetObjectItem(widget, "x");
@@ -357,9 +343,7 @@ static void generer_code_preview(FILE* f, cJSON* widget) {
     fprintf(f, "    );\n\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DE CODE C POUR UN BOUTON
-// ════════════════════════════════════════════════════════════════════════════
 static void generer_code_button(FILE* f, cJSON* widget) {
     cJSON* id = cJSON_GetObjectItem(widget, "id");
     cJSON* nom = cJSON_GetObjectItem(widget, "nom_affichage");
@@ -420,9 +404,7 @@ static void generer_code_button(FILE* f, cJSON* widget) {
     fprintf(f, "    );\n\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  FONCTION PRINCIPALE : GÉNÉRATION DU FICHIER C COMPLET
-// ════════════════════════════════════════════════════════════════════════════
 bool generer_code_c_depuis_json(JsonEditor* editor) {
     if (!editor) {
         fprintf(stderr, "❌ Éditeur invalide pour la génération de code C\n");

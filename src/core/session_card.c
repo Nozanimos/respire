@@ -13,9 +13,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-// ════════════════════════════════════════════════════════════════════════
 // CONSTANTES
-// ════════════════════════════════════════════════════════════════════════
 #define CARD_WIDTH_BASE  200    // Largeur de base (ratio carte de poker ~2.5:3.5)
 #define CARD_HEIGHT_BASE 280    // Hauteur de base
 #define CARD_CORNER_RADIUS 15   // Rayon des coins arrondis (comme une carte de poker)
@@ -25,9 +23,7 @@
 #define MARGIN_TOP    10        // Marge du haut
 #define MARGIN_BOTTOM 10        // Marge du bas
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION DE LA TEXTURE DE LA CARTE
-// ════════════════════════════════════════════════════════════════════════
 // Crée la texture complète : background + texte Cairo avec effet vitré
 static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_number,
                                        int width, int height,
@@ -236,9 +232,7 @@ static SDL_Texture* create_card_texture(SDL_Renderer* renderer, int session_numb
     return texture;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION ET INITIALISATION
-// ════════════════════════════════════════════════════════════════════════
 SessionCardState* session_card_create(int session_number, int screen_width,
                                       int screen_height, const char* font_path,
                                       float scale_factor) {
@@ -287,9 +281,7 @@ SessionCardState* session_card_create(int session_number, int screen_width,
     return card;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // DÉMARRAGE DE L'ANIMATION
-// ════════════════════════════════════════════════════════════════════════
 void session_card_start(SessionCardState* card) {
     if (!card) return;
 
@@ -300,9 +292,7 @@ void session_card_start(SessionCardState* card) {
     debug_printf("🎬 Animation carte de session démarrée (session %d)\n", card->session_number);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // MISE À JOUR DE L'ANIMATION
-// ════════════════════════════════════════════════════════════════════════
 bool session_card_update(SessionCardState* card, float delta_time) {
     if (!card || card->phase == CARD_FINISHED) return false;
 
@@ -359,9 +349,7 @@ bool session_card_update(SessionCardState* card, float delta_time) {
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RENDU DE LA CARTE
-// ════════════════════════════════════════════════════════════════════════
 void session_card_render(SessionCardState* card, SDL_Renderer* renderer) {
     if (!card || card->phase == CARD_FINISHED) return;
 
@@ -392,9 +380,7 @@ void session_card_render(SessionCardState* card, SDL_Renderer* renderer) {
     SDL_RenderCopy(renderer, card->card_texture, NULL, &dest_rect);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // MISE À JOUR DES DIMENSIONS D'ÉCRAN (lors du redimensionnement)
-// ════════════════════════════════════════════════════════════════════════
 void session_card_update_screen_size(SessionCardState* card, int new_screen_width,
                                       int new_screen_height, float scale_factor) {
     if (!card) return;
@@ -448,9 +434,7 @@ void session_card_update_screen_size(SessionCardState* card, int new_screen_widt
                  scale_factor, card_scale, card->center_x, card->current_y);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RÉINITIALISATION POUR UNE NOUVELLE SESSION
-// ════════════════════════════════════════════════════════════════════════
 void session_card_reset(SessionCardState* card, int session_number, SDL_Renderer* renderer) {
     if (!card) return;
 
@@ -487,16 +471,12 @@ void session_card_reset(SessionCardState* card, int session_number, SDL_Renderer
                  session_number, card->card_width, card->card_height, card->scale_factor);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // VÉRIFICATION FIN D'ANIMATION
-// ════════════════════════════════════════════════════════════════════════
 bool session_card_is_finished(SessionCardState* card) {
     return (card && card->phase == CARD_FINISHED);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // LIBÉRATION MÉMOIRE
-// ════════════════════════════════════════════════════════════════════════
 void session_card_destroy(SessionCardState* card) {
     if (!card) return;
 

@@ -4,9 +4,7 @@
 #include "geometry.h"
 #include "debug.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU WIDGET SEPARATOR
-// ════════════════════════════════════════════════════════════════════════════
 SeparatorWidget* create_separator_widget(int y, int start_margin, int end_margin,
                                          int thickness, SDL_Color color) {
     SeparatorWidget* sep = malloc(sizeof(SeparatorWidget));
@@ -38,9 +36,7 @@ SeparatorWidget* create_separator_widget(int y, int start_margin, int end_margin
     return sep;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU SEPARATOR
-// ════════════════════════════════════════════════════════════════════════════
 void render_separator_widget(SDL_Renderer* renderer, SeparatorWidget* sep,
                              int offset_x, int offset_y, int panel_width) {
     if (!renderer || !sep) return;
@@ -59,9 +55,7 @@ void render_separator_widget(SDL_Renderer* renderer, SeparatorWidget* sep,
     draw_separator_line(renderer, x1, y1, x2, y2, sep->thickness, sep->color);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RESCALING DU SEPARATOR
-// ════════════════════════════════════════════════════════════════════════════
 void rescale_separator_widget(SeparatorWidget* sep, float panel_ratio, int panel_width) {
     if (!sep) return;
 
@@ -84,9 +78,7 @@ void rescale_separator_widget(SeparatorWidget* sep, float panel_ratio, int panel
                  sep->base.width, sep->thickness, panel_ratio);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION
-// ════════════════════════════════════════════════════════════════════════════
 void free_separator_widget(SeparatorWidget* sep) {
     if (sep) {
         free(sep);

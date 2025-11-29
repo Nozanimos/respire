@@ -6,9 +6,7 @@
 #include "audio_sync.h"
 #include "debug.h"
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU GESTIONNAIRE AUDIO
-// ════════════════════════════════════════════════════════════════════════
 AudioSyncManager* audio_sync_create(const char** audio_files, int num_files, float master_volume) {
     if (num_files <= 0) {
         debug_printf("⚠️  Audio sync: aucun fichier à précharger\n");
@@ -60,9 +58,7 @@ AudioSyncManager* audio_sync_create(const char** audio_files, int num_files, flo
     return manager;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // AJOUT D'UN ÉVÉNEMENT AUDIO
-// ════════════════════════════════════════════════════════════════════════
 bool audio_sync_add_event(AudioSyncManager* manager,
                           int frame_index,
                           AudioEventType event_type,
@@ -101,9 +97,7 @@ bool audio_sync_add_event(AudioSyncManager* manager,
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // MISE À JOUR (APPELÉE CHAQUE FRAME)
-// ════════════════════════════════════════════════════════════════════════
 void audio_sync_update(AudioSyncManager* manager, int current_frame) {
     if (!manager || !manager->is_enabled) return;
 
@@ -144,9 +138,7 @@ void audio_sync_update(AudioSyncManager* manager, int current_frame) {
     manager->last_frame_played = current_frame;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // ACTIVER/DÉSACTIVER L'AUDIO
-// ════════════════════════════════════════════════════════════════════════
 void audio_sync_set_enabled(AudioSyncManager* manager, bool enabled) {
     if (!manager) return;
 
@@ -159,9 +151,7 @@ void audio_sync_set_enabled(AudioSyncManager* manager, bool enabled) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // CHANGER LE VOLUME GLOBAL
-// ════════════════════════════════════════════════════════════════════════
 void audio_sync_set_volume(AudioSyncManager* manager, float volume) {
     if (!manager) return;
 
@@ -172,9 +162,7 @@ void audio_sync_set_volume(AudioSyncManager* manager, float volume) {
     debug_printf("🔊 Volume global: %.1f%%\n", volume * 100.0f);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // DESTRUCTION DU GESTIONNAIRE
-// ════════════════════════════════════════════════════════════════════════
 void audio_sync_destroy(AudioSyncManager* manager) {
     if (!manager) return;
 

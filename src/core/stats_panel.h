@@ -7,9 +7,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-// ════════════════════════════════════════════════════════════════════════
 // STRUCTURES DE DONNÉES STATISTIQUES
-// ════════════════════════════════════════════════════════════════════════
 
 // Une entrée d'exercice (sauvegardée en binaire)
 typedef struct {
@@ -25,9 +23,7 @@ typedef struct {
     int capacity;               // Capacité du tableau
 } ExerciseHistory;
 
-// ════════════════════════════════════════════════════════════════════════
 // STRUCTURE DU PANNEAU DE STATISTIQUES
-// ════════════════════════════════════════════════════════════════════════
 
 typedef enum {
     STATS_CLOSED,
@@ -75,9 +71,7 @@ typedef struct {
 
 } StatsPanel;
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer le panneau de statistiques

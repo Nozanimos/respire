@@ -7,9 +7,7 @@
 #include <stdbool.h>
 #include "widget_base.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE D'UN WIDGET TOGGLE (ON/OFF)
-// ════════════════════════════════════════════════════════════════════════════
 // Widget interactif de type interrupteur avec animation visuelle
 //
 // LAYOUT VISUEL :
@@ -109,9 +107,7 @@ typedef struct ToggleWidget {
 
 } ToggleWidget;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES DES FONCTIONS
-// ════════════════════════════════════════════════════════════════════════════
 
 // Crée un nouveau widget toggle
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,

@@ -8,25 +8,19 @@
 #include "widget_base.h"
 #include "geometry.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CONSTANTES
-// ════════════════════════════════════════════════════════════════════════════
 #define MAX_SELECTOR_OPTIONS 20      // Maximum d'options dans une liste
 #define MAX_OPTION_TEXT_LENGTH 50    // Longueur max du texte d'une option
 #define MAX_CALLBACK_NAME_LENGTH 50  // Longueur max du nom de callback
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE D'UNE OPTION DU SÉLECTEUR
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct {
     char text[MAX_OPTION_TEXT_LENGTH];           // Texte affiché (ex: "Poumons pleins")
     char callback_name[MAX_CALLBACK_NAME_LENGTH]; // Nom du callback associé
     void (*callback)(void);                       // Pointeur vers la fonction callback
 } SelectorOption;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DU WIDGET SELECTOR
-// ════════════════════════════════════════════════════════════════════════════
 // Layout visuel : [Label]  [◀] [Option actuelle] [▶]
 typedef struct SelectorWidget {
     // ─────────────────────────────────────────────────────────────────────────
@@ -116,9 +110,7 @@ typedef struct SelectorWidget {
 
 } SelectorWidget;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════════
 
 /**
  * Crée un nouveau widget selector

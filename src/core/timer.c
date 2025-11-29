@@ -10,9 +10,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU TIMER
-// ════════════════════════════════════════════════════════════════════════
 TimerState* breathing_timer_create(int duration_seconds, const char* font_path, int font_size) {
     // Allocation de la structure
     TimerState* timer = malloc(sizeof(TimerState));
@@ -58,9 +56,7 @@ TimerState* breathing_timer_create(int duration_seconds, const char* font_path, 
     return timer;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // DÉMARRER LE TIMER
-// ════════════════════════════════════════════════════════════════════════
 void timer_start(TimerState* timer) {
     if (!timer) return;
 
@@ -71,9 +67,7 @@ void timer_start(TimerState* timer) {
     debug_printf("⏱️  Timer démarré: %d secondes\n", timer->total_seconds);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // MISE À JOUR DU TIMER (appelé à chaque frame)
-// ════════════════════════════════════════════════════════════════════════
 bool timer_update(TimerState* timer) {
     if (!timer || !timer->is_active || timer->is_finished) {
         return false;
@@ -104,9 +98,7 @@ bool timer_update(TimerState* timer) {
     return true;  // Timer toujours actif
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // FORMATER LE TEMPS AU FORMAT mm:ss
-// ════════════════════════════════════════════════════════════════════════
 void timer_format(TimerState* timer, char* buffer) {
     if (!timer || !buffer) return;
 
@@ -122,9 +114,7 @@ void timer_format(TimerState* timer, char* buffer) {
     snprintf(buffer, 6, "%02d:%02d", minutes, seconds);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RENDU DU TIMER CENTRÉ SUR L'HEXAGONE (avec Cairo - effet métallisé)
-// ════════════════════════════════════════════════════════════════════════
 void timer_render(TimerState* timer, SDL_Renderer* renderer,
                   int center_x, int center_y, int hex_radius) {
     if (!timer || !renderer || !timer->font_path) return;
@@ -263,9 +253,7 @@ void timer_render(TimerState* timer, SDL_Renderer* renderer,
     FT_Done_FreeType(ft_library);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RÉINITIALISER LE TIMER
-// ════════════════════════════════════════════════════════════════════════
 void timer_reset(TimerState* timer) {
     if (!timer) return;
 
@@ -277,9 +265,7 @@ void timer_reset(TimerState* timer) {
     debug_printf("🔄 Timer réinitialisé à %d secondes\n", timer->total_seconds);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // DESTRUCTION DU TIMER
-// ════════════════════════════════════════════════════════════════════════
 void timer_destroy(TimerState* timer) {
     if (!timer) return;
 

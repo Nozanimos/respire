@@ -8,9 +8,7 @@
 #include <string.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  TABLE DE CORRESPONDANCE : NOM CALLBACK → POINTEUR FONCTION
-// ════════════════════════════════════════════════════════════════════════════
 // PROBLÈME : Dans le JSON on a des strings comme "duration_value_changed"
 // mais on a besoin de pointeurs de fonction réels.
 //
@@ -96,9 +94,7 @@ static void (*obtenir_callback_void(const char* nom))(void) {
     return NULL;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING D'UN WIDGET INCREMENT
-// ════════════════════════════════════════════════════════════════════════════
 bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
     // Récupération des champs obligatoires
     cJSON* id = cJSON_GetObjectItem(json_obj, "id");
@@ -160,9 +156,7 @@ bool parser_widget_increment(cJSON* json_obj, LoaderContext* ctx, WidgetList* li
     return success;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING D'UN WIDGET TOGGLE
-// ════════════════════════════════════════════════════════════════════════════
 bool parser_widget_toggle(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
     (void)ctx;  // Paramètre non utilisé
 
@@ -212,9 +206,7 @@ bool parser_widget_toggle(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
 
     return success;
 }
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING D'UN TITRE (éléments statiques)
-// ════════════════════════════════════════════════════════════════════════════
 bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     if (!json_obj || !ctx || !list) return false;
 
@@ -310,9 +302,7 @@ bool parser_titre(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     return success;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING D'UN SÉPARATEUR (éléments statiques)
-// ════════════════════════════════════════════════════════════════════════════
 bool parser_separateur(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     if (!json_obj || !ctx || !list) return false;
 
@@ -380,9 +370,7 @@ bool parser_separateur(void* json_obj, LoaderContext* ctx, WidgetList* list) {
     return success;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING D'UN WIDGET PREVIEW
-// ════════════════════════════════════════════════════════════════════════════
 bool parser_widget_preview(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
     if (!json_obj || !ctx || !list) return false;
 
@@ -423,9 +411,7 @@ bool parser_widget_preview(cJSON* json_obj, LoaderContext* ctx, WidgetList* list
     return success;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING D'UN WIDGET BUTTON
-// ════════════════════════════════════════════════════════════════════════════
 bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
     if (!json_obj || !ctx || !list) return false;
 
@@ -501,9 +487,7 @@ bool parser_widget_button(cJSON* json_obj, LoaderContext* ctx, WidgetList* list)
     return success;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PARSING D'UN WIDGET SELECTOR
-// ════════════════════════════════════════════════════════════════════════════
 bool parser_widget_selector(cJSON* json_obj, LoaderContext* ctx, WidgetList* list) {
     (void)ctx;  // Paramètre non utilisé
 
@@ -680,9 +664,7 @@ bool parser_widget_selector(cJSON* json_obj, LoaderContext* ctx, WidgetList* lis
         return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  FONCTION PRINCIPALE : CHARGER TOUS LES WIDGETS
-// ════════════════════════════════════════════════════════════════════════════
 bool charger_widgets_depuis_json(const char* filename,
                                  LoaderContext* context,
                                  WidgetList* widget_list) {
@@ -812,9 +794,7 @@ bool charger_widgets_depuis_json(const char* filename,
     return (compteur_success > 0);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GÉNÉRATION DES TEMPLATES
-// ════════════════════════════════════════════════════════════════════════════
 
 // Fonction helper : Remplace toutes les valeurs numériques par 0 et les strings par "a_modifier"
 // (sauf le champ "type")

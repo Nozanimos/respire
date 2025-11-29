@@ -5,9 +5,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  STRUCTURE DU WIDGET SEPARATOR
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct {
     // ─────────────────────────────────────────────────────────────────────────
     // BASE (position et dimensions relatives)
@@ -34,9 +32,7 @@ typedef struct {
 
 } SeparatorWidget;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════════
 
 // Crée un nouveau separator
 // y : position verticale relative au panneau

@@ -7,16 +7,12 @@
 #include <stdlib.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTIONNAIRE DE CACHE DE POLICES - Variables globales
-// ════════════════════════════════════════════════════════════════════════════
 CachedFont g_font_cache[MAX_CACHED_FONTS] = {0};
 int g_font_cache_count = 0;
 char g_font_path[256] = "";
 
-// ════════════════════════════════════════════════════════════════════════════
 //  INITIALISATION DU GESTIONNAIRE
-// ════════════════════════════════════════════════════════════════════════════
 void init_font_manager(const char* font_path) {
     if (!font_path) return;
 
@@ -37,9 +33,7 @@ void init_font_manager(const char* font_path) {
     debug_blank_line();
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  OBTENIR UNE POLICE (avec cache)
-// ════════════════════════════════════════════════════════════════════════════
 TTF_Font* get_font_for_size(int size) {
     if (g_font_path[0] == '\0') {
         debug_printf("⚠️ Gestionnaire de polices non initialisé\n");
@@ -89,9 +83,7 @@ TTF_Font* get_font_for_size(int size) {
     return g_font_cache[0].font;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  NETTOYAGE DU GESTIONNAIRE
-// ════════════════════════════════════════════════════════════════════════════
 void cleanup_font_manager(void) {
     debug_section("NETTOYAGE GESTIONNAIRE DE POLICES");
 
@@ -108,9 +100,7 @@ void cleanup_font_manager(void) {
     debug_blank_line();
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION D'UN WIDGET DE CONFIGURATION (STYLE ROLLER)
-// ════════════════════════════════════════════════════════════════════════════
 ConfigWidget* create_config_widget(const char* name, int x, int y,
                                    int min_val, int max_val, int start_val,
                                    int increment, int text_size,
@@ -274,9 +264,7 @@ ConfigWidget* create_config_widget(const char* name, int x, int y,
     return widget;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALCUL DE LA POSITION X DU ROLLER (pour alignement en colonnes)
-// ════════════════════════════════════════════════════════════════════════════
 // Similaire à calculate_arrows_x_offset de l'ancienne version avec flèches
 // Si container_width > 0, aligne le roller à droite
 // Sinon, utilise la position par défaut (local_roller_x)
@@ -302,9 +290,7 @@ static int calculate_roller_x_offset(ConfigWidget* widget, int container_width) 
     return roller_x_offset;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU WIDGET ROLLER
-// ════════════════════════════════════════════════════════════════════════════
 void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
                           int offset_x, int offset_y, int container_width) {
     if (!widget || !renderer) return;
@@ -478,9 +464,7 @@ void render_config_widget(SDL_Renderer* renderer, ConfigWidget* widget,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES ÉVÉNEMENTS ROLLER
-// ════════════════════════════════════════════════════════════════════════════
 void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
                                  int offset_x, int offset_y, int container_width) {
     if (!widget || !event) return;
@@ -685,26 +669,20 @@ void handle_config_widget_events(ConfigWidget* widget, SDL_Event* event,
 }
 
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DU WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 void update_config_widget(ConfigWidget* widget, float delta_time) {
     (void)widget;
     (void)delta_time;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALLBACK DE CHANGEMENT DE VALEUR
-// ════════════════════════════════════════════════════════════════════════════
 void set_config_value_changed_callback(ConfigWidget* widget, void (*callback)(int)) {
     if (widget) {
         widget->on_value_changed = callback;
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RESPONSIVE : RESCALE DU WIDGET (INTELLIGENT)
-// ════════════════════════════════════════════════════════════════════════════
 void rescale_config_widget(ConfigWidget* widget, float panel_ratio) {
     if (!widget) return;
 
@@ -790,9 +768,7 @@ void rescale_config_widget(ConfigWidget* widget, float panel_ratio) {
 }
 
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION DU WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 void free_config_widget(ConfigWidget* widget) {
     if (!widget) return;
     free(widget);

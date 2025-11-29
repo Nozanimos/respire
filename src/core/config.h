@@ -26,9 +26,7 @@
 static const double HEXAGON_ANGLES[] = {ANGLE_1, ANGLE_2, ANGLE_3, ANGLE_4};
 static const bool HEXAGON_DIRECTIONS[] = {true, false, true, false}; // Horaire, Anti-horaire
 
-// ════════════════════════════════════════════════════════════════════════════
 // STRUCTURE DE CONFIGURATION
-// ════════════════════════════════════════════════════════════════════════════
 // Contient UNIQUEMENT les valeurs métier utilisées par l'application
 typedef struct {
     // Paramètres respiration
@@ -64,9 +62,7 @@ typedef struct {
 struct WidgetList;
 typedef struct WidgetList WidgetList;
 
-// ════════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════════
 
 /**
  * Charge la configuration depuis le fichier respiration.conf

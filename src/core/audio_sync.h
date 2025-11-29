@@ -5,9 +5,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL_mixer.h>
 
-// ════════════════════════════════════════════════════════════════════════
 // SYSTÈME DE SYNCHRONISATION AUDIO AVEC PRÉCHARGEMENT
-// ════════════════════════════════════════════════════════════════════════
 // Cette structure prépare l'infrastructure pour synchroniser l'audio
 // avec les animations précomputées.
 //
@@ -20,11 +18,8 @@
 // - Latence zéro (audio déjà en mémoire)
 // - Synchronisation parfaite avec les frames
 // - Prévisibilité (tous les sons connus à l'avance)
-// ════════════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════════════════════════════════
 // TYPES D'ÉVÉNEMENTS AUDIO
-// ════════════════════════════════════════════════════════════════════════
 typedef enum {
     AUDIO_EVENT_INHALE_START,    // Début inspire (scale_max → scale_min)
     AUDIO_EVENT_INHALE_END,      // Fin inspire (atteint scale_min)
@@ -36,9 +31,7 @@ typedef enum {
     AUDIO_EVENT_CUSTOM           // Événement personnalisé
 } AudioEventType;
 
-// ════════════════════════════════════════════════════════════════════════
 // POINT DE SYNCHRONISATION AUDIO
-// ════════════════════════════════════════════════════════════════════════
 // Représente un événement audio déclenché à une frame précise
 typedef struct {
     int frame_index;             // À quelle frame déclencher (0 à total_cycles-1)
@@ -49,9 +42,7 @@ typedef struct {
     bool loop;                   // true = boucle infinie
 } AudioSyncPoint;
 
-// ════════════════════════════════════════════════════════════════════════
 // GESTIONNAIRE DE SYNCHRONISATION AUDIO
-// ════════════════════════════════════════════════════════════════════════
 typedef struct {
     // Chunks audio préchargés en mémoire
     Mix_Chunk** preloaded_chunks;  // Tableau de chunks (indexé par audio_id)
@@ -69,9 +60,7 @@ typedef struct {
     float master_volume;           // Volume global (0.0 à 1.0)
 } AudioSyncManager;
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer et initialiser le gestionnaire de synchronisation audio

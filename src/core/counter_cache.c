@@ -12,9 +12,7 @@
 #include "precompute_list.h"  // Pour sinusoidal_movement
 #include "debug.h"
 
-// ════════════════════════════════════════════════════════════════════════
 // UTILITAIRE : Convertir surface Cairo vers texture SDL
-// ════════════════════════════════════════════════════════════════════════
 static SDL_Texture* texture_from_cairo_surface(SDL_Renderer* renderer, cairo_surface_t* surface) {
     int width = cairo_image_surface_get_width(surface);
     int height = cairo_image_surface_get_height(surface);
@@ -36,9 +34,7 @@ static SDL_Texture* texture_from_cairo_surface(SDL_Renderer* renderer, cairo_sur
     return texture;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // UTILITAIRE : Rendre un chiffre avec Cairo à un scale donné
-// ════════════════════════════════════════════════════════════════════════
 static SDL_Texture* render_number_with_cairo(SDL_Renderer* renderer,
                                               int number,
                                               const char* font_path,
@@ -141,9 +137,7 @@ static SDL_Texture* render_number_with_cairo(SDL_Renderer* renderer,
     return texture;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION DU CACHE
-// ════════════════════════════════════════════════════════════════════════
 CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
                                           int max_numbers,
                                           const char* font_path,
@@ -253,9 +247,7 @@ CounterTextureCache* counter_cache_create(SDL_Renderer* renderer,
     return cache;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RÉCUPÉRATION D'UNE TEXTURE DU CACHE
-// ════════════════════════════════════════════════════════════════════════
 SDL_Texture* counter_cache_get(CounterTextureCache* cache,
                                int number,
                                int frame_index,
@@ -283,9 +275,7 @@ SDL_Texture* counter_cache_get(CounterTextureCache* cache,
     return texture;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // DESTRUCTION DU CACHE
-// ════════════════════════════════════════════════════════════════════════
 void counter_cache_destroy(CounterTextureCache* cache) {
     if (!cache) return;
 

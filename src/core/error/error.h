@@ -92,9 +92,7 @@ void error_print(const Error* err);
  */
 const char* error_code_to_string(ErrorCode code);
 
-// ═══════════════════════════════════════════════════════════════════════════
 // MACROS UTILITAIRES
-// ═══════════════════════════════════════════════════════════════════════════
 
 /**
  * @brief Définit une erreur avec localisation automatique

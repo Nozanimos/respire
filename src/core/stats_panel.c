@@ -15,9 +15,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
 
-// ════════════════════════════════════════════════════════════════════════
 // CONSTANTES
-// ════════════════════════════════════════════════════════════════════════
 #define ANIMATION_SPEED 3.0f    // Vitesse d'animation (unités par seconde)
 #define GRAPH_MARGIN 60         // Marge pour les axes et labels
 #define GRAPH_EXERCISES 5       // Nombre d'exercices affichés
@@ -36,9 +34,7 @@ static const SDL_Color RAINBOW_COLORS[] = {
 };
 #define RAINBOW_COUNT 7
 
-// ════════════════════════════════════════════════════════════════════════
 // UTILITAIRES FICHIERS BINAIRES
-// ════════════════════════════════════════════════════════════════════════
 
 // Créer le dossier stats s'il n'existe pas
 static void ensure_stats_dir(void) {
@@ -62,9 +58,7 @@ static void generate_filename(char* buffer, size_t size) {
              tm_info->tm_sec);
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // SAUVEGARDE/CHARGEMENT BINAIRE
-// ════════════════════════════════════════════════════════════════════════
 
 // Vérifier si l'exercice actuel est déjà sauvegardé dans l'historique
 static bool is_exercise_already_saved(StatsPanel* panel) {
@@ -262,9 +256,7 @@ bool reset_exercise_history(void) {
     return true;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RENDU DU GRAPHIQUE AVEC CAIRO
-// ════════════════════════════════════════════════════════════════════════
 
 // Structure temporaire pour un exercice à afficher
 typedef struct {
@@ -526,9 +518,7 @@ static SDL_Texture* create_graph_texture(SDL_Renderer* renderer, StatsPanel* pan
     return NULL;
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION ET DESTRUCTION
-// ════════════════════════════════════════════════════════════════════════
 
 StatsPanel* create_stats_panel(int screen_width, int screen_height,
                                 float* session_times, int session_count) {
@@ -614,9 +604,7 @@ void destroy_stats_panel(StatsPanel* panel) {
     debug_printf("🗑️ Panneau stats détruit\n");
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // ANIMATION ET MISE À JOUR
-// ════════════════════════════════════════════════════════════════════════
 
 void open_stats_panel(StatsPanel* panel) {
     if (!panel) return;
@@ -653,9 +641,7 @@ void update_stats_panel(StatsPanel* panel, float delta_time) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // RENDU
-// ════════════════════════════════════════════════════════════════════════
 
 void render_stats_panel(SDL_Renderer* renderer, StatsPanel* panel) {
     if (!panel || panel->state == STATS_CLOSED) return;
@@ -793,9 +779,7 @@ void render_stats_panel(SDL_Renderer* renderer, StatsPanel* panel) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // GESTION DES ÉVÉNEMENTS
-// ════════════════════════════════════════════════════════════════════════
 
 void handle_stats_panel_event(StatsPanel* panel, SDL_Event* event) {
     if (!panel || panel->state != STATS_OPEN) return;

@@ -5,9 +5,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-// ════════════════════════════════════════════════════════════════════════
 // SYSTÈME DE CACHE DE TEXTURES POUR LE COMPTEUR
-// ════════════════════════════════════════════════════════════════════════
 // Ce système précharge TOUTES les textures pour chaque frame d'un cycle
 // de respiration complet. Chaque texture est rendue à la taille exacte
 // calculée par sinusoidal_movement.
@@ -19,7 +17,6 @@
 // - Tailles identiques garanties (même formule de scale pour tous)
 // - Runtime ultra-léger : lookup O(1) + blit direct
 // - Responsive garanti (multiplication du scale_factor uniquement)
-// ════════════════════════════════════════════════════════════════════════
 
 typedef struct {
     SDL_Texture*** textures;      // [number][frame_index] -> texture
@@ -39,9 +36,7 @@ typedef struct {
     SDL_Renderer* renderer;        // Renderer pour créer les textures
 } CounterTextureCache;
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer et initialiser le cache de textures

@@ -5,9 +5,7 @@
 
 
 
-// ═════════════════════════════════════════════════════════════════════════
 //  COPIER LA SÉLECTION DANS LE PRESSE-PAPIER
-// ═════════════════════════════════════════════════════════════════════════
 void copier_selection(JsonEditor* editor) {
     if (!editor || !editor->selection_active) {
         debug_printf("⚠️ COPIER: Aucune sélection active\n");
@@ -38,9 +36,7 @@ void copier_selection(JsonEditor* editor) {
     debug_printf("✅ COPIER: %d caractères copiés\n", len);
 }
 
-// ═════════════════════════════════════════════════════════════════════════
 //  COUPER LA SÉLECTION
-// ═════════════════════════════════════════════════════════════════════════
 void couper_selection(JsonEditor* editor) {
     if (!editor || !editor->selection_active) {
         debug_printf("⚠️ COUPER: Aucune sélection active\n");
@@ -72,9 +68,7 @@ void couper_selection(JsonEditor* editor) {
     }
 }
 
-// ═════════════════════════════════════════════════════════════════════════
 //  COLLER DU TEXTE
-// ═════════════════════════════════════════════════════════════════════════
 void coller_texte(JsonEditor* editor) {
     if (!editor) return;
 

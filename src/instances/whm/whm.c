@@ -6,18 +6,14 @@
 #include <string.h>
 #include <math.h>
 
-// ════════════════════════════════════════════════════════════════════════
 // PROTOTYPES PRIVÉS
-// ════════════════════════════════════════════════════════════════════════
 static void whm_init(TechniqueInstance* self, SDL_Renderer* renderer);
 static void whm_handle_event(TechniqueInstance* self, SDL_Event* event);
 static void whm_update(TechniqueInstance* self, float delta_time);
 static void whm_render(TechniqueInstance* self, SDL_Renderer* renderer);
 static void whm_cleanup(TechniqueInstance* self);
 
-// ════════════════════════════════════════════════════════════════════════
 // CRÉATION DE L'INSTANCE
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Créer une instance de la technique Wim Hof
@@ -167,9 +163,7 @@ void whm_create_counter(TechniqueInstance* instance, SDL_Renderer* renderer) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // IMPLÉMENTATION DES FONCTIONS DE CYCLE DE VIE
-// ════════════════════════════════════════════════════════════════════════
 
 /**
  * Initialisation de la technique WHM

@@ -5,9 +5,7 @@
 #include "renderer.h"
 #include "debug.h"
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU WIDGET LABEL
-// ════════════════════════════════════════════════════════════════════════════
 LabelWidget* create_label_widget(const char* text, int x, int y,
                                  int text_size, SDL_Color color, bool underlined,
                                  LabelAlignment alignment) {
@@ -49,9 +47,7 @@ LabelWidget* create_label_widget(const char* text, int x, int y,
     return label;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU LABEL
-// ════════════════════════════════════════════════════════════════════════════
 void render_label_widget(SDL_Renderer* renderer, LabelWidget* label,
                          int offset_x, int offset_y) {
     if (!renderer || !label) return;
@@ -107,9 +103,7 @@ void render_label_widget(SDL_Renderer* renderer, LabelWidget* label,
     SDL_FreeSurface(surface);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RESCALING DU LABEL
-// ════════════════════════════════════════════════════════════════════════════
 void rescale_label_widget(LabelWidget* label, float panel_ratio) {
     if (!label) return;
 
@@ -127,9 +121,7 @@ void rescale_label_widget(LabelWidget* label, float panel_ratio) {
                  label->current_text_size, panel_ratio);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CHANGER LE TEXTE DU LABEL
-// ════════════════════════════════════════════════════════════════════════════
 void set_label_text(LabelWidget* label, const char* new_text) {
     if (!label || !new_text) return;
 
@@ -139,9 +131,7 @@ void set_label_text(LabelWidget* label, const char* new_text) {
     debug_printf("✏️ Texte du label changé: \"%s\"\n", new_text);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION
-// ════════════════════════════════════════════════════════════════════════════
 void free_label_widget(LabelWidget* label) {
     if (label) {
         free(label);

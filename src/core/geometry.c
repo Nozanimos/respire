@@ -245,11 +245,8 @@ void transform_hexagon(Hexagon* hex, int new_center_x, int new_center_y, float n
     hex->center_y = new_center_y;
     hex->current_scale = new_scale;
 }
-// ═══════════════════════════════════════════════════════════════════════════════
 // RECALCUL DES SOMMETS D'UN HEXAGONE APRÈS REDIMENSIONNEMENT
-// ═══════════════════════════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // Cette fonction recalcule les sommets relatifs d'un hexagone en fonction
 // du nouveau container_size. Les points vx/vy sont recalculés comme des
 // coordonnées RELATIVES au centre (0, 0).
@@ -257,7 +254,6 @@ void transform_hexagon(Hexagon* hex, int new_center_x, int new_center_y, float n
 // IMPORTANT : Les hexagones utilisent des coordonnées relatives qui sont
 // ensuite transformées en absolues lors du rendu dans make_hexagone().
 // On doit donc recréer les points relatifs avec le nouveau rayon.
-// ═══════════════════════════════════════════════════════════════════════════════
 
 void recalculer_sommets(Hexagon* hex, int container_size) {
     if (!hex) return;
@@ -495,9 +491,7 @@ void free_triangle(Triangle* tri) {
 
 /*----------------------------------------------------*/
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // PRIMITIVES DE DESSIN POUR L'UI - Versions Cairo pour l'antialiasing
-// ═══════════════════════════════════════════════════════════════════════════════
 
 // Dessine une ligne horizontale de séparation
 void draw_separator_line(SDL_Renderer* renderer, int x1, int y1, int x2, int y2,

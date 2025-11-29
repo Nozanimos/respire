@@ -5,9 +5,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL_ttf.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  WIDGET BASE - Structure commune à TOUS les widgets
-// ════════════════════════════════════════════════════════════════════════════
 // Cette structure définit le "conteneur" de base de chaque widget.
 //
 // PRINCIPE FONDAMENTAL :
@@ -56,9 +54,7 @@ typedef struct {
 
 } WidgetBase;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTIONNAIRE DE CACHE DE POLICES
-// ════════════════════════════════════════════════════════════════════════════
 // Ce système permet de charger plusieurs tailles de police sans les recharger
 // à chaque frame, optimisant ainsi les performances.
 //
@@ -85,9 +81,7 @@ extern CachedFont g_font_cache[MAX_CACHED_FONTS];
 extern int g_font_cache_count;
 extern char g_font_path[256];    // Chemin vers la police par défaut
 
-// ════════════════════════════════════════════════════════════════════════════
 //  FONCTIONS DU GESTIONNAIRE DE POLICES
-// ════════════════════════════════════════════════════════════════════════════
 
 // Initialise le gestionnaire avec le chemin de la police
 // À appeler UNE FOIS au démarrage de l'application
@@ -102,9 +96,7 @@ TTF_Font* get_font_for_size(int size);
 // À appeler à la fermeture de l'application
 void cleanup_font_manager(void);
 
-// ════════════════════════════════════════════════════════════════════════════
 //  FONCTION UTILITAIRE - Rescaling de la base
-// ════════════════════════════════════════════════════════════════════════════
 // Cette fonction est appelée par tous les widgets pour rescaler leur position
 // et dimensions de base. Les éléments internes sont ensuite recalculés par
 // chaque widget selon ses propres offsets locaux.
@@ -121,9 +113,7 @@ static inline void rescale_widget_base(WidgetBase* base, float panel_ratio) {
     base->height = (int)(base->base_height * panel_ratio);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  HIT DETECTION - Test si un point est dans le widget
-// ════════════════════════════════════════════════════════════════════════════
 // Teste si les coordonnées (mx, my) sont à l'intérieur de la bounding box
 // du widget. Prend en compte l'offset du panneau parent.
 

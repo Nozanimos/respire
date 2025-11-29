@@ -8,9 +8,7 @@
 extern void render_text(SDL_Renderer* renderer, TTF_Font* font,
                         const char* text, int x, int y, Uint32 color);
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DE L'ÉDITEUR
-// ════════════════════════════════════════════════════════════════════════════
 void rendre_json_editor(JsonEditor* editor) {
     if (!editor || !editor->renderer) return;
 
@@ -236,9 +234,7 @@ void rendre_json_editor(JsonEditor* editor) {
         SDL_RenderPresent(editor->renderer);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DE TOUS LES BOUTONS
-// ════════════════════════════════════════════════════════════════════════════
 void rendre_tous_boutons(JsonEditor* editor) {
     if (!editor || !editor->font_ui) return;
 
@@ -270,9 +266,7 @@ void rendre_tous_boutons(JsonEditor* editor) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU MENU CONTEXTUEL
-// ════════════════════════════════════════════════════════════════════════════
 void dessiner_menu_contextuel(JsonEditor* editor) {
     ContextMenu* menu = &editor->context_menu;
 

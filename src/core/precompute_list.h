@@ -26,9 +26,7 @@ typedef struct {
     double scale;
 } SinusoidalResult;
 
-// ════════════════════════════════════════════════════════════════════════
 // STRUCTURE POUR LE PRÉCOMPUTING DU COMPTEUR DE RESPIRATIONS
-// ════════════════════════════════════════════════════════════════════════
 // Stocke les données précalculées pour chaque frame du compteur :
 // - Flags indiquant les transitions de respiration
 // - Scale RELATIF (0.0→1.0) pour le responsive parfait

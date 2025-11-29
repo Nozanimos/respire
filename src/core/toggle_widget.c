@@ -6,9 +6,7 @@
 #include <stdlib.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CRÉATION D'UN WIDGET TOGGLE
-// ════════════════════════════════════════════════════════════════════════════
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,
                                    int toggle_width, int toggle_height, int thumb_size,
                                    int text_size) {
@@ -122,9 +120,7 @@ ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_st
     return widget;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MISE À JOUR DE L'ANIMATION
-// ════════════════════════════════════════════════════════════════════════════
 void update_toggle_widget(ToggleWidget* widget, float delta_time) {
     if (!widget || !widget->is_animating) return;
 
@@ -152,9 +148,7 @@ void update_toggle_widget(ToggleWidget* widget, float delta_time) {
     widget->thumb_local_x = thumb_min + (int)((thumb_max - thumb_min) * widget->animation_progress);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RENDU DU WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget,
                           int offset_x, int offset_y) {
     if (!widget || !renderer) return;
@@ -245,9 +239,7 @@ void render_toggle_widget(SDL_Renderer* renderer, ToggleWidget* widget,
                      widget->thumb_color.a);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  GESTION DES ÉVÉNEMENTS
-// ════════════════════════════════════════════════════════════════════════════
 void handle_toggle_widget_events(ToggleWidget* widget, SDL_Event* event,
                                  int offset_x, int offset_y) {
     if (!widget || !event) return;
@@ -276,9 +268,7 @@ void handle_toggle_widget_events(ToggleWidget* widget, SDL_Event* event,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  BASCULER LA VALEUR DU WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 void toggle_widget_value(ToggleWidget* widget) {
     if (!widget) return;
 
@@ -290,18 +280,14 @@ void toggle_widget_value(ToggleWidget* widget) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  CALLBACK DE CHANGEMENT DE VALEUR
-// ════════════════════════════════════════════════════════════════════════════
 void set_toggle_value_changed_callback(ToggleWidget* widget, void (*callback)(bool)) {
     if (widget) {
         widget->on_value_changed = callback;
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RESPONSIVE : RESCALE DU WIDGET (INTELLIGENT)
-// ════════════════════════════════════════════════════════════════════════════
 void rescale_toggle_widget(ToggleWidget* widget, float panel_ratio) {
     if (!widget) return;
 
@@ -381,9 +367,7 @@ void rescale_toggle_widget(ToggleWidget* widget, float panel_ratio) {
     debug_blank_line();
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LIBÉRATION DU WIDGET
-// ════════════════════════════════════════════════════════════════════════════
 void free_toggle_widget(ToggleWidget* widget) {
     if (!widget) return;
     free(widget);

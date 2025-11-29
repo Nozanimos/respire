@@ -5,9 +5,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-// ════════════════════════════════════════════════════════════════════════════
 //  TYPES DE TOKENS JSON
-// ════════════════════════════════════════════════════════════════════════════
 typedef enum {
     TOKEN_NORMAL,          // Texte normal (blanc)
     TOKEN_CLE,            // Clé JSON (bleu clair)
@@ -18,18 +16,14 @@ typedef enum {
     TOKEN_ERREUR          // Syntaxe invalide (rouge)
 } TypeToken;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  SEGMENT COLORÉ
-// ════════════════════════════════════════════════════════════════════════════
 typedef struct {
     int debut;              // Position de début (en octets)
     int longueur;           // Longueur (en octets)
     TypeToken type;         // Type de token
 } SegmentColore;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  RÉSULTAT DU PARSING D'UNE LIGNE
-// ════════════════════════════════════════════════════════════════════════════
 #define MAX_SEGMENTS 64     // Maximum de segments par ligne
 
 typedef struct {
@@ -37,9 +31,7 @@ typedef struct {
     int nb_segments;
 } LigneColoree;
 
-// ════════════════════════════════════════════════════════════════════════════
 //  PROTOTYPES
-// ════════════════════════════════════════════════════════════════════════════
 
 // Parse une ligne de JSON et retourne les segments colorés
 LigneColoree* parser_ligne_json(const char* ligne);

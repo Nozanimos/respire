@@ -48,9 +48,7 @@ void draw_triangle(SDL_Renderer *renderer, Triangle* tri);
 void draw_triangle_with_offset(SDL_Renderer *renderer, Triangle* tri, int offset_x, int offset_y);
 void free_triangle(Triangle* tri);
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // PRIMITIVES DE DESSIN POUR L'UI (dessin pur, sans logique métier)
-// ═══════════════════════════════════════════════════════════════════════════════
 
 // Dessine une ligne horizontale de séparation
 // x1, y1 : point de départ (coordonnées absolues après offset)
