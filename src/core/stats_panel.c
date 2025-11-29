@@ -145,13 +145,22 @@ int load_exercise_history(ExerciseHistory* history) {
     history->entries = NULL;
     history->count = 0;
     history->capacity = 10;
-    history->entries = malloc(history->capacity * sizeof(ExerciseEntry));
 
-    if (!history->entries) return 0;
+    // Allocation initiale
+    history->entries = malloc(history->capacity * sizeof(ExerciseEntry));
+    if (!history->entries) {
+        debug_printf("❌ Erreur allocation entries\n");
+        return 0;
+    }
 
     // Lire tous les fichiers .bin du dossier
     DIR* dir = opendir(STATS_DIR);
-    if (!dir) return 0;
+    if (!dir) {
+        // BUG FIX: libérer entries si opendir échoue
+        free(history->entries);
+        history->entries = NULL;
+        return 0;
+    }
 
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
@@ -175,13 +184,17 @@ int load_exercise_history(ExerciseHistory* history) {
             ExerciseEntry* new_entries = realloc(history->entries,
                                                  history->capacity * sizeof(ExerciseEntry));
             if (!new_entries) {
+                debug_printf("❌ Erreur realloc entries\n");
                 fclose(file);
-                break;
+                break;  // Sortir de la boucle, les entries existantes sont OK
             }
             history->entries = new_entries;
         }
 
         ExerciseEntry* e = &history->entries[history->count];
+
+        // Initialiser session_times à NULL pour cleanup sécurisé
+        e->session_times = NULL;
 
         // Lire timestamp
         if (fread(&e->timestamp, sizeof(time_t), 1, file) != 1) {
@@ -195,21 +208,24 @@ int load_exercise_history(ExerciseHistory* history) {
             continue;
         }
 
-        // Lire les temps
+        // Lire les temps - allocation critique
         e->session_times = malloc(e->session_count * sizeof(float));
         if (!e->session_times) {
+            debug_printf("❌ Erreur allocation session_times pour exercice\n");
             fclose(file);
-            continue;
+            continue;  // Passer à l'exercice suivant
         }
 
         if (fread(e->session_times, sizeof(float), e->session_count, file) != (size_t)e->session_count) {
+            // Échec lecture: libérer session_times de CET exercice
             free(e->session_times);
+            e->session_times = NULL;
             fclose(file);
-            continue;
+            continue;  // Passer à l'exercice suivant
         }
 
         fclose(file);
-        history->count++;
+        history->count++;  // Exercice chargé avec succès
     }
 
     closedir(dir);

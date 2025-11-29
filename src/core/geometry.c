@@ -128,20 +128,29 @@ void make_hexagone(SDL_Renderer *renderer, Hexagon* hex) {
 Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, float size_ratio, unsigned char element_id) {
     Hexagon* hex = malloc(sizeof(Hexagon));
     if (!hex) {
-        fprintf(stderr,"Problème d'allocation structure Hexagon\n");
+        fprintf(stderr,"❌ Problème d'allocation structure Hexagon\n");
         return NULL;
     }
 
+    // Initialiser les pointeurs à NULL pour cleanup sécurisé
+    hex->vx = NULL;
+    hex->vy = NULL;
+
     // Initialisation
     hex->element_id = element_id;
+
+    // Allocation 1: vx
     hex->vx = malloc(NB_SIDE * sizeof(Sint16));
+    if (!hex->vx) {
+        fprintf(stderr,"❌ Problème d'allocation vx (create_single_hexagon)\n");
+        goto cleanup;
+    }
+
+    // Allocation 2: vy
     hex->vy = malloc(NB_SIDE * sizeof(Sint16));
-    if (!hex->vx || !hex->vy) {
-        fprintf(stderr,"Problème d'allocation dynamique (create_single_hexagon)\n");
-        free(hex->vx);
-        free(hex->vy);
-        free(hex);
-        return NULL;
+    if (!hex->vy) {
+        fprintf(stderr,"❌ Problème d'allocation vy (create_single_hexagon)\n");
+        goto cleanup;
     }
 
     // Stocker la position et l'échelle
@@ -171,6 +180,15 @@ Hexagon* create_single_hexagon(int center_x, int center_y, int container_size, f
            element_id, center_x, center_y);
 
     return hex;
+
+cleanup:
+    // Libération sécurisée en cas d'erreur
+    if (hex) {
+        if (hex->vx) free(hex->vx);
+        if (hex->vy) free(hex->vy);
+        free(hex);
+    }
+    return NULL;
 }
 
 /*----------------------------------------------------*/
