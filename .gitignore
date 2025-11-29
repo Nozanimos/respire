@@ -13,3 +13,13 @@ node_modules/
 bin/
 config/stats/
 *.bak
+.kateproject
+.clangd
+.claudeignore
+.mcp.json
+REFACTORING_PLAN*
+cppcheck
+debug.txt
+package-lock.json
+package.json
+
