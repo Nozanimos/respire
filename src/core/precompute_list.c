@@ -524,6 +524,39 @@ void free_precomputed_data(HexagoneList* list) {
                  nodes_freed, total_freed / (1024.0 * 1024.0));
 }
 
+// Freeze tous les hexagones (is_frozen = true)
+void freeze_all_hexagones(HexagoneList* list) {
+    if (!list) return;
+
+    HexagoneNode* node = list->first;
+    while (node) {
+        node->is_frozen = true;
+        node = node->next;
+    }
+}
+
+// Applique les frames précalculées à tous les hexagones
+void apply_all_precomputed_frames(HexagoneList* list) {
+    if (!list) return;
+
+    HexagoneNode* node = list->first;
+    while (node) {
+        apply_precomputed_frame(node);
+        node = node->next;
+    }
+}
+
+// Rend tous les hexagones
+void render_all_hexagones(SDL_Renderer* renderer, HexagoneList* list) {
+    if (!renderer || !list) return;
+
+    HexagoneNode* node = list->first;
+    while (node) {
+        make_hexagone(renderer, node->data);
+        node = node->next;
+    }
+}
+
 /*----------------------------------------------------------------------------------*/
 
 

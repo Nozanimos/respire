@@ -95,6 +95,14 @@ void precompute_counter_frames(HexagoneNode* node, int total_frames, int fps,
 // À appeler à la fin de l'animation pour économiser la mémoire
 void free_precomputed_data(HexagoneList* list);
 
+// 🆕 HELPERS POUR ÉLIMINER DUPLICATION DES BOUCLES while(node)
+// Freeze tous les hexagones (is_frozen = true)
+void freeze_all_hexagones(HexagoneList* list);
+// Applique les frames précalculées à tous les hexagones
+void apply_all_precomputed_frames(HexagoneList* list);
+// Rend tous les hexagones
+void render_all_hexagones(SDL_Renderer* renderer, HexagoneList* list);
+
 /*------------------------- Fonctions utiles ----------------------------------*/
 int gcd(int a, int b);
 int lcm(int a, int b);

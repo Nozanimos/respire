@@ -153,11 +153,7 @@ int main(int argc, char **argv) {
         debug_printf("✅ Timer créé: %d secondes (sera démarré après clic)\n", timer_duration);
 
         // 🆕 FIGER L'ANIMATION POUR PLUS TARD
-        HexagoneNode* node = hex_list->first;
-        while (node) {
-            node->is_frozen = true;  // Figer tous les hexagones
-            node = node->next;
-        }
+        freeze_all_hexagones(hex_list);
         debug_printf("❄️  Animation figée (sera démarrée après clic)\n");
     }
 
@@ -539,11 +535,7 @@ int main(int argc, char **argv) {
         }
 
         // === ANIMATION (toujours active, sauf si figée) ===
-        HexagoneNode* node = hex_list->first;
-        while (node) {
-            apply_precomputed_frame(node);  // Ne fait rien si is_frozen = true
-            node = node->next;
-        }
+        apply_all_precomputed_frames(hex_list);
 
         // === VÉRIFICATION FIN DU COMPTEUR (le compteur se désactive lui-même) ===
         if (app.counter_phase && app.breath_counter) {

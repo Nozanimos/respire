@@ -470,11 +470,7 @@ static void whm_update(TechniqueInstance* self, float delta_time) {
 
             // FIGER L'ANIMATION à scale_max
             if (data->hexagones) {
-                HexagoneNode* node = data->hexagones->first;
-                while (node) {
-                    node->is_frozen = true;
-                    node = node->next;
-                }
+                freeze_all_hexagones(data->hexagones);
             }
 
             // DÉMARRER LE CHRONOMÈTRE
@@ -594,11 +590,7 @@ static void whm_update(TechniqueInstance* self, float delta_time) {
 
             // Figer l'animation
             if (data->hexagones) {
-                HexagoneNode* node = data->hexagones->first;
-                while (node) {
-                    node->is_frozen = true;
-                    node = node->next;
-                }
+                freeze_all_hexagones(data->hexagones);
             }
 
             // Démarrer le timer de rétention (15 secondes)
