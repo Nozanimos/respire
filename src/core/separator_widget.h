@@ -4,6 +4,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include "error/error.h"
 
 //  STRUCTURE DU WIDGET SEPARATOR
 typedef struct {
@@ -40,8 +41,9 @@ typedef struct {
 // end_margin : marge à droite
 // thickness : épaisseur de la ligne
 // color : couleur de la ligne
+// err : structure pour signaler les erreurs
 SeparatorWidget* create_separator_widget(int y, int start_margin, int end_margin,
-                                         int thickness, SDL_Color color);
+                                         int thickness, SDL_Color color, Error* err);
 
 // Rendu du separator
 // offset_x, offset_y : offset du panneau parent

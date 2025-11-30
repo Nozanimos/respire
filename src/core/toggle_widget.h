@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
+#include "error/error.h"
 #include "widget_base.h"
 
 //  STRUCTURE D'UN WIDGET TOGGLE (ON/OFF)
@@ -112,7 +113,7 @@ typedef struct ToggleWidget {
 // Crée un nouveau widget toggle
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,
                                    int toggle_width, int toggle_height, int thumb_size,
-                                   int text_size);
+                                   int text_size, Error* err);
 
 // Met à jour l'animation du widget
 void update_toggle_widget(ToggleWidget* widget, float delta_time);

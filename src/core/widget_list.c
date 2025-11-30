@@ -201,9 +201,9 @@ bool add_toggle_widget(WidgetList* list,
         display_name, x, y,
         start_state,
         toggle_width, toggle_height, thumb_size,
-        text_size
+        text_size, &err
     );
-    CHECK_PTR(node->widget.toggle_widget, &err, "Échec création ToggleWidget");
+    PROPAGATE_ERROR(&err, false);
 
     // Assigner le callback
     node->on_bool_value_changed = callback;
@@ -822,8 +822,8 @@ bool add_label_widget(WidgetList* list,
     WidgetNode* node = init_widget_node_base(list, id, display_name, WIDGET_TYPE_LABEL, &err);
 
     // Créer le widget concret
-    node->widget.label_widget = create_label_widget(display_name, x, y, text_size, color, underlined, alignment);
-    CHECK_PTR(node->widget.label_widget, &err, "Échec création LabelWidget");
+    node->widget.label_widget = create_label_widget(display_name, x, y, text_size, color, underlined, alignment, &err);
+    PROPAGATE_ERROR(&err, false);
 
     // Pas de callback pour les labels
     node->on_void_callback = NULL;
@@ -848,8 +848,8 @@ bool add_separator_widget(WidgetList* list, const char* id, int y,
     WidgetNode* node = init_widget_node_base(list, id, "separator", WIDGET_TYPE_SEPARATOR, &err);
 
     // Créer le widget concret
-    node->widget.separator_widget = create_separator_widget(y, start_margin, end_margin, thickness, color);
-    CHECK_PTR(node->widget.separator_widget, &err, "Échec création SeparatorWidget");
+    node->widget.separator_widget = create_separator_widget(y, start_margin, end_margin, thickness, color, &err);
+    PROPAGATE_ERROR(&err, false);
 
     // Pas de callback pour les separators
     node->on_void_callback = NULL;
@@ -874,8 +874,8 @@ bool add_preview_widget(WidgetList* list, const char* id, int x, int y,
     WidgetNode* node = init_widget_node_base(list, id, "preview", WIDGET_TYPE_PREVIEW, &err);
 
     // Créer le widget concret
-    node->widget.preview_widget = create_preview_widget(x, y, frame_size, size_ratio, breath_duration);
-    CHECK_PTR(node->widget.preview_widget, &err, "Échec création PreviewWidget");
+    node->widget.preview_widget = create_preview_widget(x, y, frame_size, size_ratio, breath_duration, &err);
+    PROPAGATE_ERROR(&err, false);
 
     // Pas de callback pour les previews
     node->on_void_callback = NULL;
@@ -901,8 +901,8 @@ bool add_button_widget(WidgetList* list, const char* id, const char* display_nam
     WidgetNode* node = init_widget_node_base(list, id, display_name, WIDGET_TYPE_BUTTON, &err);
 
     // Créer le widget concret
-    node->widget.button_widget = create_button_widget(display_name, x, y, width, height, text_size, bg_color, y_anchor);
-    CHECK_PTR(node->widget.button_widget, &err, "Échec création ButtonWidget");
+    node->widget.button_widget = create_button_widget(display_name, x, y, width, height, text_size, bg_color, y_anchor, &err);
+    PROPAGATE_ERROR(&err, false);
 
     // Assigner le callback
     node->on_void_callback = callback;
@@ -946,9 +946,9 @@ bool add_selector_widget(WidgetList* list, const char* id, const char* display_n
         display_name, x, y,
         default_index,
         arrow_size, text_size,
-        font
+        font, &err
     );
-    CHECK_PTR(node->widget.selector_widget, &err, "Échec création SelectorWidget");
+    PROPAGATE_ERROR(&err, false);
 
     // Pas de callback global pour le selector (chaque option a son callback)
     node->on_void_callback = NULL;

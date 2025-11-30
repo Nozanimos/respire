@@ -11,12 +11,11 @@
 // CRÉATION DU WIDGET SELECTOR
 SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
                                        int default_index, int arrow_size, int text_size,
-                                       TTF_Font* font) {
-    SelectorWidget* widget = SAFE_MALLOC(sizeof(SelectorWidget));
-    if (!widget) {
-        fprintf(stderr, "❌ Erreur allocation SelectorWidget\n");
-        return NULL;
-    }
+                                       TTF_Font* font, Error* err) {
+    SelectorWidget* widget = NULL;
+
+    widget = SAFE_MALLOC(sizeof(SelectorWidget));
+    CHECK_ALLOC(widget, err, "Erreur allocation SelectorWidget");
 
     // Initialisation de la base
     widget->base.x = x;
@@ -99,6 +98,11 @@ SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
     debug_printf("✅ SelectorWidget créé: '%s' à (%d, %d)\n", nom_affichage, x, y);
 
     return widget;
+
+cleanup:
+    error_print(err);
+    SAFE_FREE(widget);
+    return NULL;
 }
 
 // AJOUTER UNE OPTION

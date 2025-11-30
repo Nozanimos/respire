@@ -11,12 +11,11 @@
 //  CRÉATION DU WIDGET BUTTON
 ButtonWidget* create_button_widget(const char* text, int x, int y,
                                    int width, int height, int text_size,
-                                   SDL_Color bg_color, ButtonYAnchor y_anchor) {
-    ButtonWidget* button = SAFE_MALLOC(sizeof(ButtonWidget));
-    if (!button) {
-        debug_printf("❌ Erreur allocation ButtonWidget\n");
-        return NULL;
-    }
+                                   SDL_Color bg_color, ButtonYAnchor y_anchor, Error* err) {
+    ButtonWidget* button = NULL;
+
+    button = SAFE_MALLOC(sizeof(ButtonWidget));
+    CHECK_ALLOC(button, err, "Erreur allocation ButtonWidget");
 
     // ─────────────────────────────────────────────────────────────────────────
     // INITIALISER LA BASE
@@ -67,6 +66,11 @@ ButtonWidget* create_button_widget(const char* text, int x, int y,
                  text, x, y, width, height, anchor_str);
 
     return button;
+
+cleanup:
+    error_print(err);
+    SAFE_FREE(button);
+    return NULL;
 }
 
 //  RENDU DU BUTTON

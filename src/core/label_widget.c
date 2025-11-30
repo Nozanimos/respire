@@ -9,12 +9,11 @@
 //  CRÉATION DU WIDGET LABEL
 LabelWidget* create_label_widget(const char* text, int x, int y,
                                  int text_size, SDL_Color color, bool underlined,
-                                 LabelAlignment alignment) {
-    LabelWidget* label = SAFE_MALLOC(sizeof(LabelWidget));
-    if (!label) {
-        debug_printf("❌ Erreur allocation LabelWidget\n");
-        return NULL;
-    }
+                                 LabelAlignment alignment, Error* err) {
+    LabelWidget* label = NULL;
+
+    label = SAFE_MALLOC(sizeof(LabelWidget));
+    CHECK_ALLOC(label, err, "Erreur allocation LabelWidget");
 
     // Initialiser la base
     label->base.x = x;
@@ -46,6 +45,11 @@ LabelWidget* create_label_widget(const char* text, int x, int y,
                  text, x, y, text_size, align_str);
 
     return label;
+
+cleanup:
+    error_print(err);
+    SAFE_FREE(label);
+    return NULL;
 }
 
 //  RENDU DU LABEL

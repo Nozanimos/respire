@@ -10,12 +10,11 @@
 
 //  CRÉATION DU WIDGET PREVIEW
 PreviewWidget* create_preview_widget(int x, int y, int frame_size,
-                                     float size_ratio, float breath_duration) {
-    PreviewWidget* preview = SAFE_MALLOC(sizeof(PreviewWidget));
-    if (!preview) {
-        debug_printf("❌ Erreur allocation PreviewWidget\n");
-        return NULL;
-    }
+                                     float size_ratio, float breath_duration, Error* err) {
+    PreviewWidget* preview = NULL;
+
+    preview = SAFE_MALLOC(sizeof(PreviewWidget));
+    CHECK_ALLOC(preview, err, "Erreur allocation PreviewWidget");
 
     // Initialiser la base
     preview->base.x = x;
@@ -47,12 +46,7 @@ PreviewWidget* create_preview_widget(int x, int y, int frame_size,
         preview->container_size,
         preview->size_ratio
     );
-
-    if (!preview->hex_list) {
-        debug_printf("❌ ERREUR: Impossible de créer les hexagones du preview\n");
-        SAFE_FREE(preview);
-        return NULL;
-    }
+    CHECK_PTR(preview->hex_list, err, "Impossible de créer les hexagones du preview");
 
     // ═════════════════════════════════════════════════════════════════════════
     // PRÉ-CALCULER LES CYCLES D'ANIMATION
@@ -67,6 +61,14 @@ PreviewWidget* create_preview_widget(int x, int y, int frame_size,
                  x, y, frame_size, preview->container_size, size_ratio);
 
     return preview;
+
+cleanup:
+    error_print(err);
+    if (preview) {
+        if (preview->hex_list) free_hexagone_list(preview->hex_list);
+        SAFE_FREE(preview);
+    }
+    return NULL;
 }
 
 //  RENDU DU PREVIEW

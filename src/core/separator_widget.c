@@ -7,12 +7,11 @@
 
 //  CRÉATION DU WIDGET SEPARATOR
 SeparatorWidget* create_separator_widget(int y, int start_margin, int end_margin,
-                                         int thickness, SDL_Color color) {
-    SeparatorWidget* sep = SAFE_MALLOC(sizeof(SeparatorWidget));
-    if (!sep) {
-        debug_printf("❌ Erreur allocation SeparatorWidget\n");
-        return NULL;
-    }
+                                         int thickness, SDL_Color color, Error* err) {
+    SeparatorWidget* sep = NULL;
+
+    sep = SAFE_MALLOC(sizeof(SeparatorWidget));
+    CHECK_ALLOC(sep, err, "Erreur allocation SeparatorWidget");
 
     // Initialiser la base
     sep->base.x = start_margin;
@@ -35,6 +34,11 @@ SeparatorWidget* create_separator_widget(int y, int start_margin, int end_margin
                  y, start_margin, end_margin, thickness);
 
     return sep;
+
+cleanup:
+    error_print(err);
+    SAFE_FREE(sep);
+    return NULL;
 }
 
 //  RENDU DU SEPARATOR

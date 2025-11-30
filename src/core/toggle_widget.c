@@ -10,12 +10,11 @@
 //  CRÉATION D'UN WIDGET TOGGLE
 ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_state,
                                    int toggle_width, int toggle_height, int thumb_size,
-                                   int text_size) {
-    ToggleWidget* widget = SAFE_MALLOC(sizeof(ToggleWidget));
-    if (!widget) {
-        debug_printf("❌ Erreur allocation ToggleWidget: %s\n", name);
-        return NULL;
-    }
+                                   int text_size, Error* err) {
+    ToggleWidget* widget = NULL;
+
+    widget = SAFE_MALLOC(sizeof(ToggleWidget));
+    CHECK_ALLOC(widget, err, "Erreur allocation ToggleWidget");
 
     // ─────────────────────────────────────────────────────────────────────────
     // INITIALISATION DES VALEURS
@@ -119,6 +118,11 @@ ToggleWidget* create_toggle_widget(const char* name, int x, int y, bool start_st
     debug_blank_line();
 
     return widget;
+
+cleanup:
+    error_print(err);
+    SAFE_FREE(widget);
+    return NULL;
 }
 
 //  MISE À JOUR DE L'ANIMATION

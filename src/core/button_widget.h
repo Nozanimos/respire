@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
+#include "error/error.h"
 
 //  ENUMÉRATION POUR L'ANCRAGE VERTICAL
 typedef enum {
@@ -63,9 +64,10 @@ typedef struct {
 // text_size : taille de la police
 // bg_color : couleur de fond
 // y_anchor : ancrage vertical (TOP ou BOTTOM)
+// err : structure pour signaler les erreurs
 ButtonWidget* create_button_widget(const char* text, int x, int y,
                                    int width, int height, int text_size,
-                                   SDL_Color bg_color, ButtonYAnchor y_anchor);
+                                   SDL_Color bg_color, ButtonYAnchor y_anchor, Error* err);
 
 // Rendu du bouton
 // offset_x, offset_y : offset du panneau parent

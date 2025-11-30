@@ -4,6 +4,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include "error/error.h"
 #include "precompute_list.h"
 
 //  STRUCTURE DU WIDGET PREVIEW
@@ -51,8 +52,9 @@ typedef struct {
 // frame_size : taille de la frame carrée
 // size_ratio : ratio entre container et frame (ex: 5/6)
 // breath_duration : durée d'un cycle de respiration en secondes
+// err : structure pour signaler les erreurs
 PreviewWidget* create_preview_widget(int x, int y, int frame_size,
-                                     float size_ratio, float breath_duration);
+                                     float size_ratio, float breath_duration, Error* err);
 
 // Rendu du preview
 // offset_x, offset_y : offset du panneau parent

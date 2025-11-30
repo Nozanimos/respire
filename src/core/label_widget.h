@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
+#include "error/error.h"
 
 //  ALIGNEMENT DU LABEL
 typedef enum {
@@ -53,9 +54,10 @@ typedef struct {
 // color : couleur du texte
 // underlined : si true, souligne le texte
 // alignment : alignement du label (left/center/right)
+// err : structure pour signaler les erreurs
 LabelWidget* create_label_widget(const char* text, int x, int y,
                                  int text_size, SDL_Color color, bool underlined,
-                                 LabelAlignment alignment);
+                                 LabelAlignment alignment, Error* err);
 
 // Rendu du label
 // offset_x, offset_y : offset du panneau parent

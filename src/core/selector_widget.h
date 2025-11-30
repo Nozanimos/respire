@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
+#include "error/error.h"
 #include "widget_base.h"
 #include "geometry.h"
 
@@ -117,7 +118,7 @@ typedef struct SelectorWidget {
  */
 SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
                                        int default_index, int arrow_size, int text_size,
-                                       TTF_Font* font);
+                                       TTF_Font* font, Error* err);
 
 /**
  * Ajoute une option au sélecteur
