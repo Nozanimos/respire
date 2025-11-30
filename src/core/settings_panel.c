@@ -27,6 +27,17 @@ extern int calculate_panel_width(int screen_width, float scale);
 // Fonction utilitaire pour calculer largeur minimale
 static int calculate_required_width_for_json_layout(SettingsPanel* panel);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Structure pour le calcul des groupes de widgets INCREMENT
+// ═══════════════════════════════════════════════════════════════════════════
+typedef struct {
+    ConfigWidget* widget;
+    int y_position;
+    int text_width;
+    int group_id;
+    int container_width_for_group;
+} IncrementLayoutInfo;
+
 //  VARIABLE GLOBALE UNIQUE POUR LE PANNEAU ACTIF
 // Remplace les 10 variables globales par une seule pointant vers le panel actif
 // Thread-safe car un seul panneau de settings peut être actif à la fois
@@ -304,7 +315,119 @@ void cancel_button_clicked(void) {
 //  FORWARD DECLARATIONS (fonctions définies plus bas)
 static void precalculate_label_dimensions(SettingsPanel* panel);
 
+// ═════════════════════════════════════════════════════════════════════════════
+//  HELPERS POUR create_settings_panel
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Initialise les polices du panneau
+static bool init_panel_fonts(SettingsPanel* panel, float scale_factor, Error* err) {
+    int font_title_size = scale_value(28, scale_factor);
+    int font_normal_size = scale_value(20, scale_factor);
+    int font_small_size = scale_value(16, scale_factor);
+
+    panel->font_title = get_font_for_size(font_title_size);
+    panel->font = get_font_for_size(font_normal_size);
+    panel->font_small = get_font_for_size(font_small_size);
+
+    if (!panel->font_title || !panel->font || !panel->font_small) {
+        SET_ERROR(err, ERR_INIT, "Impossible d'obtenir les polices pour le panneau");
+        return false;
+    }
+
+    debug_subsection("Polices du panneau");
+    debug_printf("  Titre : %dpx\n", font_title_size);
+    debug_printf("  Normal : %dpx\n", font_normal_size);
+    debug_printf("  Petit : %dpx\n", font_small_size);
+    debug_blank_line();
+
+    return true;
+}
+
+// Charge les widgets depuis le fichier JSON
+static bool load_panel_widgets(SettingsPanel* panel, SDL_Renderer* renderer, Error* err) {
+    panel->widget_list = create_widget_list();
+    CHECK_PTR(panel->widget_list, err, "Échec création widget_list");
+
+    load_config(&panel->temp_config);
+
+    LoaderContext ctx = {
+        .renderer = renderer,
+        .font_titre = panel->font_title,
+        .font_normal = panel->font,
+        .font_petit = panel->font_small,
+        .panel_width = BASE_PANEL_WIDTH
+    };
+
+    if (!charger_widgets_depuis_json(panel->json_config_path, &ctx, panel->widget_list)) {
+        debug_printf("⚠️ Échec chargement JSON, utilisation config par défaut\n");
+    }
+
+    // Initialiser le timestamp du fichier JSON
+    struct stat file_stat;
+    if (stat(panel->json_config_path, &file_stat) == 0) {
+        panel->last_json_mtime = file_stat.st_mtime;
+        debug_printf("📅 JSON timestamp initial: %ld\n", (long)panel->last_json_mtime);
+    }
+
+    debug_print_widget_list(panel->widget_list);
+
+    panel->min_width_for_unstack = calculate_required_width_for_json_layout(panel);
+    debug_printf("✅ Largeur minimale pour dépiler: %dpx\n", panel->min_width_for_unstack);
+
+    return true;
+
+cleanup:
+    return false;
+}
+
+// Charge les textures de fond et icône
+static bool load_panel_textures(SettingsPanel* panel, SDL_Renderer* renderer,
+                                int screen_width, int screen_height, float scale_factor, Error* err) {
+    // Fond du panneau
+    SDL_Surface* bg_surface = IMG_Load(IMG_SETTINGS_BG);
+    if (!bg_surface) {
+        bg_surface = SDL_CreateRGBSurface(0, BASE_PANEL_WIDTH, screen_height, 32, 0, 0, 0, 0);
+        SDL_FillRect(bg_surface, NULL, SDL_MapRGBA(bg_surface->format, 240, 240, 240, 255));
+    }
+    panel->background = SDL_CreateTextureFromSurface(renderer, bg_surface);
+    SDL_FreeSurface(bg_surface);
+    CHECK_PTR(panel->background, err, "Échec création texture background");
+
+    // Icône d'engrenage
+    SDL_Surface* gear_surface = IMG_Load(IMG_SETTINGS_ICON);
+    if (!gear_surface) {
+        gear_surface = SDL_CreateRGBSurface(0, 40, 40, 32, 0, 0, 0, 0);
+        SDL_FillRect(gear_surface, NULL, SDL_MapRGBA(gear_surface->format, 128, 128, 128, 255));
+    }
+    panel->gear_icon = SDL_CreateTextureFromSurface(renderer, gear_surface);
+    SDL_FreeSurface(gear_surface);
+    CHECK_PTR(panel->gear_icon, err, "Échec création texture gear_icon");
+
+    // Position de l'icône
+    int gear_size = scale_value(40, scale_factor);
+    int gear_margin = scale_value(20, scale_factor);
+    panel->gear_rect = (SDL_Rect){
+        screen_width - gear_size - gear_margin,
+        gear_margin,
+        gear_size,
+        gear_size
+    };
+
+    return true;
+
+cleanup:
+    return false;
+}
+
+// Initialise le layout du panneau
+static void init_panel_layout(SettingsPanel* panel, int screen_width, int screen_height, float scale_factor) {
+    precalculate_label_dimensions(panel);
+    update_panel_scale(panel, screen_width, screen_height, scale_factor);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 //  CRÉATION DU PANNEAU
+// ═════════════════════════════════════════════════════════════════════════════
 
 SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window, int screen_width, int screen_height, float scale_factor) {
     Error err;
@@ -339,110 +462,23 @@ SettingsPanel* create_settings_panel(SDL_Renderer* renderer, SDL_Window* window,
 
     debug_printf("🎨 Création panneau avec scale: %.2f\n", scale_factor);
 
-    // ════════════════════════════════════════════════════════════════════════
-    // OBTENTION DES POLICES (depuis le gestionnaire centralisé)
-    // ════════════════════════════════════════════════════════════════════════
-    // Les tailles sont calculées avec le scale_factor mais le minimum de 16px
-    // sera appliqué automatiquement par get_font_for_size()
-
-    int font_title_size = scale_value(28, scale_factor);
-    int font_normal_size = scale_value(20, scale_factor);
-    int font_small_size = scale_value(16, scale_factor);
-
-    panel->font_title = get_font_for_size(font_title_size);
-    panel->font = get_font_for_size(font_normal_size);
-    panel->font_small = get_font_for_size(font_small_size);
-
-    if (!panel->font_title || !panel->font || !panel->font_small) {
-        SET_ERROR(&err, ERR_INIT, "Impossible d'obtenir les polices pour le panneau");
+    // Initialiser les polices
+    if (!init_panel_fonts(panel, scale_factor, &err)) {
         goto cleanup;
     }
 
-    debug_subsection("Polices du panneau");
-    debug_printf("  Titre : %dpx\n", font_title_size);
-    debug_printf("  Normal : %dpx\n", font_normal_size);
-    debug_printf("  Petit : %dpx\n", font_small_size);
-    debug_blank_line();
-
-    // ════════════════════════════════════════════════════════════════════════
-    // CHARGEMENT DES WIDGETS DEPUIS JSON
-    // ════════════════════════════════════════════════════════════════════════
-    panel->widget_list = create_widget_list();
-    CHECK_PTR(panel->widget_list, &err, "Échec création widget_list");
-
-    load_config(&panel->temp_config);
-
-    LoaderContext ctx = {
-        .renderer = renderer,
-        .font_titre = panel->font_title,
-        .font_normal = panel->font,
-        .font_petit = panel->font_small,
-        .panel_width = BASE_PANEL_WIDTH  // Passer la largeur de référence pour calculs CENTER/RIGHT
-    };
-
-    if (!charger_widgets_depuis_json(panel->json_config_path, &ctx, panel->widget_list)) {
-        debug_printf("⚠️ Échec chargement JSON, utilisation config par défaut\n");
+    // Charger les widgets depuis JSON
+    if (!load_panel_widgets(panel, renderer, &err)) {
+        goto cleanup;
     }
 
-    // Initialiser le timestamp du fichier JSON
-    struct stat file_stat;
-    if (stat(panel->json_config_path, &file_stat) == 0) {
-        panel->last_json_mtime = file_stat.st_mtime;
-        debug_printf("📅 JSON timestamp initial: %ld\n", (long)panel->last_json_mtime);
+    // Charger les textures (fond et icône)
+    if (!load_panel_textures(panel, renderer, screen_width, screen_height, scale_factor, &err)) {
+        goto cleanup;
     }
 
-    debug_print_widget_list(panel->widget_list);
-
-    // Calculer la largeur minimale nécessaire pour afficher le layout JSON
-    panel->min_width_for_unstack = calculate_required_width_for_json_layout(panel);
-    debug_printf("✅ Largeur minimale pour dépiler: %dpx\n", panel->min_width_for_unstack);
-
-    // NOTE: sync_config_to_widgets() est appelé dans initialize_app() APRÈS init_panel_callback_context()
-    // pour éviter que les callbacks ne soient appelés avec g_active_panel=NULL
-
-    // ════════════════════════════════════════════════════════════════════════
-    // CHARGEMENT DU FOND ET DE L'ICÔNE
-    // ════════════════════════════════════════════════════════════════════════
-    SDL_Surface* bg_surface = IMG_Load(IMG_SETTINGS_BG);
-    if (!bg_surface) {
-        bg_surface = SDL_CreateRGBSurface(0, BASE_PANEL_WIDTH, screen_height, 32, 0, 0, 0, 0);
-        SDL_FillRect(bg_surface, NULL, SDL_MapRGBA(bg_surface->format, 240, 240, 240, 255));
-    }
-    panel->background = SDL_CreateTextureFromSurface(renderer, bg_surface);
-    SDL_FreeSurface(bg_surface);
-    CHECK_PTR(panel->background, &err, "Échec création texture background");
-
-    SDL_Surface* gear_surface = IMG_Load(IMG_SETTINGS_ICON);
-    if (!gear_surface) {
-        gear_surface = SDL_CreateRGBSurface(0, 40, 40, 32, 0, 0, 0, 0);
-        SDL_FillRect(gear_surface, NULL, SDL_MapRGBA(gear_surface->format, 128, 128, 128, 255));
-    }
-    panel->gear_icon = SDL_CreateTextureFromSurface(renderer, gear_surface);
-    SDL_FreeSurface(gear_surface);
-    CHECK_PTR(panel->gear_icon, &err, "Échec création texture gear_icon");
-
-    int gear_size = scale_value(40, scale_factor);
-    int gear_margin = scale_value(20, scale_factor);
-    panel->gear_rect = (SDL_Rect){
-        screen_width - gear_size - gear_margin,
-        gear_margin,
-        gear_size,
-        gear_size
-    };
-
-    // ════════════════════════════════════════════════════════════════════════
-    // PRÉ-CALCUL DES DIMENSIONS DES LABEL (avant le layout)
-    // ════════════════════════════════════════════════════════════════════════
-    // IMPORTANT : Les LABEL avec alignment=CENTER ont besoin de connaître leur
-    // width pour être centrés correctement. Or width est normalement calculé au
-    // rendu. On le pré-calcule ici pour que le premier recalculate_widget_layout()
-    // puisse positionner correctement les LABEL CENTER.
-    precalculate_label_dimensions(panel);
-
-    // ════════════════════════════════════════════════════════════════════════
-    // CALCUL DES POSITIONS INITIALES (responsive)
-    // ════════════════════════════════════════════════════════════════════════
-    update_panel_scale(panel, screen_width, screen_height, scale_factor);
+    // Initialiser le layout
+    init_panel_layout(panel, screen_width, screen_height, scale_factor);
 
     debug_printf("✅ Panneau de configuration créé avec widgets\n");
     return panel;
@@ -1421,122 +1457,99 @@ static void stack_widgets_vertically(SettingsPanel* panel, WidgetRect* rects, in
     }
 }
 
-void recalculate_widget_layout(SettingsPanel* panel) {
-    if (!panel || !panel->widget_list) return;
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER: Vérifier si on doit dépiler les widgets et le faire si nécessaire
+// ═══════════════════════════════════════════════════════════════════════════
+// Retourne true si le dépilement a été effectué (on doit sauter à calculate_heights)
+static bool should_unstack_widgets(SettingsPanel* panel) {
+    if (!panel) return false;
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0: VÉRIFIER SI RECALCUL NÉCESSAIRE
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Le flag layout_dirty évite les recalculs multiples par frame
-    // Il est positionné à true lors des resize ou autres changements de layout
-    // ═══════════════════════════════════════════════════════════════════════════
-    if (!panel->layout_dirty) {
-        return;  // Déjà à jour, pas besoin de recalculer
-    }
-
-    debug_printf("\n🔄 === RECALCULATE_WIDGET_LAYOUT (layout_dirty=true) ===\n");
-
-    const int UNSTACK_MARGIN = 80;     // Marge d'hystérésis pour éviter oscillations
+    const int UNSTACK_MARGIN = 80;  // Marge d'hystérésis pour éviter oscillations
     int panel_width = panel->rect.w;
-    WidgetNode* node;
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 1: DÉCISION DE DÉPILEMENT AVEC MÉMOIRE PERSISTANTE
-    // ═══════════════════════════════════════════════════════════════════════════
     // Si widgets empilés ET largeur suffisante → dépiler
-    // Condition: panel_width >= panel_width_when_stacked + UNSTACK_MARGIN
-    // La marge évite les oscillations pile/dépile dues au scaling
-    // ═══════════════════════════════════════════════════════════════════════════
-    if (panel->widgets_stacked &&
-        panel->panel_width_when_stacked > 0 &&
-        panel_width >= panel->panel_width_when_stacked + UNSTACK_MARGIN) {
-
-        debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= (saved_width=%dpx + marge=%dpx)\n",
-                    panel_width, panel->panel_width_when_stacked, UNSTACK_MARGIN);
-
-        // Restaurer positions JSON originales (helper function)
-        restore_json_positions(panel);
-
-        // ───────────────────────────────────────────────────────────────────────
-        // Repositionner les UIButton (apply_button, cancel_button)
-        // ───────────────────────────────────────────────────────────────────────
-        int scaled_button_width = scale_value(BUTTON_WIDTH, panel->scale_factor);
-        int scaled_button_height = scale_value(BUTTON_HEIGHT, panel->scale_factor);
-        int scaled_spacing = scale_value(10, panel->scale_factor);
-        int scaled_bottom_margin = scale_value(50, panel->scale_factor);
-
-        int total_buttons_width = scaled_button_width * 2 + scaled_spacing;
-        const int MIN_SPACING = 20;
-
-        bool buttons_should_stack = (scaled_spacing < MIN_SPACING) ||
-                                     (total_buttons_width > panel_width - (2 * BUTTON_MARGIN));
-
-        if (buttons_should_stack) {
-            // Empiler verticalement
-            int button_center_x = (panel_width - scaled_button_width) / 2;
-            const int STACK_SPACING = 10;
-
-            panel->apply_button.rect.x = button_center_x;
-            panel->apply_button.rect.y = panel->screen_height - scaled_bottom_margin - scaled_button_height - STACK_SPACING;
-            panel->apply_button.rect.w = scaled_button_width;
-            panel->apply_button.rect.h = scaled_button_height;
-
-            panel->cancel_button.rect.x = button_center_x;
-            panel->cancel_button.rect.y = panel->screen_height - scaled_bottom_margin;
-            panel->cancel_button.rect.w = scaled_button_width;
-            panel->cancel_button.rect.h = scaled_button_height;
-
-            debug_printf("   🔘 UIButton empilés verticalement (x=%d)\n", button_center_x);
-        } else {
-            // Côte à côte (comportement normal)
-            int buttons_start_x = (panel_width - total_buttons_width) / 2;
-
-            panel->apply_button.rect.x = buttons_start_x;
-            panel->apply_button.rect.y = panel->screen_height - scaled_bottom_margin;
-            panel->apply_button.rect.w = scaled_button_width;
-            panel->apply_button.rect.h = scaled_button_height;
-
-            panel->cancel_button.rect.x = buttons_start_x + scaled_button_width + scaled_spacing;
-            panel->cancel_button.rect.y = panel->screen_height - scaled_bottom_margin;
-            panel->cancel_button.rect.w = scaled_button_width;
-            panel->cancel_button.rect.h = scaled_button_height;
-
-            debug_printf("   🔘 UIButton côte à côte (apply_x=%d, cancel_x=%d)\n",
-                        buttons_start_x, buttons_start_x + scaled_button_width + scaled_spacing);
-        }
-
-        // Marquer comme dépilé
-        panel->widgets_stacked = false;
-
-        debug_printf("✅ Widgets dépilés - positions JSON restaurées\n");
-        debug_printf("   📌 panel_width_when_stacked=%dpx (gardé en mémoire)\n",
-                    panel->panel_width_when_stacked);
-
-        // Recalculer les hauteurs et terminer
-        goto calculate_heights;
+    if (!panel->widgets_stacked ||
+        panel->panel_width_when_stacked <= 0 ||
+        panel_width < panel->panel_width_when_stacked + UNSTACK_MARGIN) {
+        return false;  // Pas de dépilement nécessaire
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 0bis: CALCULER LES GROUPES ET LARGEURS DES WIDGETS INCREMENT
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Pour la détection de collision, on doit utiliser la largeur incluant l'alignement
+    debug_printf("🔄 DÉPILEMENT: panel_width=%dpx >= (saved_width=%dpx + marge=%dpx)\n",
+                panel_width, panel->panel_width_when_stacked, UNSTACK_MARGIN);
+
+    // Restaurer positions JSON originales (helper function)
+    restore_json_positions(panel);
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Repositionner les UIButton (apply_button, cancel_button)
+    // ───────────────────────────────────────────────────────────────────────
+    int scaled_button_width = scale_value(BUTTON_WIDTH, panel->scale_factor);
+    int scaled_button_height = scale_value(BUTTON_HEIGHT, panel->scale_factor);
+    int scaled_spacing = scale_value(10, panel->scale_factor);
+    int scaled_bottom_margin = scale_value(50, panel->scale_factor);
+
+    int total_buttons_width = scaled_button_width * 2 + scaled_spacing;
+    const int MIN_SPACING = 20;
+
+    bool buttons_should_stack = (scaled_spacing < MIN_SPACING) ||
+                                 (total_buttons_width > panel_width - (2 * BUTTON_MARGIN));
+
+    if (buttons_should_stack) {
+        // Empiler verticalement
+        int button_center_x = (panel_width - scaled_button_width) / 2;
+        const int STACK_SPACING = 10;
+
+        panel->apply_button.rect.x = button_center_x;
+        panel->apply_button.rect.y = panel->screen_height - scaled_bottom_margin - scaled_button_height - STACK_SPACING;
+        panel->apply_button.rect.w = scaled_button_width;
+        panel->apply_button.rect.h = scaled_button_height;
+
+        panel->cancel_button.rect.x = button_center_x;
+        panel->cancel_button.rect.y = panel->screen_height - scaled_bottom_margin;
+        panel->cancel_button.rect.w = scaled_button_width;
+        panel->cancel_button.rect.h = scaled_button_height;
+
+        debug_printf("   🔘 UIButton empilés verticalement (x=%d)\n", button_center_x);
+    } else {
+        // Côte à côte (comportement normal)
+        int buttons_start_x = (panel_width - total_buttons_width) / 2;
+
+        panel->apply_button.rect.x = buttons_start_x;
+        panel->apply_button.rect.y = panel->screen_height - scaled_bottom_margin;
+        panel->apply_button.rect.w = scaled_button_width;
+        panel->apply_button.rect.h = scaled_button_height;
+
+        panel->cancel_button.rect.x = buttons_start_x + scaled_button_width + scaled_spacing;
+        panel->cancel_button.rect.y = panel->screen_height - scaled_bottom_margin;
+        panel->cancel_button.rect.w = scaled_button_width;
+        panel->cancel_button.rect.h = scaled_button_height;
+
+        debug_printf("   🔘 UIButton côte à côte (apply_x=%d, cancel_x=%d)\n",
+                    buttons_start_x, buttons_start_x + scaled_button_width + scaled_spacing);
+    }
+
+    // Marquer comme dépilé
+    panel->widgets_stacked = false;
+
+    debug_printf("✅ Widgets dépilés - positions JSON restaurées\n");
+    debug_printf("   📌 panel_width_when_stacked=%dpx (gardé en mémoire)\n",
+                panel->panel_width_when_stacked);
+
+    return true;  // Dépilement effectué, caller doit sauter à calculate_heights
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER: Calculer les groupes et largeurs des widgets INCREMENT
+// ═══════════════════════════════════════════════════════════════════════════
+static int calculate_increment_groups(SettingsPanel* panel, IncrementLayoutInfo* increment_infos, int max_count) {
+    if (!panel || !panel->widget_list || !increment_infos) return 0;
 
     const int GROUP_SPACING_THRESHOLD = 30;  // Espacement dans JSON
-
-    typedef struct {
-        ConfigWidget* widget;
-        int y_position;
-        int text_width;
-        int group_id;
-        int container_width_for_group;
-    } IncrementLayoutInfo;
-
-    IncrementLayoutInfo increment_infos[50];
     int increment_count = 0;
 
     // Collecter les widgets INCREMENT
-    node = panel->widget_list->first;
-    while (node && increment_count < 50) {
+    WidgetNode* node = panel->widget_list->first;
+    while (node && increment_count < max_count) {
         if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
             ConfigWidget* w = node->widget.increment_widget;
             TTF_Font* font = get_font_for_size(w->current_text_size);
@@ -1609,14 +1622,20 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 1: CONSTRUIRE LA LISTE DES RECTANGLES DE COLLISION
-    // ═══════════════════════════════════════════════════════════════════════════
-    WidgetRect rects[50];  // Maximum 50 widgets
-    int rect_count = 0;
+    return increment_count;
+}
 
-    node = panel->widget_list->first;
-    while (node && rect_count < 50) {
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER: Construire la liste des rectangles de collision
+// ═══════════════════════════════════════════════════════════════════════════
+static int build_collision_rects(SettingsPanel* panel, IncrementLayoutInfo* increment_infos,
+                                 int increment_count, WidgetRect* rects, int max_rects) {
+    if (!panel || !panel->widget_list || !rects) return 0;
+
+    int rect_count = 0;
+    WidgetNode* node = panel->widget_list->first;
+
+    while (node && rect_count < max_rects) {
         // Pour les widgets INCREMENT, utiliser le container_width calculé
         if (node->type == WIDGET_TYPE_INCREMENT && node->widget.increment_widget) {
             ConfigWidget* w = node->widget.increment_widget;
@@ -1646,16 +1665,22 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         node = node->next;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 2: DÉTERMINER SI ON DOIT RÉORGANISER
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
-    // Critère 2: Widget qui dépasse le bord droit du panneau (avec marge)
-    // Critère 3: Détection de collision entre widgets
+    return rect_count;
+}
 
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER: Déterminer si une réorganisation est nécessaire
+// ═══════════════════════════════════════════════════════════════════════════
+// Critère 1: Largeur de la fenêtre (si trop étroit, forcer l'empilement)
+// Critère 2: Widget qui dépasse le bord droit du panneau (avec marge)
+// Critère 3: Détection de collision entre widgets
+static bool check_reorganization_needed(SettingsPanel* panel, WidgetRect* rects, int rect_count) {
+    if (!panel || !rects) return false;
+
+    int panel_width = panel->rect.w;
     bool needs_reorganization = false;
 
-    // Vérifier si le panneau est trop étroit
+    // Critère 1: Vérifier si le panneau est trop étroit
     if (panel_width < panel->layout_threshold_width) {
         debug_printf("📱 Panneau étroit (%dpx < %dpx) - empilement forcé\n",
                      panel_width, panel->layout_threshold_width);
@@ -1695,50 +1720,18 @@ void recalculate_widget_layout(SettingsPanel* panel) {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE (empilement)
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Si needs_reorganization=true, empiler. Sinon, garder les positions restaurées.
-    // ═══════════════════════════════════════════════════════════════════════════
-    if (needs_reorganization) {
-        debug_printf("🔧 EMPILEMENT: collisions détectées ou panneau trop étroit\n");
+    return needs_reorganization;
+}
 
-        // Marquer que les widgets sont maintenant empilés
-        panel->widgets_stacked = true;
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER: Calculer la hauteur totale du contenu et le max_scroll
+// ═══════════════════════════════════════════════════════════════════════════
+static void calculate_content_height(SettingsPanel* panel) {
+    if (!panel || !panel->widget_list) return;
 
-        // ═════════════════════════════════════════════════════════════════════════
-        // SAUVEGARDER LA LARGEUR UNE SEULE FOIS (FLAG)
-        // ═════════════════════════════════════════════════════════════════════════
-        // Si panel_width_when_stacked == 0, c'est le PREMIER empilement
-        // → Sauvegarder la largeur actuelle comme référence
-        // Sinon, c'est un ré-empilement après dépilement → garder l'ancienne valeur
-        // ═════════════════════════════════════════════════════════════════════════
-        if (panel->panel_width_when_stacked == 0) {
-            panel->panel_width_when_stacked = panel_width;
-            debug_printf("   💾 SAUVEGARDE panel_width_when_stacked=%dpx (PREMIER empilement)\n",
-                        panel->panel_width_when_stacked);
-        } else {
-            debug_printf("   ♻️  panel_width_when_stacked=%dpx déjà sauvegardé (ré-empilement)\n",
-                        panel->panel_width_when_stacked);
-        }
-
-        // Empiler les widgets verticalement (helper function)
-        stack_widgets_vertically(panel, rects, rect_count);
-
-    } else {
-        debug_printf("✅ Aucune collision détectée - conserver positions actuelles\n");
-        // Note: Ne pas modifier widgets_stacked ici!
-        // Si widgets_stacked = true, on le garde car le dépilement n'a pas eu lieu
-        // Ne passer à widgets_stacked = false QUE lors du dépilement explicite
-    }
-
-calculate_heights:
-    ;  // Statement vide nécessaire pour le label
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ÉTAPE 4: CALCULER LA HAUTEUR TOTALE DU CONTENU ET LE MAX_SCROLL
-    // ═══════════════════════════════════════════════════════════════════════════
     int max_y = 0;
-    node = panel->widget_list->first;
+    WidgetNode* node = panel->widget_list->first;
+
     while (node) {
         int widget_bottom = 0;
 
@@ -1809,6 +1802,91 @@ calculate_heights:
     // Marquer le layout comme à jour
     panel->layout_dirty = false;
     debug_printf("✅ Recalcul terminé - layout_dirty=false\n\n");
+}
+
+void recalculate_widget_layout(SettingsPanel* panel) {
+    if (!panel || !panel->widget_list) return;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 0: VÉRIFIER SI RECALCUL NÉCESSAIRE
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Le flag layout_dirty évite les recalculs multiples par frame
+    // Il est positionné à true lors des resize ou autres changements de layout
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (!panel->layout_dirty) {
+        return;  // Déjà à jour, pas besoin de recalculer
+    }
+
+    debug_printf("\n🔄 === RECALCULATE_WIDGET_LAYOUT (layout_dirty=true) ===\n");
+
+    int panel_width = panel->rect.w;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1: DÉCISION DE DÉPILEMENT AVEC MÉMOIRE PERSISTANTE
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (should_unstack_widgets(panel)) {
+        goto calculate_heights;  // Dépilement effectué, sauter directement au calcul des hauteurs
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 0bis: CALCULER LES GROUPES ET LARGEURS DES WIDGETS INCREMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    IncrementLayoutInfo increment_infos[50];
+    int increment_count = calculate_increment_groups(panel, increment_infos, 50);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 1: CONSTRUIRE LA LISTE DES RECTANGLES DE COLLISION
+    // ═══════════════════════════════════════════════════════════════════════════
+    WidgetRect rects[50];  // Maximum 50 widgets
+    int rect_count = build_collision_rects(panel, increment_infos, increment_count, rects, 50);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 2: DÉTERMINER SI ON DOIT RÉORGANISER
+    // ═══════════════════════════════════════════════════════════════════════════
+    bool needs_reorganization = check_reorganization_needed(panel, rects, rect_count);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 3: RÉORGANISER SI NÉCESSAIRE (empilement)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Si needs_reorganization=true, empiler. Sinon, garder les positions restaurées.
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (needs_reorganization) {
+        debug_printf("🔧 EMPILEMENT: collisions détectées ou panneau trop étroit\n");
+
+        // Marquer que les widgets sont maintenant empilés
+        panel->widgets_stacked = true;
+
+        // ═════════════════════════════════════════════════════════════════════════
+        // SAUVEGARDER LA LARGEUR UNE SEULE FOIS (FLAG)
+        // ═════════════════════════════════════════════════════════════════════════
+        // Si panel_width_when_stacked == 0, c'est le PREMIER empilement
+        // → Sauvegarder la largeur actuelle comme référence
+        // Sinon, c'est un ré-empilement après dépilement → garder l'ancienne valeur
+        // ═════════════════════════════════════════════════════════════════════════
+        if (panel->panel_width_when_stacked == 0) {
+            panel->panel_width_when_stacked = panel_width;
+            debug_printf("   💾 SAUVEGARDE panel_width_when_stacked=%dpx (PREMIER empilement)\n",
+                        panel->panel_width_when_stacked);
+        } else {
+            debug_printf("   ♻️  panel_width_when_stacked=%dpx déjà sauvegardé (ré-empilement)\n",
+                        panel->panel_width_when_stacked);
+        }
+
+        // Empiler les widgets verticalement (helper function)
+        stack_widgets_vertically(panel, rects, rect_count);
+
+    } else {
+        debug_printf("✅ Aucune collision détectée - conserver positions actuelles\n");
+        // Note: Ne pas modifier widgets_stacked ici!
+        // Si widgets_stacked = true, on le garde car le dépilement n'a pas eu lieu
+        // Ne passer à widgets_stacked = false QUE lors du dépilement explicite
+    }
+
+calculate_heights:
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ÉTAPE 4: CALCULER LA HAUTEUR TOTALE DU CONTENU ET LE MAX_SCROLL
+    // ═══════════════════════════════════════════════════════════════════════════
+    calculate_content_height(panel);
 }
 void handle_panel_scroll(SettingsPanel* panel, SDL_Event* event) {
     if (!panel || !event) return;
