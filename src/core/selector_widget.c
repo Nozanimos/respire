@@ -231,14 +231,14 @@ void update_selector_submenu_animation(SelectorWidget* widget, float delta_time)
 
     if (widget->submenu_open) {
         // Ouverture : 0.0 → 1.0 en 0.5s
-        widget->submenu_animation += delta_time / 0.5f;
+        widget->submenu_animation += delta_time / 0.2f;
         if (widget->submenu_animation >= 1.0f) {
             widget->submenu_animation = 1.0f;
             widget->submenu_animating = false;
         }
     } else {
         // Fermeture : 1.0 → 0.0 en 0.5s
-        widget->submenu_animation -= delta_time / 0.5f;
+        widget->submenu_animation -= delta_time / 0.2f;
         if (widget->submenu_animation <= 0.0f) {
             widget->submenu_animation = 0.0f;
             widget->submenu_animating = false;
