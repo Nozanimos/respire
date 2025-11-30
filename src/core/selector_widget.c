@@ -35,8 +35,8 @@ SelectorWidget* create_selector_widget(const char* nom_affichage, int x, int y,
 
     // Initialisation des options
     widget->num_options = 0;
-    widget->current_index = default_index;
-    widget->previous_index = default_index;
+    widget->current_index = -1;  // Pas encore défini (sera initialisé par set_selector_value)
+    widget->previous_index = -1;
 
     // Police
     widget->font = font;
@@ -162,10 +162,29 @@ void set_selector_value(SelectorWidget* widget, int new_index) {
     debug_printf("🔄 Selector '%s': option changée → [%d] '%s'\n",
                  widget->nom_affichage, new_index, widget->options[new_index].text);
 
-    // Appeler le callback
-    if (widget->options[new_index].callback) {
-        widget->options[new_index].callback();
-        debug_printf("✅ Callback appelé: %s\n", widget->options[new_index].callback_name);
+    // Activer le sous-menu si l'option est "Alterné" (index 2)
+    // On vérifie aussi si le widget a les données roller configurées
+    if (new_index == 2 && widget->roller_callback != NULL) {
+        widget->submenu_enabled = true;
+        debug_printf("✅ Sous-menu roller activé (option Alterné)\n");
+
+        // Appeler le callback ROLLER au lieu du callback classique
+        widget->roller_callback(widget->seq1_type, widget->seq1_count,
+                               widget->seq2_type, widget->seq2_count);
+        debug_printf("✅ Callback roller appelé: seq1=%d×%d, seq2=%d×%d\n",
+                    widget->seq1_count, widget->seq1_type,
+                    widget->seq2_count, widget->seq2_type);
+    } else {
+        widget->submenu_enabled = false;
+        widget->submenu_open = false;
+        widget->submenu_animation = 0.0f;
+        debug_printf("🚫 Sous-menu roller désactivé\n");
+
+        // Appeler le callback CLASSIQUE de l'option
+        if (widget->options[new_index].callback) {
+            widget->options[new_index].callback();
+            debug_printf("✅ Callback classique appelé: %s\n", widget->options[new_index].callback_name);
+        }
     }
 }
 
@@ -584,13 +603,10 @@ void handle_selector_widget_events(SelectorWidget* widget, SDL_Event* event,
                     widget->seq2_type_hovered = false;
                     widget->seq2_count_hovered = false;
                 }
-
-                // Skip le reste si mode submenu activé
-                break;
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // MODE CLASSIQUE (flèches)
+            // DÉTECTION HOVER DES FLÈCHES PRINCIPALES (TOUJOURS ACTIF)
             // ═══════════════════════════════════════════════════════════════
             // Vérifier survol flèche gauche
             SDL_Rect left_abs = widget->left_arrow_rect;
@@ -627,27 +643,27 @@ void handle_selector_widget_events(SelectorWidget* widget, SDL_Event* event,
             int mouse_x = event->button.x;
             int mouse_y = event->button.y;
 
-            // Mode classique uniquement
-            if (!widget->submenu_enabled) {
-                // Clic sur flèche gauche
-                SDL_Rect left_abs = widget->left_arrow_rect;
-                left_abs.x += widget_x;
-                left_abs.y += widget_y;
-                if (mouse_x >= left_abs.x && mouse_x <= left_abs.x + left_abs.w &&
-                    mouse_y >= left_abs.y && mouse_y <= left_abs.y + left_abs.h) {
-                    selector_previous_option(widget);
-                    break;
-                }
+            // ═══════════════════════════════════════════════════════════════
+            // CLICS SUR FLÈCHES PRINCIPALES (TOUJOURS ACTIF)
+            // ═══════════════════════════════════════════════════════════════
+            // Clic sur flèche gauche
+            SDL_Rect left_abs = widget->left_arrow_rect;
+            left_abs.x += widget_x;
+            left_abs.y += widget_y;
+            if (mouse_x >= left_abs.x && mouse_x <= left_abs.x + left_abs.w &&
+                mouse_y >= left_abs.y && mouse_y <= left_abs.y + left_abs.h) {
+                selector_previous_option(widget);
+                break;
+            }
 
-                // Clic sur flèche droite
-                SDL_Rect right_abs = widget->right_arrow_rect;
-                right_abs.x += widget_x;
-                right_abs.y += widget_y;
-                if (mouse_x >= right_abs.x && mouse_x <= right_abs.x + right_abs.w &&
-                    mouse_y >= right_abs.y && mouse_y <= right_abs.y + right_abs.h) {
-                    selector_next_option(widget);
-                    break;
-                }
+            // Clic sur flèche droite
+            SDL_Rect right_abs = widget->right_arrow_rect;
+            right_abs.x += widget_x;
+            right_abs.y += widget_y;
+            if (mouse_x >= right_abs.x && mouse_x <= right_abs.x + right_abs.w &&
+                mouse_y >= right_abs.y && mouse_y <= right_abs.y + right_abs.h) {
+                selector_next_option(widget);
+                break;
             }
             break;
         }

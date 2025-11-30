@@ -554,52 +554,62 @@ bool parser_widget_selector(cJSON* json_obj, LoaderContext* ctx, WidgetList* lis
         SelectorWidget* selector = node->widget.selector_widget;
 
         // ─────────────────────────────────────────────────────────────────────────
+        // CHARGER LES DONNÉES ROLLER (TOUJOURS, même en mode classique)
+        // ─────────────────────────────────────────────────────────────────────────
+        // Ces données sont nécessaires pour activer dynamiquement le submenu
+        // lorsque l'utilisateur sélectionne l'option "Alterné"
+        cJSON* seq1_type = cJSON_GetObjectItem(json_obj, "roller_seq1_type_default");
+        cJSON* seq1_count = cJSON_GetObjectItem(json_obj, "roller_seq1_count_default");
+        cJSON* seq2_type = cJSON_GetObjectItem(json_obj, "roller_seq2_type_default");
+        cJSON* seq2_count = cJSON_GetObjectItem(json_obj, "roller_seq2_count_default");
+
+        selector->seq1_type = (seq1_type && cJSON_IsNumber(seq1_type)) ? seq1_type->valueint : 1;
+        selector->seq1_count = (seq1_count && cJSON_IsNumber(seq1_count)) ? seq1_count->valueint : 1;
+        selector->seq2_type = (seq2_type && cJSON_IsNumber(seq2_type)) ? seq2_type->valueint : 0;
+        selector->seq2_count = (seq2_count && cJSON_IsNumber(seq2_count)) ? seq2_count->valueint : 2;
+
+        // Charger le callback roller (avec 4 paramètres)
+        cJSON* roller_callback_name = cJSON_GetObjectItem(json_obj, "roller_callback");
+        if (roller_callback_name && cJSON_IsString(roller_callback_name)) {
+            // Mapper le nom vers la fonction
+            if (strcmp(roller_callback_name->valuestring, "retention_roller_changed") == 0) {
+                // Déclaration externe du callback
+                extern void retention_roller_changed(int, int, int, int);
+                selector->roller_callback = retention_roller_changed;
+                debug_printf("✅ Callback roller '%s' défini\n", roller_callback_name->valuestring);
+            }
+        }
+
+        debug_printf("🔧 Données roller chargées: seq1=%d×%d, seq2=%d×%d, callback=%s\n",
+                     selector->seq1_count, selector->seq1_type,
+                     selector->seq2_count, selector->seq2_type,
+                     selector->roller_callback ? "OUI" : "NON");
+
+        // ─────────────────────────────────────────────────────────────────────────
         // VÉRIFIER LE MODE ROLLER (sous-menu personnalisé)
         // ─────────────────────────────────────────────────────────────────────────
-        // submenu_enabled déjà déclaré ligne 518
+        // submenu_enabled déjà déclaré ligne 503
         if (submenu_enabled && cJSON_IsTrue(submenu_enabled)) {
-            // Mode roller activé
+            // Mode roller-only activé (ancien comportement, obsolète)
             selector->submenu_enabled = true;
 
-            // Charger les valeurs par défaut des rollers
-            cJSON* seq1_type = cJSON_GetObjectItem(json_obj, "roller_seq1_type_default");
-            cJSON* seq1_count = cJSON_GetObjectItem(json_obj, "roller_seq1_count_default");
-            cJSON* seq2_type = cJSON_GetObjectItem(json_obj, "roller_seq2_type_default");
-            cJSON* seq2_count = cJSON_GetObjectItem(json_obj, "roller_seq2_count_default");
-
-            selector->seq1_type = (seq1_type && cJSON_IsNumber(seq1_type)) ? seq1_type->valueint : 1;
-            selector->seq1_count = (seq1_count && cJSON_IsNumber(seq1_count)) ? seq1_count->valueint : 1;
-            selector->seq2_type = (seq2_type && cJSON_IsNumber(seq2_type)) ? seq2_type->valueint : 0;
-            selector->seq2_count = (seq2_count && cJSON_IsNumber(seq2_count)) ? seq2_count->valueint : 2;
-
-            // Charger le callback roller (avec 4 paramètres)
-            cJSON* roller_callback_name = cJSON_GetObjectItem(json_obj, "roller_callback");
-            if (roller_callback_name && cJSON_IsString(roller_callback_name)) {
-                // Mapper le nom vers la fonction
-                if (strcmp(roller_callback_name->valuestring, "retention_roller_changed") == 0) {
-                    // Déclaration externe du callback
-                    extern void retention_roller_changed(int, int, int, int);
-                    selector->roller_callback = retention_roller_changed;
-                    debug_printf("✅ Callback roller '%s' défini\n", roller_callback_name->valuestring);
-                }
-            }
-
-            debug_printf("✅ Selector '%s' en mode roller: seq1=%d×%d, seq2=%d×%d\n",
-                         id->valuestring,
-                         selector->seq1_count, selector->seq1_type,
-                         selector->seq2_count, selector->seq2_type);
+            debug_printf("✅ Selector '%s' en mode roller-only (layout initialisé)\n",
+                         id->valuestring);
 
             // ─────────────────────────────────────────────────────────────────────────
             // INITIALISATION DU LAYOUT (créer flèches et zones cliquables)
             // IMPORTANT: Doit être fait même en mode roller pour initialiser les flèches
             // ─────────────────────────────────────────────────────────────────────────
             rescale_selector_widget(selector, 1.0f);
-            debug_printf("✅ Widget selector '%s' chargé en mode roller (layout initialisé)\n",
-                         id->valuestring);
 
-            // Skip le parsing des options en mode roller
+            // Skip le parsing des options en mode roller-only
             return true;
         }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // MODE CLASSIQUE : submenu désactivé par défaut, sera activé dynamiquement
+        // ─────────────────────────────────────────────────────────────────────────
+        selector->submenu_enabled = false;
 
         // ─────────────────────────────────────────────────────────────────────────
         // PARSING DU TABLEAU D'OPTIONS (mode classique uniquement)
@@ -643,14 +653,15 @@ bool parser_widget_selector(cJSON* json_obj, LoaderContext* ctx, WidgetList* lis
         }
 
         // ─────────────────────────────────────────────────────────────────────────
-        // APPELER LE CALLBACK DE L'OPTION PAR DÉFAUT
+        // INITIALISER LA VALEUR PAR DÉFAUT (appelle le bon callback)
         // ─────────────────────────────────────────────────────────────────────────
+        // Utiliser set_selector_value() qui va :
+        // - Définir current_index
+        // - Activer le submenu si index == 2 (Alterné)
+        // - Appeler le callback approprié (classique OU roller)
         if (default_index >= 0 && default_index < selector->num_options) {
-            if (selector->options[default_index].callback) {
-                selector->options[default_index].callback();
-                debug_printf("✅ Callback de l'option par défaut appelé: %s\n",
-                             selector->options[default_index].callback_name);
-            }
+            set_selector_value(selector, default_index);
+            debug_printf("✅ Valeur par défaut initialisée: index=%d\n", default_index);
         }
 
         // ─────────────────────────────────────────────────────────────────────────

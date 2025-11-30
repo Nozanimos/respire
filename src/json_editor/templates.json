@@ -35,8 +35,19 @@
 			"nom_affichage":	"a_modifier",
 			"x":	0,
 			"y":	0,
+			"index_depart":	0,
 			"taille_texte":	0,
-			"submenu_enabled":	true,
+			"options":	[{
+					"texte":	"a_modifier",
+					"callback":	"a_modifier"
+				}, {
+					"texte":	"a_modifier",
+					"callback":	"a_modifier"
+				}, {
+					"texte":	"a_modifier",
+					"callback":	"a_modifier"
+				}],
+			"submenu_enabled":	false,
 			"roller_seq1_type_default":	0,
 			"roller_seq1_count_default":	0,
 			"roller_seq2_type_default":	0,
